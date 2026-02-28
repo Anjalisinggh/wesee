@@ -5,9 +5,11 @@ interface SectionLabelProps {
 
 export default function SectionLabel({ number, title }: SectionLabelProps) {
   return (
-    <div className="flex items-center gap-3 mb-6">
-      <span className="section-number">({number})</span>
-      <span className="text-xs font-medium tracking-widest uppercase text-[#999]">
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+      <span style={{ fontSize: 11, fontWeight: 300, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888888" }}>
+        ({number})
+      </span>
+      <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>
         {title}
       </span>
     </div>

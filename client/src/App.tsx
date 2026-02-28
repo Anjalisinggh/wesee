@@ -9,7 +9,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import LoadingScreen from "./components/LoadingScreen";
 import { useLenis } from "./hooks/useLenis";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation } from "wouter";
 
 const Services = lazy(() => import("./pages/Services"));
@@ -31,7 +31,9 @@ function ScrollToTop() {
 function PageLoader() {
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="font-mono text-sm text-[#999]">Loading...</div>
+      <span style={{ fontSize: 11, fontWeight: 300, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888888" }}>
+        Loading...
+      </span>
     </div>
   );
 }
@@ -57,19 +59,29 @@ function Router() {
 
 function App() {
   useLenis();
+  const [loadingDone, setLoadingDone] = useState(false);
+
+  // Check if loading was already done
+  useEffect(() => {
+    if (sessionStorage.getItem("wesee-loaded")) {
+      setLoadingDone(true);
+    }
+  }, []);
 
   return (
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <LoadingScreen />
-          <ScrollToTop />
-          <Header />
-          <main>
-            <Router />
-          </main>
-          <Footer />
+          <LoadingScreen onComplete={() => setLoadingDone(true)} />
+          <div style={{ opacity: loadingDone ? 1 : 0, transition: "opacity 0.4s ease" }}>
+            <ScrollToTop />
+            <Header />
+            <main>
+              <Router />
+            </main>
+            <Footer />
+          </div>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

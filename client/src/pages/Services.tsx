@@ -1,354 +1,259 @@
-/*
- * Services / Projects Page — Modeled after CLOU Architects Projects page
- * Features: Filter panel, category tabs, service cards grid
- */
-
 import { useState, useMemo, useEffect } from "react";
 import { Link, useSearch } from "wouter";
-import { motion, AnimatePresence } from "framer-motion";
-import { Filter, X, ArrowUpRight } from "lucide-react";
-import { services, categories, serviceTypes, industryFilters, statusFilters, engagementFilters } from "@/data/services";
+import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const categoryColors: Record<number, string> = {
-  1: "bg-blue-50 text-blue-700",
-  2: "bg-emerald-50 text-emerald-700",
-  3: "bg-orange-50 text-orange-700",
-  4: "bg-green-50 text-green-700",
-  5: "bg-purple-50 text-purple-700",
-  6: "bg-pink-50 text-pink-700",
-  7: "bg-amber-50 text-amber-700",
-  8: "bg-indigo-50 text-indigo-700",
-  9: "bg-slate-50 text-slate-700",
+gsap.registerPlugin(ScrollTrigger);
+
+/* Atmospheric Unsplash images for service cards — one per category theme */
+const categoryImages: Record<number, string[]> = {
+  1: [
+    "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80",
+    "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
+    "https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=600&q=80",
+    "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=600&q=80",
+    "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=600&q=80",
+  ],
+  2: [
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80",
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+    "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&q=80",
+    "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=600&q=80",
+  ],
+  3: [
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+    "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=600&q=80",
+    "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=600&q=80",
+    "https://images.unsplash.com/photo-1432888498266-38ffec3eaf0a?w=600&q=80",
+  ],
+  4: [
+    "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=600&q=80",
+    "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80",
+    "https://images.unsplash.com/photo-1512756290469-ec264b7fbf87?w=600&q=80",
+    "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&q=80",
+    "https://images.unsplash.com/photo-1542435503-956c469947f6?w=600&q=80",
+  ],
+  5: [
+    "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&q=80",
+    "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=600&q=80",
+    "https://images.unsplash.com/photo-1596526131083-e8c633c948d2?w=600&q=80",
+    "https://images.unsplash.com/photo-1557200134-90327ee9fafa?w=600&q=80",
+  ],
+  6: [
+    "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=600&q=80",
+    "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=600&q=80",
+    "https://images.unsplash.com/photo-1545235617-9465d2a55698?w=600&q=80",
+    "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&q=80",
+    "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=600&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+  ],
+  7: [
+    "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=600&q=80",
+    "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=600&q=80",
+    "https://images.unsplash.com/photo-1586880244406-556ebe35f282?w=600&q=80",
+    "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&q=80",
+    "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600&q=80",
+  ],
+  8: [
+    "https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=600&q=80",
+    "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80",
+    "https://images.unsplash.com/photo-1552664730-d307ca884978?w=600&q=80",
+    "https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&q=80",
+    "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
+  ],
+  9: [
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&q=80",
+    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=80",
+    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&q=80",
+    "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80",
+  ],
 };
 
+export function getServiceImage(service: typeof services[0], index: number): string {
+  const imgs = categoryImages[service.categoryId] || categoryImages[1];
+  return imgs[index % imgs.length];
+}
+
+const industries = ["Healthcare", "Real Estate", "E-Commerce", "SaaS", "Financial Services", "Education", "Hospitality", "Manufacturing", "Legal", "Logistics"];
+const engagementSizes = ["Starter", "Growth", "Enterprise"];
+const statuses = ["Live", "In Progress", "Case Study"];
+
 export default function Services() {
-  const searchString = useSearch();
-  const params = new URLSearchParams(searchString);
+  const search = useSearch();
+  const params = new URLSearchParams(search);
 
   const [filterOpen, setFilterOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState<number | null>(
-    params.get("category") ? parseInt(params.get("category")!) : null
-  );
-  const [activeType, setActiveType] = useState<string | null>(params.get("type") || null);
-  const [activeIndustry, setActiveIndustry] = useState<string | null>(null);
-  const [activeStatus, setActiveStatus] = useState<string | null>(null);
-  const [activeEngagement, setActiveEngagement] = useState<string | null>(null);
-
-  const filteredServices = useMemo(() => {
-    return services.filter((s) => {
-      if (activeCategory && s.categoryId !== activeCategory) return false;
-      if (activeType && s.serviceType !== activeType) return false;
-      if (activeIndustry && !s.industries.some(ind => ind.toLowerCase().includes(activeIndustry.toLowerCase()))) return false;
-      if (activeStatus && s.status !== activeStatus) return false;
-      if (activeEngagement && s.engagementSize !== activeEngagement) return false;
-      return true;
-    });
-  }, [activeCategory, activeType, activeIndustry, activeStatus, activeEngagement]);
-
-  const activeFilterCount = [activeCategory, activeType, activeIndustry, activeStatus, activeEngagement].filter(Boolean).length;
-
-  const clearFilters = () => {
-    setActiveCategory(null);
-    setActiveType(null);
-    setActiveIndustry(null);
-    setActiveStatus(null);
-    setActiveEngagement(null);
-  };
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(params.get("category") ? Number(params.get("category")) : null);
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  const [expandedFilter, setExpandedFilter] = useState<string | null>("category");
 
   useEffect(() => {
-    if (filterOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    const handler = () => setFilterOpen(prev => !prev);
+    window.addEventListener("toggle-filter-panel", handler);
+    return () => window.removeEventListener("toggle-filter-panel", handler);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = filterOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [filterOpen]);
 
+  useEffect(() => {
+    const reveals = document.querySelectorAll(".gsap-reveal");
+    reveals.forEach((el) => {
+      gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none none" }
+      });
+    });
+    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+  }, []);
+
+  const filtered = useMemo(() => {
+    return services.filter(s => {
+      if (selectedCategory && s.categoryId !== selectedCategory) return false;
+      if (selectedIndustry && !s.industries.some(ind => ind.toLowerCase().includes(selectedIndustry.toLowerCase()))) return false;
+      if (selectedSize && s.engagementSize !== selectedSize) return false;
+      if (selectedStatus && s.status !== selectedStatus) return false;
+      return true;
+    });
+  }, [selectedCategory, selectedIndustry, selectedSize, selectedStatus]);
+
+  // Dispatch filter count to header
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("update-filter-count", { detail: { count: filtered.length } }));
+  }, [filtered.length]);
+
+  const clearAll = () => {
+    setSelectedCategory(null);
+    setSelectedIndustry(null);
+    setSelectedSize(null);
+    setSelectedStatus(null);
+  };
+
   return (
-    <div className="min-h-screen pt-24 md:pt-32">
-      <div className="container">
-        {/* Page Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <SectionLabel number="P" title="Services" />
-          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#1a1a1a]">
-            Our services.
-          </h1>
-          <p className="mt-4 text-lg text-[#555] max-w-2xl">
-            9 categories, 43 services — everything your business needs to
-            automate, grow, and scale intelligently.
-          </p>
-        </motion.div>
-
-        {/* Filter Bar */}
-        <div className="mt-10 flex items-center justify-between border-b border-[#eee] pb-4">
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={`flex-shrink-0 text-sm font-medium px-3 py-1.5 rounded-sm transition-colors ${
-                !activeCategory ? "bg-[#1a1a1a] text-white" : "text-[#666] hover:text-[#1a1a1a]"
-              }`}
-            >
-              All
+    <div style={{ paddingTop: 64 }}>
+      {/* ═══ FILTER PANEL — slides from LEFT ═══ */}
+      <div
+        style={{
+          position: "fixed",
+          left: 0,
+          top: 0,
+          height: "100vh",
+          width: 360,
+          background: "#FFFFFF",
+          borderRight: "1px solid #EEEEEE",
+          zIndex: 100,
+          transform: filterOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+          overflowY: "auto",
+          padding: "32px 24px",
+        }}
+      >
+        <div className="flex items-center justify-between" style={{ marginBottom: 32 }}>
+          <div>
+            <div style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A" }}>Filter Services ({filtered.length})</div>
+            <button onClick={clearAll} style={{ fontSize: 13, color: "#888888", marginTop: 4 }} className="hover:!text-[#1A1A1A]">
+              Clear all
             </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
-                className={`flex-shrink-0 text-sm font-medium px-3 py-1.5 rounded-sm transition-colors whitespace-nowrap ${
-                  activeCategory === cat.id ? "bg-[#1a1a1a] text-white" : "text-[#666] hover:text-[#1a1a1a]"
-                }`}
-              >
-                {cat.name.split(" & ")[0].split(",")[0]}
-              </button>
-            ))}
           </div>
-          <button
-            onClick={() => setFilterOpen(true)}
-            className="flex-shrink-0 ml-4 flex items-center gap-2 text-sm font-medium text-[#666] hover:text-[#1a1a1a] transition-colors"
-          >
-            <Filter className="w-4 h-4" />
-            Filter
-            {activeFilterCount > 0 && (
-              <span className="ml-1 w-5 h-5 bg-[#2563EB] text-white text-xs rounded-full flex items-center justify-center">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
+          <button onClick={() => setFilterOpen(false)} style={{ fontSize: 24, color: "#1A1A1A", padding: 8 }}>×</button>
         </div>
 
-        {/* Results count */}
-        <div className="mt-4 flex items-center justify-between">
-          <p className="text-sm text-[#999]">
-            {filteredServices.length} service{filteredServices.length !== 1 ? "s" : ""}
-          </p>
-          {activeFilterCount > 0 && (
+        {[
+          { key: "category", label: "CATEGORY", items: [{ label: "All", value: null as any }, ...categories.map(c => ({ label: c.name, value: c.id }))], selected: selectedCategory, onSelect: setSelectedCategory },
+          { key: "industry", label: "INDUSTRY", items: [{ label: "All", value: null as any }, ...industries.map(ind => ({ label: ind, value: ind }))], selected: selectedIndustry, onSelect: setSelectedIndustry },
+          { key: "size", label: "ENGAGEMENT SIZE", items: [{ label: "All", value: null as any }, ...engagementSizes.map(s => ({ label: s, value: s }))], selected: selectedSize, onSelect: setSelectedSize },
+          { key: "status", label: "STATUS", items: [{ label: "All", value: null as any }, ...statuses.map(s => ({ label: s, value: s }))], selected: selectedStatus, onSelect: setSelectedStatus },
+        ].map((group) => (
+          <div key={group.key} style={{ borderTop: "1px solid #EEEEEE" }}>
             <button
-              onClick={clearFilters}
-              className="text-sm text-[#2563EB] hover:underline"
+              onClick={() => setExpandedFilter(expandedFilter === group.key ? null : group.key)}
+              className="w-full flex items-center justify-between"
+              style={{ padding: "16px 0", fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}
             >
-              Clear all filters
+              {group.label}
+              <span style={{ fontSize: 16 }}>{expandedFilter === group.key ? "−" : "+"}</span>
             </button>
-          )}
-        </div>
-
-        {/* Service Cards Grid */}
-        <div className="mt-8 mb-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <AnimatePresence mode="popLayout">
-            {filteredServices.map((service, i) => (
-              <motion.div
-                key={service.id}
-                layout
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.4, delay: Math.min(i * 0.05, 0.3) }}
-              >
-                <Link
-                  href={`/services/${service.slug}`}
-                  className="group block p-6 border border-[#eee] rounded-sm hover:border-[#2563EB] transition-all duration-300 h-full"
-                >
-                  {/* Category badge */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`text-xs font-medium px-2 py-1 rounded-sm ${categoryColors[service.categoryId] || "bg-gray-50 text-gray-700"}`}>
-                      {service.category.split(" & ")[0].split(",")[0]}
-                    </span>
-                    <span className={`text-xs font-mono px-2 py-0.5 rounded-sm ${
-                      service.status === "Live" ? "bg-green-50 text-green-600" :
-                      service.status === "In Progress" ? "bg-amber-50 text-amber-600" :
-                      "bg-blue-50 text-blue-600"
-                    }`}>
-                      {service.status}
-                    </span>
-                  </div>
-
-                  {/* Service thumbnail placeholder */}
-                  <div className="w-full aspect-[16/9] rounded-sm mb-4 overflow-hidden"
+            {expandedFilter === group.key && (
+              <div style={{ paddingBottom: 16 }}>
+                {group.items.map((item, i) => (
+                  <button
+                    key={i}
+                    onClick={() => group.onSelect(item.value)}
+                    className="block w-full text-left"
                     style={{
-                      background: `linear-gradient(135deg, ${
-                        service.categoryId <= 3 ? '#e0e7ff, #dbeafe' :
-                        service.categoryId <= 6 ? '#d1fae5, #ecfdf5' :
-                        '#fef3c7, #fef9c3'
-                      })`,
+                      padding: "8px 0",
+                      fontSize: 14,
+                      fontWeight: group.selected === item.value ? 600 : 400,
+                      color: group.selected === item.value ? "#1A1A1A" : "#3A3A3A",
                     }}
                   >
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="font-heading text-4xl font-bold text-white/40">
-                        {String(service.id).padStart(2, "0")}
-                      </span>
-                    </div>
-                  </div>
-
-                  <h3 className="font-heading text-lg font-semibold text-[#1a1a1a] group-hover:text-[#2563EB] transition-colors">
-                    {service.name}
-                  </h3>
-                  <p className="mt-2 text-sm text-[#666] leading-relaxed line-clamp-2">
-                    {service.shortDescription}
-                  </p>
-
-                  <div className="mt-4 flex items-center gap-2 text-xs text-[#999]">
-                    <span>{service.serviceType}</span>
-                    <span>·</span>
-                    <span>{service.engagementSize}</span>
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-1 text-sm font-medium text-[#1a1a1a] group-hover:text-[#2563EB] transition-colors">
-                    Learn more
-                    <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-
-        {filteredServices.length === 0 && (
-          <div className="py-20 text-center">
-            <p className="text-lg text-[#999]">No services match your filters.</p>
-            <button onClick={clearFilters} className="mt-4 text-sm text-[#2563EB] hover:underline">
-              Clear all filters
-            </button>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        )}
+        ))}
       </div>
 
-      {/* Filter Slide-out Panel */}
-      <AnimatePresence>
-        {filterOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/20 z-50"
-              onClick={() => setFilterOpen(false)}
-            />
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed top-0 right-0 bottom-0 w-full max-w-md bg-white z-50 overflow-y-auto shadow-2xl"
-            >
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-8">
-                  <h3 className="font-heading text-lg font-semibold">Filters</h3>
-                  <button onClick={() => setFilterOpen(false)}>
-                    <X className="w-5 h-5 text-[#666]" />
-                  </button>
-                </div>
+      {/* Overlay */}
+      {filterOpen && (
+        <div onClick={() => setFilterOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99 }} />
+      )}
 
-                {/* Service Type */}
-                <div className="mb-8">
-                  <h4 className="text-xs font-semibold tracking-widest uppercase text-[#999] mb-3">
-                    Service Type
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {serviceTypes.map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => setActiveType(activeType === type ? null : type)}
-                        className={`text-sm px-3 py-1.5 rounded-sm border transition-colors ${
-                          activeType === type
-                            ? "border-[#2563EB] bg-[#2563EB] text-white"
-                            : "border-[#eee] text-[#666] hover:border-[#ccc]"
-                        }`}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+      {/* Page Content */}
+      <div className="section-padding">
+        <div className="container">
+          <div className="gsap-reveal">
+            <SectionLabel number="01" title="SERVICES" />
+            <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }}>
+              Our services.
+            </h1>
+            <p className="body-text" style={{ marginTop: 24, maxWidth: 640 }}>
+              9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
+            </p>
+          </div>
 
-                {/* Industry */}
-                <div className="mb-8">
-                  <h4 className="text-xs font-semibold tracking-widest uppercase text-[#999] mb-3">
-                    Industry
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {industryFilters.map((ind) => (
-                      <button
-                        key={ind}
-                        onClick={() => setActiveIndustry(activeIndustry === ind ? null : ind)}
-                        className={`text-sm px-3 py-1.5 rounded-sm border transition-colors ${
-                          activeIndustry === ind
-                            ? "border-[#2563EB] bg-[#2563EB] text-white"
-                            : "border-[#eee] text-[#666] hover:border-[#ccc]"
-                        }`}
-                      >
-                        {ind}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          {/* Mobile filter button */}
+          <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: 24 }}>
+            Filter Services +
+          </button>
 
-                {/* Status */}
-                <div className="mb-8">
-                  <h4 className="text-xs font-semibold tracking-widest uppercase text-[#999] mb-3">
-                    Status
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {statusFilters.map((status) => (
-                      <button
-                        key={status}
-                        onClick={() => setActiveStatus(activeStatus === status ? null : status)}
-                        className={`text-sm px-3 py-1.5 rounded-sm border transition-colors ${
-                          activeStatus === status
-                            ? "border-[#2563EB] bg-[#2563EB] text-white"
-                            : "border-[#eee] text-[#666] hover:border-[#ccc]"
-                        }`}
-                      >
-                        {status}
-                      </button>
-                    ))}
-                  </div>
+          {/* Service Cards Grid — 3 cols, 2px gap, image + title + category ONLY */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: 64 }}>
+            {filtered.map((service, i) => (
+              <Link key={service.id} href={`/services/${service.slug}`} className="block group">
+                <div className="img-hover-zoom" style={{ height: 280 }}>
+                  <img
+                    src={getServiceImage(service, i)}
+                    alt={service.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    loading="lazy"
+                  />
                 </div>
+                <div style={{ padding: "16px 0 4px" }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A" }}>{service.name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{service.category}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
 
-                {/* Engagement Size */}
-                <div className="mb-8">
-                  <h4 className="text-xs font-semibold tracking-widest uppercase text-[#999] mb-3">
-                    Engagement Size
-                  </h4>
-                  <div className="flex flex-wrap gap-2">
-                    {engagementFilters.map((eng) => (
-                      <button
-                        key={eng}
-                        onClick={() => setActiveEngagement(activeEngagement === eng ? null : eng)}
-                        className={`text-sm px-3 py-1.5 rounded-sm border transition-colors ${
-                          activeEngagement === eng
-                            ? "border-[#2563EB] bg-[#2563EB] text-white"
-                            : "border-[#eee] text-[#666] hover:border-[#ccc]"
-                        }`}
-                      >
-                        {eng}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    onClick={clearFilters}
-                    className="flex-1 py-3 border border-[#eee] text-sm font-medium rounded-sm hover:border-[#ccc] transition-colors"
-                  >
-                    Clear All
-                  </button>
-                  <button
-                    onClick={() => setFilterOpen(false)}
-                    className="flex-1 py-3 bg-[#1a1a1a] text-white text-sm font-medium rounded-sm hover:bg-[#2563EB] transition-colors"
-                  >
-                    Apply Filters
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          {filtered.length === 0 && (
+            <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <p style={{ fontSize: 16, color: "#888888" }}>No services match your filters.</p>
+              <button onClick={clearAll} className="cta-link" style={{ marginTop: 16 }}>Clear all filters +</button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

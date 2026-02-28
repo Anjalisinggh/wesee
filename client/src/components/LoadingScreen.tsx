@@ -1,79 +1,113 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 
-function shouldShowLoading(): boolean {
-  try {
-    if (sessionStorage.getItem("wesee-loaded")) return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-export default function LoadingScreen() {
-  const [shouldShow] = useState(() => shouldShowLoading());
+export default function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [count, setCount] = useState(0);
-  const [isComplete, setIsComplete] = useState(!shouldShow);
-  const [isVisible, setIsVisible] = useState(shouldShow);
+  const [visible, setVisible] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
+  const [visibleWords, setVisibleWords] = useState(0);
 
   useEffect(() => {
-    if (!shouldShow) return;
+    if (sessionStorage.getItem("wesee-loaded")) {
+      setVisible(false);
+      onComplete();
+      return;
+    }
 
-    try {
-      sessionStorage.setItem("wesee-loaded", "1");
-    } catch {}
-
-    const duration = 1600;
-    const steps = 100;
-    const interval = duration / steps;
+    const totalSteps = 100;
+    const intervalTime = 1800 / totalSteps;
     let current = 0;
 
-    const timer = setInterval(() => {
+    const timer = window.setInterval(() => {
       current += 1;
-      const progress = current / steps;
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCount(Math.floor(eased * 100));
-
-      if (current >= steps) {
-        clearInterval(timer);
-        setCount(100);
-        setTimeout(() => setIsComplete(true), 200);
-        setTimeout(() => setIsVisible(false), 700);
+      setCount(current);
+      if (current >= 100) {
+        window.clearInterval(timer);
+        setTimeout(() => {
+          setFadeOut(true);
+          setTimeout(() => {
+            setVisible(false);
+            sessionStorage.setItem("wesee-loaded", "true");
+            onComplete();
+          }, 600);
+        }, 200);
       }
-    }, interval);
+    }, intervalTime);
 
-    return () => clearInterval(timer);
-  }, [shouldShow]);
+    for (let i = 0; i < 6; i++) {
+      setTimeout(() => {
+        setVisibleWords((prev) => prev + 1);
+      }, 300 + i * 150);
+    }
 
-  if (!isVisible) return null;
+    return () => window.clearInterval(timer);
+  }, []);
+
+  if (!visible) return null;
+
+  const line1 = ["We", "are", "builders."];
+  const line2 = ["We", "are", "WeSee."];
 
   return (
-    <AnimatePresence>
-      {!isComplete ? (
-        <motion.div
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="fixed inset-0 z-[9999] bg-white flex items-center justify-center"
-        >
-          <div className="text-center">
-            <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="font-mono text-6xl md:text-8xl font-medium text-[#1a1a1a] tabular-nums block"
-              style={{ fontVariantNumeric: "tabular-nums" }}
-            >
-              {count}
-            </motion.span>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${count}%` }}
-              className="h-[2px] bg-[#2563EB] mt-6 mx-auto"
-              style={{ maxWidth: "120px" }}
-            />
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        background: "#FFFFFF",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: fadeOut ? 0 : 1,
+        transition: "opacity 0.6s ease",
+        pointerEvents: fadeOut ? "none" : "auto",
+      }}
+    >
+      <div style={{ position: "absolute", top: 32, left: 32, display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 300, letterSpacing: "0.15em", textTransform: "uppercase", color: "#888888" }}>
+          Loading
+        </span>
+        <span style={{ fontSize: 11, fontWeight: 300, color: "#888888" }}>
+          ({count})
+        </span>
+      </div>
+
+      <div style={{ textAlign: "center" }}>
+        <div>
+          <div style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15, minHeight: "1.2em" }}>
+            {line1.map((word, i) => (
+              <span
+                key={`l1-${i}`}
+                style={{
+                  display: "inline-block",
+                  marginRight: 12,
+                  opacity: visibleWords > i ? 1 : 0,
+                  transform: visibleWords > i ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 0.4s ease, transform 0.4s ease",
+                }}
+              >
+                {word}
+              </span>
+            ))}
           </div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
+          <div style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15, minHeight: "1.2em", marginTop: 4 }}>
+            {line2.map((word, i) => (
+              <span
+                key={`l2-${i}`}
+                style={{
+                  display: "inline-block",
+                  marginRight: 12,
+                  opacity: visibleWords > i + 3 ? 1 : 0,
+                  transform: visibleWords > i + 3 ? "translateY(0)" : "translateY(8px)",
+                  transition: "opacity 0.4s ease, transform 0.4s ease",
+                }}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

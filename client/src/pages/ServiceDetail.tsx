@@ -1,262 +1,158 @@
-/*
- * Service Detail Page — Individual service deep-dive
- * Layout: Back link → Header → Content grid (2/3 + 1/3 sidebar) → Related
- */
+import { useEffect } from "react";
+import { Link, useParams } from "wouter";
+import { services } from "@/data/services";
+import { getServiceImage } from "@/pages/Services";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-import { useParams, Link } from "wouter";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowUpRight, Check } from "lucide-react";
-import { services, categories } from "@/data/services";
-
-const categoryGradients: Record<number, string> = {
-  1: "from-blue-100 via-indigo-50 to-sky-50",
-  2: "from-emerald-100 via-teal-50 to-green-50",
-  3: "from-orange-100 via-amber-50 to-yellow-50",
-  4: "from-green-100 via-lime-50 to-emerald-50",
-  5: "from-purple-100 via-violet-50 to-fuchsia-50",
-  6: "from-pink-100 via-rose-50 to-red-50",
-  7: "from-amber-100 via-yellow-50 to-orange-50",
-  8: "from-indigo-100 via-blue-50 to-cyan-50",
-  9: "from-slate-100 via-gray-50 to-zinc-50",
-};
+gsap.registerPlugin(ScrollTrigger);
 
 export default function ServiceDetail() {
   const { slug } = useParams<{ slug: string }>();
   const service = services.find((s) => s.slug === slug);
+  const serviceIndex = services.findIndex((s) => s.slug === slug);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const reveals = document.querySelectorAll(".gsap-reveal");
+    reveals.forEach((el) => {
+      gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none none" }
+      });
+    });
+    const heroImg = document.querySelector(".detail-hero-parallax");
+    if (heroImg) {
+      gsap.to(heroImg, { y: -60, ease: "none",
+        scrollTrigger: { trigger: heroImg, start: "top bottom", end: "bottom top", scrub: true }
+      });
+    }
+    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+  }, [slug]);
 
   if (!service) {
     return (
-      <div className="min-h-screen pt-32 text-center">
-        <h1 className="font-heading text-3xl font-bold">Service not found</h1>
-        <Link href="/services" className="mt-4 inline-block text-[#2563EB] hover:underline">
-          Back to services
-        </Link>
+      <div style={{ paddingTop: 120, textAlign: "center" }}>
+        <p style={{ fontSize: 16, color: "#888888" }}>Service not found.</p>
+        <Link href="/services" className="cta-link" style={{ marginTop: 16, display: "inline-block" }}>← All services +</Link>
       </div>
     );
   }
 
-  const category = categories.find((c) => c.id === service.categoryId);
-  const relatedServices = services
-    .filter((s) => s.categoryId === service.categoryId && s.id !== service.id)
-    .slice(0, 3);
+  const heroImage = getServiceImage(service, serviceIndex);
 
   return (
-    <div className="min-h-screen pt-24 md:pt-32 pb-20">
-      <div className="container">
-        {/* Back link */}
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.4 }}
-        >
-          <Link
-            href="/services"
-            className="inline-flex items-center gap-2 text-sm text-[#666] hover:text-[#2563EB] transition-colors mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to services
+    <div style={{ paddingTop: 64 }}>
+      <div className="section-padding">
+        <div className="container">
+          <Link href="/services" className="cta-link" style={{ fontSize: 13, color: "#888888" }}>
+            ← All services +
           </Link>
-        </motion.div>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-xs font-medium px-2.5 py-1 bg-[#f5f5f5] rounded-sm text-[#666]">
-              {category?.name}
-            </span>
-            <span className={`text-xs font-mono px-2 py-0.5 rounded-sm ${
-              service.status === "Live" ? "bg-green-50 text-green-600" :
-              service.status === "In Progress" ? "bg-amber-50 text-amber-600" :
-              "bg-blue-50 text-blue-600"
-            }`}>
-              {service.status}
-            </span>
+          <div style={{ marginTop: 24, fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>
+            {service.category}
           </div>
-          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-[#1a1a1a]">
+          <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05, marginTop: 12 }}>
             {service.name}
           </h1>
-          <p className="mt-4 text-lg text-[#555] max-w-2xl leading-relaxed">
+          <p style={{ fontSize: 20, fontWeight: 400, color: "#3A3A3A", fontStyle: "italic", maxWidth: 720, marginTop: 20, lineHeight: 1.6 }}>
             {service.shortDescription}
           </p>
-        </motion.div>
+        </div>
 
-        {/* Hero gradient banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className={`mt-10 w-full aspect-[16/5] rounded-sm overflow-hidden bg-gradient-to-br ${categoryGradients[service.categoryId] || "from-gray-100 to-gray-50"}`}
-        >
-          <div className="w-full h-full flex items-center justify-center relative">
-            <div className="text-center">
-              <span className="font-mono text-xs tracking-widest text-[#999] block mb-2">
-                SERVICE {String(service.id).padStart(2, "0")} / {String(services.length).padStart(2, "0")}
-              </span>
-              <span className="font-heading text-2xl md:text-3xl font-bold text-[#1a1a1a]/20">
-                {category?.name.split(" & ")[0]}
-              </span>
-            </div>
-          </div>
-        </motion.div>
+        {/* Hero image */}
+        <div className="overflow-hidden" style={{ marginTop: 48, height: 500 }}>
+          <img src={heroImage} alt={service.name} className="detail-hero-parallax" style={{ width: "100%", height: "130%", objectFit: "cover", display: "block" }} />
+        </div>
 
-        {/* Content Grid */}
-        <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-16">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <h2 className="font-heading text-2xl font-bold text-[#1a1a1a] mb-4">
-                What it is
-              </h2>
-              <p className="text-base text-[#555] leading-relaxed">
-                {service.fullDescription}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12"
-            >
-              <h2 className="font-heading text-2xl font-bold text-[#1a1a1a] mb-4">
-                How it benefits you
-              </h2>
-              <p className="text-base text-[#555] leading-relaxed">
-                {service.benefits}
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="mt-12"
-            >
-              <h2 className="font-heading text-2xl font-bold text-[#1a1a1a] mb-4">
-                What automation brings
-              </h2>
-              <ul className="space-y-3">
-                {service.automationPoints.map((point, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-[#2563EB] flex-shrink-0 mt-0.5" />
-                    <span className="text-base text-[#555]">{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="mt-12"
-            >
-              <h2 className="font-heading text-2xl font-bold text-[#1a1a1a] mb-4">
-                Key deliverables
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {service.deliverables.map((del, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 border border-[#eee] rounded-sm">
-                    <div className="w-2 h-2 bg-[#2563EB] rounded-full flex-shrink-0" />
-                    <span className="text-sm text-[#555]">{del}</span>
-                  </div>
-                ))}
+        {/* Metadata strip */}
+        <div className="container">
+          <div className="flex flex-wrap gap-12" style={{ borderTop: "1px solid #EEEEEE", borderBottom: "1px solid #EEEEEE", padding: "24px 0" }}>
+            {[
+              { label: "SERVICE TYPE", value: service.serviceType },
+              { label: "INDUSTRIES", value: service.industries.slice(0, 4).join(", ") },
+              { label: "ENGAGEMENT SIZE", value: service.engagementSize },
+              { label: "STATUS", value: service.status },
+              { label: "DELIVERY", value: "Remote" },
+            ].map((item, i) => (
+              <div key={i}>
+                <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.1em", textTransform: "uppercase", color: "#888888" }}>{item.label}</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: "#1A1A1A", marginTop: 4 }}>{item.value}</div>
               </div>
-            </motion.div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="sticky top-28"
-            >
-              {/* Quick Info */}
-              <div className="p-6 bg-[#fafafa] rounded-sm mb-6">
-                <h3 className="font-heading text-sm font-semibold tracking-widest uppercase text-[#999] mb-4">
-                  Quick Info
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <span className="text-xs text-[#999]">Service Type</span>
-                    <p className="text-sm font-medium text-[#1a1a1a]">{service.serviceType}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-[#999]">Engagement Size</span>
-                    <p className="text-sm font-medium text-[#1a1a1a]">{service.engagementSize}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-[#999]">Industries</span>
-                    <div className="mt-1 flex flex-wrap gap-1.5">
-                      {service.industries.map((ind) => (
-                        <span key={ind} className="text-xs px-2 py-0.5 bg-white border border-[#eee] rounded-sm text-[#666]">
-                          {ind}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="p-6 bg-[#1a1a1a] rounded-sm text-white">
-                <h3 className="font-heading text-lg font-semibold">
-                  Interested in this service?
-                </h3>
-                <p className="mt-2 text-sm text-white/70">
-                  Book a free discovery call and we'll show you exactly how this
-                  can work for your business.
-                </p>
-                <Link
-                  href="/contact"
-                  className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-[#2563EB] text-white text-sm font-medium rounded-sm hover:bg-[#1d4ed8] transition-colors w-full justify-center"
-                >
-                  Book a Call <ArrowUpRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </motion.div>
+            ))}
           </div>
         </div>
 
-        {/* Related Services */}
-        {relatedServices.length > 0 && (
-          <div className="mt-24 border-t border-[#eee] pt-16">
-            <h2 className="font-heading text-2xl font-bold text-[#1a1a1a] mb-8">
-              Related services
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {relatedServices.map((rs) => (
-                <Link
-                  key={rs.id}
-                  href={`/services/${rs.slug}`}
-                  className="group p-6 border border-[#eee] rounded-sm hover:border-[#2563EB] transition-colors"
-                >
-                  <span className="text-xs font-mono text-[#999]">
-                    {String(rs.id).padStart(2, "0")}
-                  </span>
-                  <h3 className="mt-2 font-heading text-base font-semibold text-[#1a1a1a] group-hover:text-[#2563EB] transition-colors">
-                    {rs.name}
-                  </h3>
-                  <p className="mt-2 text-sm text-[#666] line-clamp-2">
-                    {rs.shortDescription}
-                  </p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#1a1a1a] group-hover:text-[#2563EB] transition-colors">
-                    Learn more <ArrowUpRight className="w-3.5 h-3.5" />
-                  </span>
-                </Link>
-              ))}
-            </div>
+        {/* Body content */}
+        <div className="container" style={{ marginTop: 64 }}>
+          <div style={{ maxWidth: "65%" }} className="gsap-reveal max-md:!max-w-full">
+            <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginBottom: 16 }}>What it is</h3>
+            <p style={{ fontSize: 16, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.75 }}>{service.fullDescription}</p>
+
+            <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginTop: 48, marginBottom: 16 }}>The problem it solves</h3>
+            <p style={{ fontSize: 16, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.75 }}>{service.benefits}</p>
           </div>
-        )}
+        </div>
+
+        <div className="overflow-hidden" style={{ marginTop: 64 }}>
+          <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=80" alt="" style={{ width: "100%", height: 360, objectFit: "cover" }} loading="lazy" />
+        </div>
+
+        <div className="container" style={{ marginTop: 64 }}>
+          <div style={{ maxWidth: "65%" }} className="gsap-reveal max-md:!max-w-full">
+            <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginBottom: 16 }}>What automation brings</h3>
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {service.automationPoints.map((point, i) => (
+                <li key={i} style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, padding: "4px 0" }}>— {point}</li>
+              ))}
+            </ul>
+
+            <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginTop: 48, marginBottom: 16 }}>How we build it</h3>
+            <p style={{ fontSize: 16, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.75 }}>
+              At WeSee, we approach {service.name.toLowerCase()} with a rigorous discovery-first methodology. We begin by mapping your current workflows, identifying bottlenecks, and defining clear success metrics before writing a single line of code.
+            </p>
+            <p style={{ fontSize: 16, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.75, marginTop: 16 }}>
+              Our team of AI engineers and strategists then design, build, and deploy the solution in iterative sprints — with full transparency and client collaboration at every stage. Post-launch, we provide ongoing optimization and support to ensure the system scales with your business.
+            </p>
+
+            <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginTop: 48, marginBottom: 16 }}>Deliverables</h3>
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {service.deliverables.map((d, i) => (
+                <li key={i} style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, padding: "4px 0" }}>— {d}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Inline CTA */}
+        <div style={{ background: "#1A1A1A", padding: 48, marginTop: 80 }}>
+          <div className="container" style={{ textAlign: "center" }}>
+            <h3 style={{ fontSize: 32, fontWeight: 600, color: "#FFFFFF" }}>Interested in this service?</h3>
+            <p style={{ fontSize: 16, fontWeight: 400, color: "#AAAAAA", marginTop: 16, maxWidth: 560, marginLeft: "auto", marginRight: "auto" }}>
+              Book a free discovery call and we'll show you exactly how this can work for your business.
+            </p>
+            <a href="https://cal.com/wesee/discovery" target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-block", marginTop: 24, padding: "16px 32px", background: "#FFFFFF", color: "#1A1A1A", fontSize: 13, fontWeight: 500, textDecoration: "none" }}>
+              Book a Call ↗
+            </a>
+          </div>
+        </div>
+
+        {/* Related services */}
+        <div className="container" style={{ marginTop: 80, marginBottom: 80 }}>
+          <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginBottom: 32 }}>Related services</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 2 }}>
+            {services.filter(s => s.categoryId === service.categoryId && s.id !== service.id).slice(0, 3).map((s, i) => (
+              <Link key={s.id} href={`/services/${s.slug}`} className="block group">
+                <div className="img-hover-zoom" style={{ height: 220 }}>
+                  <img src={getServiceImage(s, i)} alt={s.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                </div>
+                <div style={{ padding: "16px 0 4px" }}>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A" }}>{s.name}</div>
+                  <div style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{s.category}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
