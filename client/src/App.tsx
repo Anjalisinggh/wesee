@@ -5,34 +5,71 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import LoadingScreen from "./components/LoadingScreen";
+import { useLenis } from "./hooks/useLenis";
+import { lazy, Suspense, useEffect } from "react";
+import { useLocation } from "wouter";
 
+const Services = lazy(() => import("./pages/Services"));
+const ServiceDetail = lazy(() => import("./pages/ServiceDetail"));
+const About = lazy(() => import("./pages/About"));
+const Team = lazy(() => import("./pages/Team"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Careers = lazy(() => import("./pages/Careers"));
 
-function Router() {
+function ScrollToTop() {
+  const [location] = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+  return null;
+}
+
+function PageLoader() {
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="font-mono text-sm text-[#999]">Loading...</div>
+    </div>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
+function Router() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Switch>
+        <Route path="/" component={Home} />
+        <Route path="/services" component={Services} />
+        <Route path="/services/:slug" component={ServiceDetail} />
+        <Route path="/about" component={About} />
+        <Route path="/team" component={Team} />
+        <Route path="/contact" component={Contact} />
+        <Route path="/blog" component={Blog} />
+        <Route path="/careers" component={Careers} />
+        <Route path="/404" component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </Suspense>
+  );
+}
 
 function App() {
+  useLenis();
+
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <LoadingScreen />
+          <ScrollToTop />
+          <Header />
+          <main>
+            <Router />
+          </main>
+          <Footer />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>
