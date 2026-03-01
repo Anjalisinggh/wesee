@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useSearch } from "wouter";
 import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
+import CircularGallery from "@/components/CircularGallery";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -86,6 +87,9 @@ export default function Services() {
   const search = useSearch();
   const params = new URLSearchParams(search);
 
+  const [viewMode, setViewMode] = useState<"ring" | "grid">(
+    params.get("view") === "grid" ? "grid" : "ring"
+  );
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(params.get("category") ? Number(params.get("category")) : null);
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
@@ -104,7 +108,9 @@ export default function Services() {
     return () => { document.body.style.overflow = ""; };
   }, [filterOpen]);
 
+  // GSAP reveal for grid view
   useEffect(() => {
+    if (viewMode !== "grid") return;
     const reveals = document.querySelectorAll(".gsap-reveal");
     reveals.forEach((el) => {
       gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
@@ -112,7 +118,7 @@ export default function Services() {
       });
     });
     return () => ScrollTrigger.getAll().forEach(t => t.kill());
-  }, []);
+  }, [viewMode]);
 
   const filtered = useMemo(() => {
     return services.filter(s => {
@@ -129,6 +135,11 @@ export default function Services() {
     window.dispatchEvent(new CustomEvent("update-filter-count", { detail: { count: filtered.length } }));
   }, [filtered.length]);
 
+  // Dispatch view mode to header
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("update-view-mode", { detail: { mode: viewMode } }));
+  }, [viewMode]);
+
   const clearAll = () => {
     setSelectedCategory(null);
     setSelectedIndustry(null);
@@ -136,8 +147,50 @@ export default function Services() {
     setSelectedStatus(null);
   };
 
+  // Prepare ring items
+  const ringItems = useMemo(() => {
+    return filtered.map((s, i) => ({
+      title: s.name,
+      image: getServiceImage(s, i),
+      url: `/services/${s.slug}`,
+      category: s.category,
+      categoryId: s.categoryId,
+    }));
+  }, [filtered]);
+
+  // Category labels for ring
+  const ringCategoryLabels = useMemo(() => {
+    const catCounts: Record<number, number> = {};
+    filtered.forEach(s => { catCounts[s.categoryId] = (catCounts[s.categoryId] || 0) + 1; });
+
+    // Position each category label at the midpoint of its items on the ring
+    const catPositions: { name: string; count: number; angle: number }[] = [];
+    let currentIndex = 0;
+    const uniqueCats = Array.from(new Set(filtered.map(s => s.categoryId)));
+
+    for (const catId of uniqueCats) {
+      const count = catCounts[catId] || 0;
+      const cat = categories.find(c => c.id === catId);
+      if (!cat || count === 0) continue;
+
+      // Midpoint angle of this category's items
+      const midIndex = currentIndex + count / 2;
+      const angle = midIndex * ((2 * Math.PI) / filtered.length);
+
+      catPositions.push({
+        name: cat.name.split("&")[0].trim(), // Shorten label
+        count,
+        angle,
+      });
+
+      currentIndex += count;
+    }
+
+    return catPositions;
+  }, [filtered]);
+
   return (
-    <div style={{ paddingTop: 64 }}>
+    <>
       {/* ═══ FILTER PANEL — slides from LEFT ═══ */}
       <div
         style={{
@@ -208,52 +261,100 @@ export default function Services() {
         <div onClick={() => setFilterOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", zIndex: 99 }} />
       )}
 
-      {/* Page Content */}
-      <div className="section-padding">
-        <div className="container">
-          <div className="gsap-reveal">
-            <SectionLabel number="01" title="SERVICES" />
-            <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }}>
-              Our services.
-            </h1>
-            <p className="body-text" style={{ marginTop: 24, maxWidth: 640 }}>
-              9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
-            </p>
+      {/* ═══ RING VIEW ═══ */}
+      {viewMode === "ring" && (
+        <div style={{ position: "relative" }}>
+          {/* Top-left: Filter button — positioned below the WeSee. logo */}
+          <div style={{ position: "fixed", top: 20, left: 80, zIndex: 60 }}>
+            <button
+              onClick={() => setFilterOpen(true)}
+              style={{ fontSize: 13, fontWeight: 500, color: "#1A1A1A", letterSpacing: "0.02em" }}
+              className="hover:opacity-50 transition-opacity"
+            >
+              Filter Services +
+            </button>
           </div>
 
-          {/* Mobile filter button */}
-          <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: 24 }}>
-            Filter Services +
-          </button>
-
-          {/* Service Cards Grid — 3 cols, 2px gap, image + title + category ONLY */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: 64 }}>
-            {filtered.map((service, i) => (
-              <Link key={service.id} href={`/services/${service.slug}`} className="block group">
-                <div className="img-hover-zoom" style={{ height: 280 }}>
-                  <img
-                    src={getServiceImage(service, i)}
-                    alt={service.name}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    loading="lazy"
-                  />
-                </div>
-                <div style={{ padding: "16px 0 4px" }}>
-                  <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A" }}>{service.name}</div>
-                  <div style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{service.category}</div>
-                </div>
-              </Link>
-            ))}
+          {/* Top-right: Grid view toggle */}
+          <div style={{ position: "fixed", top: 20, right: 24, zIndex: 60 }}>
+            <button
+              onClick={() => setViewMode("grid")}
+              style={{ fontSize: 13, fontWeight: 500, color: "#1A1A1A", letterSpacing: "0.02em" }}
+              className="hover:opacity-50 transition-opacity"
+            >
+              Grid view +
+            </button>
           </div>
 
-          {filtered.length === 0 && (
-            <div style={{ textAlign: "center", padding: "80px 0" }}>
-              <p style={{ fontSize: 16, color: "#888888" }}>No services match your filters.</p>
-              <button onClick={clearAll} className="cta-link" style={{ marginTop: 16 }}>Clear all filters +</button>
-            </div>
-          )}
+          <CircularGallery
+            items={ringItems}
+            categoryLabels={ringCategoryLabels}
+          />
         </div>
-      </div>
-    </div>
+      )}
+
+      {/* ═══ GRID VIEW ═══ */}
+      {viewMode === "grid" && (
+        <div style={{ paddingTop: 64 }}>
+          {/* Top-right: Ring view toggle */}
+          <div style={{ position: "fixed", top: 20, right: 24, zIndex: 60 }}>
+            <button
+              onClick={() => setViewMode("ring")}
+              style={{ fontSize: 13, fontWeight: 500, color: "#1A1A1A", letterSpacing: "0.02em" }}
+              className="hover:opacity-50 transition-opacity"
+            >
+              Ring view +
+            </button>
+          </div>
+
+          {/* Page Content */}
+          <div className="section-padding">
+            <div className="container">
+              <div className="gsap-reveal">
+                <SectionLabel number="01" title="SERVICES" />
+                <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }}>
+                  Our services.
+                </h1>
+                <p className="body-text" style={{ marginTop: 24, maxWidth: 640 }}>
+                  9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
+                </p>
+              </div>
+
+              {/* Mobile filter button */}
+              <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: 24 }}>
+                Filter Services +
+              </button>
+
+              {/* Service Cards Grid — 3 cols, 2px gap, image + title + category ONLY */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: 64 }}>
+                {filtered.map((service, i) => (
+                  <Link key={service.id} href={`/services/${service.slug}`} className="block group">
+                    <div className="img-hover-zoom" style={{ height: 280 }}>
+                      <img
+                        src={getServiceImage(service, i)}
+                        alt={service.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        loading="lazy"
+                      />
+                    </div>
+                    <div style={{ padding: "16px 0 4px" }}>
+                      <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A" }}>{service.name}</div>
+                      <div style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{service.category}</div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {filtered.length === 0 && (
+                <div style={{ textAlign: "center", padding: "80px 0" }}>
+                  <p style={{ fontSize: 16, color: "#888888" }}>No services match your filters.</p>
+                  <button onClick={clearAll} className="cta-link" style={{ marginTop: 16 }}>Clear all filters +</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

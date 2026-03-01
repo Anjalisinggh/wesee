@@ -16,6 +16,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
   const [filterCount, setFilterCount] = useState(43);
+  const [viewMode, setViewMode] = useState<"ring" | "grid">("ring");
 
   const isServicesPage = location === "/services";
 
@@ -26,6 +27,15 @@ export default function Header() {
     };
     window.addEventListener("update-filter-count", handler);
     return () => window.removeEventListener("update-filter-count", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const mode = (e as CustomEvent).detail?.mode;
+      if (mode) setViewMode(mode);
+    };
+    window.addEventListener("update-view-mode", handler);
+    return () => window.removeEventListener("update-view-mode", handler);
   }, []);
 
   useEffect(() => {
@@ -43,6 +53,9 @@ export default function Header() {
     return () => { document.body.style.overflow = ""; };
   }, [isOpen]);
 
+  // In ring view on services page, hide the header completely (ring has its own controls)
+  const hideHeader = isServicesPage && viewMode === "ring";
+
   return (
     <>
       <header
@@ -51,6 +64,8 @@ export default function Header() {
           background: scrolled ? "rgba(255,255,255,0.95)" : "transparent",
           backdropFilter: scrolled ? "blur(8px)" : "none",
           borderBottom: scrolled ? "1px solid #F0F0F0" : "1px solid transparent",
+          transform: hideHeader ? "translateY(-100%)" : "translateY(0)",
+          pointerEvents: hideHeader ? "none" : "auto",
         }}
       >
         <div className="container flex items-center justify-between" style={{ height: 64 }}>
@@ -62,8 +77,8 @@ export default function Header() {
               </span>
             </Link>
 
-            {/* Filter Services button — only on /services page */}
-            {isServicesPage && (
+            {/* Filter Services button — only on /services page in grid view */}
+            {isServicesPage && viewMode === "grid" && (
               <button
                 onClick={() => window.dispatchEvent(new CustomEvent("toggle-filter-panel"))}
                 className="hidden md:block cta-link"
