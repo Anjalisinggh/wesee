@@ -1,5 +1,9 @@
 import { useEffect } from "react";
 import SectionLabel from "@/components/SectionLabel";
+import TextReveal from "@/components/TextReveal";
+import ImageReveal from "@/components/ImageReveal";
+import TiltCard from "@/components/TiltCard";
+import StaggerReveal from "@/components/StaggerReveal";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -44,13 +48,15 @@ const articles = [
 export default function Blog() {
   useEffect(() => {
     window.scrollTo(0, 0);
-    const reveals = document.querySelectorAll(".gsap-reveal");
-    reveals.forEach((el) => {
-      gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
-        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none none" }
+    const timer = setTimeout(() => {
+      const reveals = document.querySelectorAll(".gsap-reveal");
+      reveals.forEach((el) => {
+        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" }
+        });
       });
-    });
-    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+    }, 50);
+    return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
   }, []);
 
   const featured = articles.find(a => a.featured);
@@ -59,26 +65,33 @@ export default function Blog() {
   return (
     <div style={{ paddingTop: 64 }}>
       <div className="section-padding">
-        <div className="container gsap-reveal">
+        <div className="container">
           <SectionLabel number="01" title="BLOG" />
-          <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }}>Insights & ideas.</h1>
-          <p className="body-text" style={{ marginTop: 16, maxWidth: 640 }}>Practical guides, case studies, and thought pieces on AI automation, marketing, and building smarter businesses.</p>
+          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06} onScroll={false}>
+            Insights & ideas.
+          </TextReveal>
+          <p className="body-text gsap-reveal" style={{ marginTop: 16, maxWidth: 640 }}>Practical guides, case studies, and thought pieces on AI automation, marketing, and building smarter businesses.</p>
         </div>
       </div>
 
       {featured && (
         <section className="section-padding">
-          <div className="container gsap-reveal">
+          <div className="container">
             <a href={`/blog/${featured.slug}`} className="block group" onClick={(e) => { e.preventDefault(); alert("Full article coming soon."); }}>
-              <div className="img-hover-zoom" style={{ height: 400 }}>
-                <img src={featured.image} alt={featured.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-              </div>
+              <ImageReveal
+                src={featured.image}
+                alt={featured.title}
+                direction="up"
+                duration={1.2}
+                zoom
+                style={{ height: 400 }}
+              />
               <div style={{ marginTop: 24 }}>
                 <div className="flex items-center gap-4">
                   <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{featured.category}</span>
                   <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>({featured.date})</span>
                 </div>
-                <h2 style={{ fontSize: 40, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.15, marginTop: 12, maxWidth: 720 }}>{featured.title}</h2>
+                <h2 style={{ fontSize: 40, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.15, marginTop: 12, maxWidth: 720, transition: "transform 0.3s ease" }} className="group-hover:translate-x-3">{featured.title}</h2>
                 <p style={{ fontSize: 16, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 12, maxWidth: 600 }}>{featured.excerpt}</p>
                 <span className="cta-link" style={{ marginTop: 16, display: "inline-block" }}>Read article ↗</span>
               </div>
@@ -88,25 +101,29 @@ export default function Blog() {
       )}
 
       <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
-        <div className="container gsap-reveal">
-          <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 32 }}>
-            {grid.map((article) => (
-              <a key={article.slug} href={`/blog/${article.slug}`} className="block group" onClick={(e) => { e.preventDefault(); alert("Full article coming soon."); }}>
-                <div className="img-hover-zoom" style={{ height: 240 }}>
-                  <img src={article.image} alt={article.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-                </div>
-                <div style={{ marginTop: 16 }}>
-                  <div className="flex items-center gap-4">
-                    <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{article.category}</span>
-                    <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{article.date}</span>
-                  </div>
-                  <h3 style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.3, marginTop: 8 }}>{article.title}</h3>
-                  <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{article.excerpt}</p>
-                  <span className="cta-link" style={{ marginTop: 12, display: "inline-block", fontSize: 13 }}>Read article ↗</span>
-                </div>
-              </a>
-            ))}
-          </div>
+        <div className="container">
+          <StaggerReveal stagger={0.15} y={30}>
+            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 32 }}>
+              {grid.map((article) => (
+                <TiltCard key={article.slug} maxTilt={5} scale={1.01}>
+                  <a href={`/blog/${article.slug}`} className="block group" onClick={(e) => { e.preventDefault(); alert("Full article coming soon."); }}>
+                    <div className="img-hover-zoom" style={{ height: 240, overflow: "hidden" }}>
+                      <img src={article.image} alt={article.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                    </div>
+                    <div style={{ marginTop: 16 }}>
+                      <div className="flex items-center gap-4">
+                        <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{article.category}</span>
+                        <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{article.date}</span>
+                      </div>
+                      <h3 style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.3, marginTop: 8, transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">{article.title}</h3>
+                      <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{article.excerpt}</p>
+                      <span className="cta-link" style={{ marginTop: 12, display: "inline-block", fontSize: 13 }}>Read article ↗</span>
+                    </div>
+                  </a>
+                </TiltCard>
+              ))}
+            </div>
+          </StaggerReveal>
         </div>
       </section>
     </div>

@@ -1,6 +1,11 @@
 import { useEffect } from "react";
 import { Link } from "wouter";
 import SectionLabel from "@/components/SectionLabel";
+import TextReveal from "@/components/TextReveal";
+import ImageReveal from "@/components/ImageReveal";
+import TiltCard from "@/components/TiltCard";
+import StaggerReveal from "@/components/StaggerReveal";
+import MagneticButton from "@/components/MagneticButton";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -45,80 +50,111 @@ const teamMembers = [
 export default function Team() {
   useEffect(() => {
     window.scrollTo(0, 0);
-    const reveals = document.querySelectorAll(".gsap-reveal");
-    reveals.forEach((el) => {
-      gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
-        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none none" }
+    const timer = setTimeout(() => {
+      const reveals = document.querySelectorAll(".gsap-reveal");
+      reveals.forEach((el) => {
+        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" }
+        });
       });
-    });
-    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+    }, 50);
+    return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
   }, []);
 
   return (
     <div style={{ paddingTop: 64 }}>
       <div className="section-padding">
-        <div className="container gsap-reveal">
+        <div className="container">
           <SectionLabel number="01" title="TEAM" />
-          <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }}>
+          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06} onScroll={false}>
             We are a community of builders.
-          </h1>
-          <p className="body-text" style={{ marginTop: 24, maxWidth: 640 }}>
+          </TextReveal>
+          <p className="body-text gsap-reveal" style={{ marginTop: 24, maxWidth: 640 }}>
             To work at WeSee means to build intelligent systems in an ambitious and relentless spirit — transcending industries and disciplines.
           </p>
         </div>
       </div>
 
-      <div className="container gsap-reveal">
+      {/* 2x2 team collage with staggered image reveals */}
+      <div className="container">
         <div className="grid grid-cols-2 gap-2">
-          <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80" alt="" style={{ width: "100%", height: 320, objectFit: "cover" }} />
-          <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80" alt="" style={{ width: "100%", height: 220, objectFit: "cover" }} />
-          <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="" style={{ width: "100%", height: 220, objectFit: "cover" }} />
-          <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="" style={{ width: "100%", height: 320, objectFit: "cover" }} />
+          <ImageReveal src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80" alt="" direction="left" delay={0} style={{ height: 320 }} />
+          <ImageReveal src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80" alt="" direction="right" delay={0.15} style={{ height: 220 }} />
+          <ImageReveal src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="" direction="left" delay={0.3} style={{ height: 220 }} />
+          <ImageReveal src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="" direction="right" delay={0.45} style={{ height: 320 }} />
         </div>
       </div>
 
+      {/* Leadership — TiltCard + hover grayscale-to-color */}
       <section className="section-padding">
         <div className="container">
-          <h2 className="section-heading gsap-reveal">Leadership.</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12" style={{ marginTop: 48 }}>
-            {directors.map((d) => (
-              <div key={d.name} className="gsap-reveal">
-                <img src={d.photo} alt={d.name} style={{ width: 280, height: 400, objectFit: "cover" }} />
-                <div style={{ marginTop: 16 }}>
-                  <div style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A" }}>{d.name}</div>
-                  <div style={{ fontSize: 14, fontWeight: 400, color: "#888888", marginTop: 4 }}>{d.title}</div>
-                  <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 12 }}>{d.bio}</p>
-                  <div className="flex items-center gap-4" style={{ marginTop: 12 }}>
-                    <a href={d.linkedin} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: "#1A1A1A", textDecoration: "underline" }}>LinkedIn</a>
-                    <span style={{ fontSize: 13, color: "#888888" }}>{d.email}</span>
+          <TextReveal as="h2" className="section-heading" stagger={0.05}>
+            Leadership.
+          </TextReveal>
+          <StaggerReveal stagger={0.15} y={30} style={{ marginTop: 48 }}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              {directors.map((d) => (
+                <TiltCard key={d.name} maxTilt={5} scale={1.01}>
+                  <div className="group">
+                    <div className="overflow-hidden" style={{ width: 280, height: 400 }}>
+                      <img
+                        src={d.photo}
+                        alt={d.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%)", transition: "filter 0.6s ease, transform 0.6s ease" }}
+                        className="group-hover:!grayscale-0 group-hover:scale-105"
+                      />
+                    </div>
+                    <div style={{ marginTop: 16 }}>
+                      <div style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A" }}>{d.name}</div>
+                      <div style={{ fontSize: 14, fontWeight: 400, color: "#888888", marginTop: 4 }}>{d.title}</div>
+                      <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 12 }}>{d.bio}</p>
+                      <div className="flex items-center gap-4" style={{ marginTop: 12 }}>
+                        <a href={d.linkedin} target="_blank" rel="noopener noreferrer" className="cta-link" style={{ fontSize: 13, color: "#1A1A1A" }}>LinkedIn</a>
+                        <span style={{ fontSize: 13, color: "#888888" }}>{d.email}</span>
+                      </div>
+                    </div>
+                  </div>
+                </TiltCard>
+              ))}
+            </div>
+          </StaggerReveal>
+        </div>
+      </section>
+
+      {/* Team members — hover grayscale-to-color + name slide */}
+      <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
+        <div className="container">
+          <TextReveal as="h2" className="section-heading" stagger={0.05}>
+            The team.
+          </TextReveal>
+          <StaggerReveal stagger={0.08} y={20} style={{ marginTop: 48 }}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+              {teamMembers.map((m) => (
+                <div key={m.name} className="group">
+                  <div className="overflow-hidden" style={{ width: 208, height: 280 }}>
+                    <img
+                      src={m.photo}
+                      alt={m.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%)", transition: "filter 0.6s ease, transform 0.6s ease" }}
+                      className="group-hover:!grayscale-0 group-hover:scale-105"
+                    />
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">{m.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 400, color: "#888888", marginTop: 2 }}>{m.title}</div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </StaggerReveal>
         </div>
       </section>
 
       <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
         <div className="container">
-          <h2 className="section-heading gsap-reveal">The team.</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8" style={{ marginTop: 48 }}>
-            {teamMembers.map((m) => (
-              <div key={m.name} className="gsap-reveal">
-                <img src={m.photo} alt={m.name} style={{ width: 208, height: 280, objectFit: "cover" }} />
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A" }}>{m.name}</div>
-                  <div style={{ fontSize: 13, fontWeight: 400, color: "#888888", marginTop: 2 }}>{m.title}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
-        <div className="container gsap-reveal">
-          <Link href="/careers" className="cta-link" style={{ fontSize: 18, fontWeight: 600 }}>Join our team +</Link>
+          <MagneticButton as="a" href="/careers" className="cta-link" style={{ fontSize: 18, fontWeight: 600 }} strength={0.3}>
+            Join our team +
+          </MagneticButton>
         </div>
       </section>
     </div>

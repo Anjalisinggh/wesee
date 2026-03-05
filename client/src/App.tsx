@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import LoadingScreen from "./components/LoadingScreen";
+import CustomCursor from "./components/CustomCursor";
 import { useLenis } from "./hooks/useLenis";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation } from "wouter";
@@ -61,7 +62,6 @@ function App() {
   useLenis();
   const [loadingDone, setLoadingDone] = useState(false);
 
-  // Check if loading was already done
   useEffect(() => {
     if (sessionStorage.getItem("wesee-loaded")) {
       setLoadingDone(true);
@@ -73,8 +73,12 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <CustomCursor />
           <LoadingScreen onComplete={() => setLoadingDone(true)} />
-          <div style={{ opacity: loadingDone ? 1 : 0, transition: "opacity 0.4s ease" }}>
+          <div
+            className={loadingDone ? "page-enter" : ""}
+            style={{ opacity: loadingDone ? 1 : 0 }}
+          >
             <ScrollToTop />
             <Header />
             <main>

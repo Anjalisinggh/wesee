@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import SectionLabel from "@/components/SectionLabel";
+import TextReveal from "@/components/TextReveal";
+import ImageReveal from "@/components/ImageReveal";
+import StaggerReveal from "@/components/StaggerReveal";
+import MagneticButton from "@/components/MagneticButton";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -21,16 +25,19 @@ const offices = [
 export default function Contact() {
   const [openOffice, setOpenOffice] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "", company: "", service: "", message: "" });
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const reveals = document.querySelectorAll(".gsap-reveal");
-    reveals.forEach((el) => {
-      gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
-        scrollTrigger: { trigger: el, start: "top 80%", toggleActions: "play none none none" }
+    const timer = setTimeout(() => {
+      const reveals = document.querySelectorAll(".gsap-reveal");
+      reveals.forEach((el) => {
+        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+          scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" }
+        });
       });
-    });
-    return () => ScrollTrigger.getAll().forEach(t => t.kill());
+    }, 50);
+    return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -39,50 +46,88 @@ export default function Contact() {
     setFormData({ name: "", email: "", company: "", service: "", message: "" });
   };
 
+  const inputStyle = (field: string) => ({
+    width: "100%",
+    padding: "12px 0",
+    background: "none",
+    fontSize: 15,
+    color: "#1A1A1A",
+    outline: "none",
+    border: "none",
+    borderBottom: focusedField === field ? "2px solid #1A1A1A" : "1px solid #DDDDDD",
+    transition: "border-bottom 0.3s ease",
+  });
+
   return (
     <div style={{ paddingTop: 64 }}>
       <div className="section-padding">
-        <div className="container gsap-reveal">
+        <div className="container">
           <SectionLabel number="01" title="CONTACT" />
-          <h1 style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }}>Get in touch.</h1>
+          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06} onScroll={false}>
+            Get in touch.
+          </TextReveal>
         </div>
       </div>
 
-      <div className="overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=2000&q=80" alt="City" style={{ width: "100%", height: 400, objectFit: "cover" }} />
-      </div>
+      <ImageReveal
+        src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=2000&q=80"
+        alt="City"
+        direction="up"
+        duration={1.4}
+        parallax
+        parallaxAmount={50}
+        zoom={false}
+        style={{ width: "100%", height: 400 }}
+      />
 
+      {/* Contact types with hover effect */}
       <section className="section-padding">
-        <div className="container gsap-reveal">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {contactTypes.map((ct) => (
-              <div key={ct.label} className="flex gap-6">
-                <img src={ct.photo} alt={ct.person} style={{ width: 72, height: 72, objectFit: "cover", flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{ct.label}</div>
-                  <a href={`mailto:${ct.email}`} style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", textDecoration: "none", display: "block", marginTop: 4 }}>{ct.email}</a>
-                  <div style={{ fontSize: 14, fontWeight: 400, color: "#888888", marginTop: 4 }}>{ct.person} — {ct.title}</div>
+        <div className="container">
+          <StaggerReveal stagger={0.1} y={20}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {contactTypes.map((ct) => (
+                <div key={ct.label} className="flex gap-6 group" style={{ cursor: "pointer" }}>
+                  <div className="overflow-hidden" style={{ width: 72, height: 72, flexShrink: 0 }}>
+                    <img
+                      src={ct.photo}
+                      alt={ct.person}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%)", transition: "filter 0.5s ease, transform 0.5s ease" }}
+                      className="group-hover:!grayscale-0 group-hover:scale-110"
+                    />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{ct.label}</div>
+                    <a href={`mailto:${ct.email}`} className="cta-link" style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", textDecoration: "none", display: "block", marginTop: 4 }}>{ct.email}</a>
+                    <div style={{ fontSize: 14, fontWeight: 400, color: "#888888", marginTop: 4 }}>{ct.person} — {ct.title}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </StaggerReveal>
         </div>
       </section>
 
+      {/* Offices accordion with smooth animation */}
       <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
-        <div className="container gsap-reveal">
-          <h2 className="section-heading">Our offices.</h2>
-          <div style={{ marginTop: 40 }}>
+        <div className="container">
+          <TextReveal as="h2" className="section-heading" stagger={0.05}>
+            Our offices.
+          </TextReveal>
+          <StaggerReveal stagger={0.1} y={15} style={{ marginTop: 40 }}>
             {offices.map((office, i) => (
               <div key={office.city} style={{ borderTop: "1px solid #EEEEEE" }}>
-                <button onClick={() => setOpenOffice(openOffice === i ? null : i)} className="w-full flex items-center justify-between" style={{ padding: "24px 0", cursor: "pointer", background: "none", border: "none", textAlign: "left" }}>
+                <button
+                  onClick={() => setOpenOffice(openOffice === i ? null : i)}
+                  className="w-full flex items-center justify-between group"
+                  style={{ padding: "24px 0", cursor: "pointer", background: "none", border: "none", textAlign: "left" }}
+                >
                   <div>
-                    <span style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A" }}>{office.city}</span>
+                    <span style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease", display: "inline-block" }} className="group-hover:translate-x-2">{office.city}</span>
                     <span style={{ fontSize: 14, fontWeight: 400, color: "#888888", marginLeft: 12 }}>{office.country}</span>
                   </div>
-                  <span style={{ fontSize: 24, fontWeight: 300, color: "#888888", transition: "transform 0.3s ease", transform: openOffice === i ? "rotate(45deg)" : "none" }}>+</span>
+                  <span style={{ fontSize: 24, fontWeight: 300, color: "#888888", transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)", transform: openOffice === i ? "rotate(45deg)" : "none" }}>+</span>
                 </button>
-                <div style={{ maxHeight: openOffice === i ? 200 : 0, overflow: "hidden", transition: "max-height 0.4s ease" }}>
+                <div style={{ maxHeight: openOffice === i ? 200 : 0, overflow: "hidden", transition: "max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1)" }}>
                   <div style={{ paddingBottom: 24 }}>
                     <div style={{ fontSize: 13, fontWeight: 400, color: "#888888", textTransform: "uppercase", letterSpacing: "0.1em" }}>{office.role}</div>
                     <div style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", marginTop: 8 }}>{office.address}</div>
@@ -91,31 +136,34 @@ export default function Contact() {
                 </div>
               </div>
             ))}
-          </div>
+          </StaggerReveal>
         </div>
       </section>
 
+      {/* Form with animated focus states */}
       <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
-        <div className="container gsap-reveal">
-          <h2 className="section-heading">Or send us a message.</h2>
-          <form onSubmit={handleSubmit} style={{ marginTop: 40, maxWidth: 640 }}>
+        <div className="container">
+          <TextReveal as="h2" className="section-heading" stagger={0.05}>
+            Or send us a message.
+          </TextReveal>
+          <form onSubmit={handleSubmit} className="gsap-reveal" style={{ marginTop: 40, maxWidth: 640 }}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", display: "block", marginBottom: 8 }}>Name</label>
-                <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={{ width: "100%", padding: "12px 0", background: "none", fontSize: 15, color: "#1A1A1A", outline: "none", border: "none", borderBottom: "1px solid #DDDDDD" }} />
+                <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} onFocus={() => setFocusedField("name")} onBlur={() => setFocusedField(null)} style={inputStyle("name")} />
               </div>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", display: "block", marginBottom: 8 }}>Email</label>
-                <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} style={{ width: "100%", padding: "12px 0", background: "none", fontSize: 15, color: "#1A1A1A", outline: "none", border: "none", borderBottom: "1px solid #DDDDDD" }} />
+                <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} onFocus={() => setFocusedField("email")} onBlur={() => setFocusedField(null)} style={inputStyle("email")} />
               </div>
             </div>
             <div style={{ marginTop: 24 }}>
               <label style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", display: "block", marginBottom: 8 }}>Company</label>
-              <input type="text" value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} style={{ width: "100%", padding: "12px 0", background: "none", fontSize: 15, color: "#1A1A1A", outline: "none", border: "none", borderBottom: "1px solid #DDDDDD" }} />
+              <input type="text" value={formData.company} onChange={(e) => setFormData({ ...formData, company: e.target.value })} onFocus={() => setFocusedField("company")} onBlur={() => setFocusedField(null)} style={inputStyle("company")} />
             </div>
             <div style={{ marginTop: 24 }}>
               <label style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", display: "block", marginBottom: 8 }}>Service of interest</label>
-              <select value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} style={{ width: "100%", padding: "12px 0", background: "none", fontSize: 15, color: "#1A1A1A", outline: "none", border: "none", borderBottom: "1px solid #DDDDDD", cursor: "pointer" }}>
+              <select value={formData.service} onChange={(e) => setFormData({ ...formData, service: e.target.value })} onFocus={() => setFocusedField("service")} onBlur={() => setFocusedField(null)} style={{ ...inputStyle("service"), cursor: "pointer" }}>
                 <option value="">Select a service</option>
                 <option value="ai-agents">AI Agents</option>
                 <option value="workflow-automation">Workflow Automation</option>
@@ -130,16 +178,30 @@ export default function Contact() {
             </div>
             <div style={{ marginTop: 24 }}>
               <label style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", display: "block", marginBottom: 8 }}>Message</label>
-              <textarea rows={4} required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} style={{ width: "100%", padding: "12px 0", background: "none", fontSize: 15, color: "#1A1A1A", outline: "none", border: "none", borderBottom: "1px solid #DDDDDD", resize: "vertical" }} />
+              <textarea rows={4} required value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} onFocus={() => setFocusedField("message")} onBlur={() => setFocusedField(null)} style={{ ...inputStyle("message"), resize: "vertical" } as React.CSSProperties} />
             </div>
-            <button type="submit" style={{ marginTop: 32, padding: "16px 32px", background: "#1A1A1A", color: "#FFFFFF", fontSize: 13, fontWeight: 500, border: "none", cursor: "pointer" }}>Send message +</button>
+            <MagneticButton
+              as="button"
+              type="submit"
+              className="btn-fill-sweep"
+              style={{ marginTop: 32, padding: "16px 32px", background: "#1A1A1A", color: "#FFFFFF", fontSize: 13, fontWeight: 500, border: "none" }}
+              strength={0.2}
+            >
+              Send message +
+            </MagneticButton>
           </form>
         </div>
       </section>
 
-      <div className="overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=2000&q=80" alt="City" style={{ width: "100%", height: 360, objectFit: "cover" }} />
-      </div>
+      <ImageReveal
+        src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=2000&q=80"
+        alt="City"
+        direction="up"
+        parallax
+        parallaxAmount={40}
+        zoom={false}
+        style={{ width: "100%", height: 360 }}
+      />
     </div>
   );
 }
