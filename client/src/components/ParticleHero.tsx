@@ -82,7 +82,6 @@ export default function ParticleHero({ className = "", style = {} }: ParticleHer
         }
 
         function drawParticle(p: Particle) {
-            if (!ctx) return;
             const alpha = p.opacity * (p.life < 30 ? p.life / 30 : p.life > p.maxLife - 40 ? (p.maxLife - p.life) / 40 : 1);
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
@@ -91,7 +90,6 @@ export default function ParticleHero({ className = "", style = {} }: ParticleHer
         }
 
         function drawConnections(dt: number) {
-            if (!ctx) return;
             const ps = particles.current;
             for (let i = 0; i < ps.length; i++) {
                 for (let j = i + 1; j < ps.length; j++) {
