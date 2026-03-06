@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "wouter";
 import SectionLabel from "@/components/SectionLabel";
 import TextReveal from "@/components/TextReveal";
 import ImageReveal from "@/components/ImageReveal";
@@ -51,7 +52,8 @@ export default function Blog() {
     const timer = setTimeout(() => {
       const reveals = document.querySelectorAll(".gsap-reveal");
       reveals.forEach((el) => {
-        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+        gsap.fromTo(el, { opacity: 0, y: 30 }, {
+          opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
           scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" }
         });
       });
@@ -77,7 +79,7 @@ export default function Blog() {
       {featured && (
         <section className="section-padding">
           <div className="container">
-            <a href={`/blog/${featured.slug}`} className="block group" onClick={(e) => { e.preventDefault(); alert("Full article coming soon."); }}>
+            <Link href={`/blog/${featured.slug}`} className="block group">
               <ImageReveal
                 src={featured.image}
                 alt={featured.title}
@@ -95,7 +97,7 @@ export default function Blog() {
                 <p style={{ fontSize: 16, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 12, maxWidth: 600 }}>{featured.excerpt}</p>
                 <span className="cta-link" style={{ marginTop: 16, display: "inline-block" }}>Read article ↗</span>
               </div>
-            </a>
+            </Link>
           </div>
         </section>
       )}
@@ -106,7 +108,7 @@ export default function Blog() {
             <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 32 }}>
               {grid.map((article) => (
                 <TiltCard key={article.slug} maxTilt={5} scale={1.01}>
-                  <a href={`/blog/${article.slug}`} className="block group" onClick={(e) => { e.preventDefault(); alert("Full article coming soon."); }}>
+                  <Link href={`/blog/${article.slug}`} className="block group">
                     <div className="img-hover-zoom" style={{ height: 240, overflow: "hidden" }}>
                       <img src={article.image} alt={article.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
                     </div>
@@ -119,7 +121,7 @@ export default function Blog() {
                       <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{article.excerpt}</p>
                       <span className="cta-link" style={{ marginTop: 12, display: "inline-block", fontSize: 13 }}>Read article ↗</span>
                     </div>
-                  </a>
+                  </Link>
                 </TiltCard>
               ))}
             </div>

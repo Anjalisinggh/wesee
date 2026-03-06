@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { X } from "lucide-react";
 
 const navItems = [
   { label: "Services", href: "/services" },
@@ -12,180 +11,268 @@ const navItems = [
 ];
 
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [location] = useLocation();
-  const [filterCount, setFilterCount] = useState(43);
-  const [viewMode, setViewMode] = useState<"ring" | "grid">("ring");
-
-  const isServicesPage = location === "/services";
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const count = (e as CustomEvent).detail?.count;
-      if (typeof count === "number") setFilterCount(count);
-    };
-    window.addEventListener("update-filter-count", handler);
-    return () => window.removeEventListener("update-filter-count", handler);
+    const h = () => setScrolled(window.scrollY > 40);
+    window.addEventListener("scroll", h, { passive: true });
+    return () => window.removeEventListener("scroll", h);
   }, []);
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const mode = (e as CustomEvent).detail?.mode;
-      if (mode) setViewMode(mode);
-    };
-    window.addEventListener("update-view-mode", handler);
-    return () => window.removeEventListener("update-view-mode", handler);
+    // Check screen width for responsive logic
+    const check = () => setIsDesktop(window.innerWidth >= 1024);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Close on navigation
+  useEffect(() => { setOpen(false); }, [location]);
 
+  // Lock body scroll when mobile menu is open
   useEffect(() => {
-    setIsOpen(false);
-  }, [location]);
-
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
+    document.body.style.overflow = open ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [isOpen]);
-
-  // In ring view on services page, hide the header
-  const hideHeader = isServicesPage && viewMode === "ring";
+  }, [open]);
 
   return (
     <>
-      <header
-        className="fixed top-0 left-0 right-0 z-50"
-        style={{
-          background: scrolled ? "rgba(255,255,255,0.95)" : "transparent",
-          backdropFilter: scrolled ? "blur(12px)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(12px)" : "none",
-          borderBottom: scrolled ? "1px solid #F0F0F0" : "1px solid transparent",
-          transform: hideHeader ? "translateY(-100%)" : "translateY(0)",
-          pointerEvents: hideHeader ? "none" : "auto",
-          transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), background 0.4s ease, border-bottom 0.4s ease, backdrop-filter 0.4s ease",
-        }}
-      >
-        <div className="container flex items-center justify-between" style={{ height: 64 }}>
-          {/* Logo with subtle scale on hover */}
-          <div className="flex items-center gap-8">
-            <Link href="/" className="relative z-50 group" data-cursor="grow">
-              <span
-                style={{
-                  fontSize: 20,
-                  fontWeight: 700,
-                  color: "#1A1A1A",
-                  letterSpacing: "-0.01em",
-                  display: "inline-block",
-                  transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
-                }}
-                className="group-hover:scale-105 inline-block"
-              >
-                WeSee.
-              </span>
-            </Link>
+      {/* ── Main header bar ── */}
+      <header style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50,
+        height: 60,
+        display: "flex", alignItems: "center",
+        background: scrolled ? "rgba(247,248,250,0.88)" : "transparent",
+        backdropFilter: scrolled ? "blur(28px) saturate(200%)" : "none",
+        WebkitBackdropFilter: scrolled ? "blur(28px) saturate(200%)" : "none",
+        borderBottom: scrolled ? "1px solid rgba(17,19,23,0.07)" : "1px solid transparent",
+        transition: "background 0.5s ease, border-color 0.5s ease",
+      }}>
+        <div className="container" style={{
+          display: "flex", alignItems: "center",
+          justifyContent: "space-between", height: "100%",
+          position: "relative",
+        }}>
+          {/* Logo */}
+          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0, zIndex: 2 }}>
+            <span style={{
+              fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 650,
+              color: "var(--ink)", letterSpacing: "-0.035em", lineHeight: 1,
+            }}>
+              WeSee<span style={{ color: "var(--accent)", fontWeight: 700 }}>.</span>
+            </span>
+          </Link>
 
-            {/* Filter Services button — only on /services page in grid view */}
-            {isServicesPage && viewMode === "grid" && (
-              <button
-                onClick={() => window.dispatchEvent(new CustomEvent("toggle-filter-panel"))}
-                className="hidden md:block cta-link"
-                style={{ fontSize: 13, fontWeight: 500, color: "#1A1A1A" }}
-                data-cursor="grow"
+          {/* ── Desktop: centered pill nav ── */}
+          {isDesktop && (
+            <nav
+              aria-label="Main navigation"
+              style={{
+                position: "absolute", left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex", alignItems: "center",
+                gap: 0,
+                background: "rgba(255,255,255,0.75)",
+                backdropFilter: "blur(24px) saturate(200%)",
+                WebkitBackdropFilter: "blur(24px) saturate(200%)",
+                border: "1px solid rgba(17,19,23,0.09)",
+                borderRadius: 999,
+                padding: "4px 6px",
+              }}
+            >
+              {navItems.map((item) => {
+                const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    style={{
+                      padding: "6px 13px",
+                      borderRadius: 999,
+                      fontSize: 13,
+                      fontWeight: isActive ? 550 : 400,
+                      color: isActive ? "var(--ink)" : "rgba(17,19,23,0.48)",
+                      textDecoration: "none",
+                      transition: "color 0.22s ease, background 0.22s ease",
+                      background: isActive ? "rgba(17,19,23,0.07)" : "transparent",
+                      letterSpacing: "0.003em",
+                      whiteSpace: "nowrap",
+                    }}
+                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--ink)"; }}
+                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.48)"; }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {/* ── Right: CTA + hamburger ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, zIndex: 2 }}>
+            {/* Book a Call — desktop only */}
+            {isDesktop && (
+              <a
+                href="https://cal.com/wesee/discovery"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "8px 18px",
+                  background: "var(--ink)",
+                  color: "#fff",
+                  fontSize: 13, fontWeight: 500, letterSpacing: "0.005em",
+                  borderRadius: 999,
+                  border: "1.5px solid var(--ink)",
+                  textDecoration: "none",
+                  transition: "background 0.25s ease, transform 0.25s ease",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = "#2a2d33";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = "var(--ink)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
               >
-                Filter Services ({filterCount})
+                Book a Call <span style={{ fontSize: 11, opacity: 0.75 }}>↗</span>
+              </a>
+            )}
+
+            {/* Hamburger — mobile only */}
+            {!isDesktop && (
+              <button
+                onClick={() => setOpen(!open)}
+                aria-label={open ? "Close menu" : "Open menu"}
+                style={{
+                  width: 36, height: 36,
+                  display: "flex", flexDirection: "column",
+                  alignItems: "center", justifyContent: "center", gap: 5,
+                  background: "rgba(255,255,255,0.8)",
+                  border: "1px solid rgba(17,19,23,0.10)",
+                  borderRadius: 999, cursor: "pointer", padding: 0,
+                  backdropFilter: "blur(12px)",
+                  WebkitBackdropFilter: "blur(12px)",
+                }}
+              >
+                <span style={{
+                  display: "block", width: 16, height: 1.5,
+                  background: "var(--ink)", borderRadius: 2,
+                  transformOrigin: "center",
+                  transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+                  transform: open ? "translateY(6.5px) rotate(45deg)" : "none",
+                }} />
+                <span style={{
+                  display: "block", width: 16, height: 1.5,
+                  background: "var(--ink)", borderRadius: 2,
+                  transition: "opacity 0.3s ease", opacity: open ? 0 : 1,
+                }} />
+                <span style={{
+                  display: "block", width: 16, height: 1.5,
+                  background: "var(--ink)", borderRadius: 2,
+                  transformOrigin: "center",
+                  transition: "transform 0.4s cubic-bezier(0.16,1,0.3,1)",
+                  transform: open ? "translateY(-6.5px) rotate(-45deg)" : "none",
+                }} />
               </button>
             )}
           </div>
+        </div>
+      </header>
 
-          {/* Desktop Nav with underline-from-center hover */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navItems.map((item) => (
+      {/* ── Mobile full-screen overlay ── */}
+      {!isDesktop && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 40,
+          background: "rgba(247,248,250,0.97)",
+          backdropFilter: "blur(36px)",
+          WebkitBackdropFilter: "blur(36px)",
+          display: "flex", flexDirection: "column",
+          justifyContent: "center", alignItems: "flex-start",
+          padding: "40px 36px",
+          opacity: open ? 1 : 0,
+          pointerEvents: open ? "auto" : "none",
+          transition: "opacity 0.4s cubic-bezier(0.16,1,0.3,1)",
+        }}>
+          {/* Close button in top-right corner */}
+          <button
+            onClick={() => setOpen(false)}
+            style={{
+              position: "absolute", top: 18, right: 18,
+              width: 36, height: 36,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              background: "rgba(17,19,23,0.06)",
+              border: "1px solid rgba(17,19,23,0.09)",
+              borderRadius: 999, cursor: "pointer",
+              fontSize: 18, color: "var(--ink)",
+              transition: "background 0.2s ease",
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "rgba(17,19,23,0.12)"}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "rgba(17,19,23,0.06)"}
+            aria-label="Close menu"
+          >
+            ×
+          </button>
+
+          <nav style={{ width: "100%" }}>
+            {navItems.map((item, i) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="nav-link-hover"
-                data-cursor="grow"
                 style={{
-                  fontSize: 14,
+                  display: "block",
+                  fontSize: "clamp(32px, 8vw, 52px)",
                   fontWeight: 400,
-                  color: "#1A1A1A",
-                  letterSpacing: "0.02em",
-                  transition: "opacity 0.3s ease",
+                  letterSpacing: "-0.035em",
+                  color: location === item.href ? "var(--ink)" : "rgba(17,19,23,0.28)",
+                  padding: "9px 0",
+                  opacity: open ? 1 : 0,
+                  transform: open ? "translateX(0)" : "translateX(-20px)",
+                  transition: `opacity 0.45s ease ${i * 45}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 45}ms, color 0.25s ease`,
+                  textDecoration: "none",
+                }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
+                onMouseLeave={e => {
+                  if (location !== item.href) (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.28)";
                 }}
               >
-                <span className="hover:opacity-60 transition-opacity duration-300">
-                  {item.label}
-                </span>
+                {item.label}
               </Link>
             ))}
           </nav>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden relative z-50 p-2"
-            aria-label="Toggle menu"
-            data-cursor="grow"
-          >
-            {isOpen ? (
-              <X className="w-6 h-6" style={{ color: "#1A1A1A" }} />
-            ) : (
-              <div className="flex flex-col gap-1.5">
-                <span
-                  className="block w-6 h-px bg-[#1A1A1A] transition-all duration-300"
-                  style={{ transformOrigin: "center" }}
-                />
-                <span className="block w-6 h-px bg-[#1A1A1A] transition-all duration-300" />
-                <span
-                  className="block w-6 h-px bg-[#1A1A1A] transition-all duration-300"
-                  style={{ transformOrigin: "center" }}
-                />
-              </div>
-            )}
-          </button>
-        </div>
-      </header>
-
-      {/* Full-screen Mobile Menu with staggered entrance */}
-      <div
-        className="fixed inset-0 z-40 bg-white flex flex-col justify-center items-start px-8 pt-20"
-        style={{
-          opacity: isOpen ? 1 : 0,
-          pointerEvents: isOpen ? "auto" : "none",
-          transition: "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
-      >
-        <nav className="flex flex-col gap-6">
-          {navItems.map((item, i) => (
-            <Link
-              key={item.href}
-              href={item.href}
+          <div style={{
+            marginTop: 40,
+            opacity: open ? 1 : 0,
+            transform: open ? "translateY(0)" : "translateY(10px)",
+            transition: "opacity 0.5s ease 0.3s, transform 0.5s cubic-bezier(0.16,1,0.3,1) 0.3s",
+          }}>
+            <a
+              href="https://cal.com/wesee/discovery"
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
-                fontSize: 36,
-                fontWeight: 700,
-                color: "#1A1A1A",
-                letterSpacing: "-0.02em",
-                transition: "opacity 0.3s ease, transform 0.3s ease",
-                transform: isOpen ? "translateY(0)" : "translateY(20px)",
-                opacity: isOpen ? 1 : 0,
-                transitionDelay: isOpen ? `${i * 60}ms` : "0ms",
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "14px 28px",
+                background: "var(--ink)", color: "#fff",
+                fontSize: 14, fontWeight: 500, borderRadius: 999,
+                textDecoration: "none",
               }}
-              className="hover:opacity-50"
             >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto mb-8" style={{ fontSize: 13, color: "#888888" }}>
-          <p>hello@wesee.in</p>
-          <p className="mt-1">Jaipur, India</p>
+              Book a Discovery Call ↗
+            </a>
+            <p style={{ fontSize: 13, color: "rgba(17,19,23,0.30)", marginTop: 20, letterSpacing: "0.02em" }}>
+              hello@wesee.in
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

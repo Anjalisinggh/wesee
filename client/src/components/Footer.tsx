@@ -17,41 +17,101 @@ const companyLinks = [
   { label: "Contact", href: "/contact" },
 ];
 
-const socialLinks = [
+const socials = [
   { label: "LinkedIn", href: "https://linkedin.com/company/wesee" },
   { label: "Instagram", href: "https://instagram.com/wesee" },
-  { label: "Twitter", href: "https://twitter.com/wesee" },
+  { label: "X / Twitter", href: "https://twitter.com/wesee" },
 ];
 
 export default function Footer() {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
   return (
-    <footer style={{ background: "#FFFFFF", borderTop: "1px solid #EEEEEE" }}>
-      <div className="container" style={{ paddingTop: 80, paddingBottom: 40 }}>
-        {/* 4-column grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8">
-          {/* Brand */}
+    <footer style={{ background: "var(--ink)", position: "relative", overflow: "hidden" }}>
+      {/* Subtle blob */}
+      <div style={{
+        position: "absolute",
+        width: 700, height: 700,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(201,168,76,0.07) 0%, transparent 65%)",
+        top: 0, right: "-10%",
+        pointerEvents: "none",
+        animation: "blob2 20s ease-in-out infinite",
+      }} />
+
+      {/* "Let's Talk" CTA strip */}
+      <div className="container" style={{ paddingTop: 96, paddingBottom: 72, position: "relative", zIndex: 1 }}>
+        <div style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: 72, marginBottom: 72 }}>
+
+          <span style={{
+            fontSize: 11, fontWeight: 500, letterSpacing: "0.2em", textTransform: "uppercase",
+            color: "rgba(255,255,255,0.30)", display: "block", marginBottom: 20,
+          }}>
+            Ready to start?
+          </span>
+
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+            <h2 style={{
+              fontSize: "clamp(44px, 7vw, 88px)",
+              fontWeight: 400,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.02,
+              color: "#FFFFFF",
+              margin: 0,
+            }}>
+              Let's Talk<span style={{ color: "var(--accent)", fontWeight: 600 }}>.</span>
+            </h2>
+
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <a
+                href="https://cal.com/wesee/discovery"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary shine-on-hover"
+                style={{
+                  background: "#FFFFFF",
+                  color: "var(--ink)",
+                  border: "1.5px solid #FFFFFF",
+                  padding: "13px 28px",
+                  fontSize: 14,
+                }}
+              >
+                Book Discovery Call ↗
+              </a>
+              <a href="mailto:hello@wesee.in" style={{
+                fontSize: 14, color: "rgba(255,255,255,0.35)",
+                transition: "color 0.3s ease", textDecoration: "none",
+              }}
+                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+              >
+                hello@wesee.in
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* 4-col link grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 40 }}>
+          {/* Brand col */}
           <div>
             <Link href="/">
-              <span style={{ fontSize: 20, fontWeight: 700, color: "#1A1A1A" }}>WeSee.</span>
+              <span style={{ fontSize: 17, fontWeight: 600, color: "#FFFFFF", letterSpacing: "-0.03em" }}>
+                WeSee<span style={{ color: "var(--accent)" }}>.</span>
+              </span>
             </Link>
-            <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, marginTop: 16, maxWidth: 280 }}>
-              India's leading AI automation agency. We build intelligent systems that help businesses operate smarter, faster, and at scale.
+            <p style={{
+              fontSize: 13, color: "rgba(255,255,255,0.30)",
+              lineHeight: 1.7, marginTop: 14, maxWidth: 240,
+            }}>
+              India's leading AI automation agency — building intelligent systems that help businesses operate smarter, faster, and at scale.
             </p>
-            <div className="flex gap-4 mt-6">
-              {socialLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontSize: 13, fontWeight: 400, color: "#888888", transition: "color 0.3s ease" }}
-                  className="hover:!text-[#1A1A1A]"
+            <div style={{ display: "flex", gap: 16, marginTop: 20 }}>
+              {socials.map(s => (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", transition: "color 0.3s ease", textDecoration: "none" }}
+                  onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
                 >
-                  {link.label}
+                  {s.label}
                 </a>
               ))}
             </div>
@@ -59,18 +119,19 @@ export default function Footer() {
 
           {/* Services */}
           <div>
-            <h4 style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", marginBottom: 16 }}>
+            <h4 style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.20)", marginBottom: 18 }}>
               Services
             </h4>
-            <ul className="space-y-3">
-              {serviceLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", transition: "color 0.3s ease" }}
-                    className="hover:!text-[#1A1A1A]"
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+              {serviceLinks.map(l => (
+                <li key={l.label}>
+                  <Link href={l.href} style={{
+                    fontSize: 14, color: "rgba(255,255,255,0.35)", transition: "color 0.3s ease", textDecoration: "none",
+                  }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.9)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)"; }}
                   >
-                    {link.label}
+                    {l.label}
                   </Link>
                 </li>
               ))}
@@ -79,75 +140,82 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h4 style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", marginBottom: 16 }}>
+            <h4 style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.20)", marginBottom: 18 }}>
               Company
             </h4>
-            <ul className="space-y-3">
-              {companyLinks.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", transition: "color 0.3s ease" }}
-                    className="hover:!text-[#1A1A1A]"
+            <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
+              {companyLinks.map(l => (
+                <li key={l.label}>
+                  <Link href={l.href} style={{
+                    fontSize: 14, color: "rgba(255,255,255,0.35)", transition: "color 0.3s ease", textDecoration: "none",
+                  }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.9)"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)"; }}
                   >
-                    {link.label}
+                    {l.label}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Get Started */}
+          {/* Offices */}
           <div>
-            <h4 style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", marginBottom: 16 }}>
-              Get Started
+            <h4 style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.20)", marginBottom: 18 }}>
+              Offices
             </h4>
-            <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, marginBottom: 16 }}>
-              Ready to automate your business? Let's talk.
-            </p>
-            <Link
-              href="/contact"
-              style={{
-                display: "inline-block",
-                padding: "12px 24px",
-                background: "#1A1A1A",
-                color: "#FFFFFF",
-                fontSize: 13,
-                fontWeight: 500,
-                textDecoration: "none",
-              }}
-            >
-              Book a Call ↗
-            </Link>
-            <p style={{ fontSize: 14, color: "#888888", marginTop: 16 }}>
-              hello@wesee.in
-            </p>
+            {[
+              { city: "Jaipur", sub: "India — HQ" },
+              { city: "Mumbai", sub: "India — Operations" },
+              { city: "Dubai", sub: "UAE — MENA" },
+            ].map(o => (
+              <div key={o.city} style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 14, fontWeight: 500, color: "rgba(255,255,255,0.55)", letterSpacing: "-0.01em" }}>
+                  {o.city}
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.20)", letterSpacing: "0.04em", marginTop: 2 }}>
+                  {o.sub}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Bottom bar */}
-        <div
-          className="flex flex-col md:flex-row items-center justify-between gap-4"
-          style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid #EEEEEE" }}
-        >
-          <p style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>
-            © {new Date().getFullYear()} WeSee. All rights reserved.
+        <div style={{
+          marginTop: 56, paddingTop: 24,
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          display: "flex", flexWrap: "wrap",
+          justifyContent: "space-between",
+          alignItems: "center", gap: 12,
+        }}>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.18)", letterSpacing: "0.03em" }}>
+            © {new Date().getFullYear()} WeSee AI Automation. All rights reserved.
           </p>
-          <div className="flex items-center gap-6">
-            <Link href="/privacy" style={{ fontSize: 12, fontWeight: 400, color: "#888888" }} className="hover:!text-[#1A1A1A]">
-              Privacy Policy
-            </Link>
-            <span style={{ fontSize: 12, color: "#888888" }}>·</span>
-            <Link href="/terms" style={{ fontSize: 12, fontWeight: 400, color: "#888888" }} className="hover:!text-[#1A1A1A]">
-              Terms & Conditions
-            </Link>
-            <span style={{ fontSize: 12, color: "#888888" }}>·</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+            {[
+              { label: "Privacy Policy", href: "/privacy" },
+              { label: "Terms", href: "/terms" },
+            ].map(l => (
+              <Link key={l.label} href={l.href} style={{
+                fontSize: 12, color: "rgba(255,255,255,0.18)", transition: "color 0.3s ease", textDecoration: "none",
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.7)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.18)"; }}
+              >
+                {l.label}
+              </Link>
+            ))}
             <button
-              onClick={scrollToTop}
-              style={{ fontSize: 12, fontWeight: 400, color: "#888888", transition: "color 0.3s ease" }}
-              className="hover:!text-[#1A1A1A]"
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              style={{
+                fontSize: 12, color: "rgba(255,255,255,0.18)", background: "none",
+                border: "none", transition: "color 0.3s ease", cursor: "none",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.18)"; }}
             >
-              Back to top
+              ↑ Top
             </button>
           </div>
         </div>

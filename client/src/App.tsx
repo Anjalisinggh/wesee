@@ -19,6 +19,7 @@ const About = lazy(() => import("./pages/About"));
 const Team = lazy(() => import("./pages/Team"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Blog = lazy(() => import("./pages/Blog"));
+const BlogDetail = lazy(() => import("./pages/BlogDetail"));
 const Careers = lazy(() => import("./pages/Careers"));
 
 function ScrollToTop() {
@@ -50,11 +51,32 @@ function Router() {
         <Route path="/team" component={Team} />
         <Route path="/contact" component={Contact} />
         <Route path="/blog" component={Blog} />
+        <Route path="/blog/:slug" component={BlogDetail} />
         <Route path="/careers" component={Careers} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
+  );
+}
+
+/* ── Grain noise overlay ── */
+function GrainOverlay() {
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9998,
+        pointerEvents: "none",
+        opacity: 0.028,
+        userSelect: "none",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+        backgroundRepeat: "repeat",
+        backgroundSize: "200px 200px",
+      }}
+    />
   );
 }
 
@@ -73,6 +95,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <GrainOverlay />
           <CustomCursor />
           <LoadingScreen onComplete={() => setLoadingDone(true)} />
           <div
