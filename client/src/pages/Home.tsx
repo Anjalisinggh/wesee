@@ -73,7 +73,7 @@ export default function Home() {
   useEffect(() => {
     const id = setInterval(() => {
       setWordIndex(i => (i + 1) % HERO_WORDS.length);
-    }, 2200);
+    }, 5000);
     return () => clearInterval(id);
   }, []);
 
@@ -112,23 +112,26 @@ export default function Home() {
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
-        overflow: "hidden",
         paddingTop: 72,
         paddingBottom: 60,
         background: "var(--paper)",
       }}>
-        {/* Particle canvas */}
+        {/* Particle canvas — fills section exactly via inset:0, no overflow needed */}
         <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
 
-        {/* Warm radial halo */}
-        <div style={{
-          position: "absolute", pointerEvents: "none", zIndex: 0,
-          width: 1000, height: 1000, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)",
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-55%)",
-          animation: "blob1 20s ease-in-out infinite",
-        }} />
+        {/* Decorative blobs — contained in their own overflow:hidden wrapper so they
+            don't bleed out of the section, but the wrapper does NOT clip the text */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+          {/* Warm radial halo */}
+          <div style={{
+            position: "absolute", pointerEvents: "none",
+            width: 1000, height: 1000, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)",
+            top: "50%", left: "50%",
+            transform: "translate(-50%,-55%)",
+            animation: "blob1 20s ease-in-out infinite",
+          }} />
+        </div>
 
         {/* — Main content — */}
         <div className="container" style={{
@@ -163,7 +166,7 @@ export default function Home() {
             India's leading AI Automation Agency
           </div>
 
-          {/* Hero headline — 3 lines */}
+          {/* Hero headline — 2 lines: "We build [word]" / "systems." */}
           <h1
             className="fade-up"
             style={{
@@ -171,43 +174,51 @@ export default function Home() {
               fontSize: "clamp(52px, 7.5vw, 102px)",
               fontWeight: 450,
               letterSpacing: "-0.04em",
-              lineHeight: 1.03,
+              lineHeight: 1.08,
               color: "var(--ink)",
-              maxWidth: 800,
               animationDelay: "0.18s",
             }}
           >
-            We build{" "}
-            {/* Dynamic animated word */}
-            <span style={{ display: "inline-block", position: "relative", overflow: "hidden", verticalAlign: "bottom" }}>
-              <style>{`
-                @keyframes wordFlipIn {
-                  0%   { opacity: 0; transform: translateY(60%) skewY(4deg); }
-                  100% { opacity: 1; transform: translateY(0%)  skewY(0deg); }
-                }
-                .hero-word-anim {
-                  display: inline-block;
-                  animation: wordFlipIn 0.52s cubic-bezier(0.16,1,0.3,1) both;
-                  font-style: italic;
-                  font-weight: 300;
-                  background: linear-gradient(110deg, #9C7A1E 0%, #C9A84C 40%, #E8C870 65%, #C9A84C 100%);
-                  -webkit-background-clip: text;
-                  -webkit-text-fill-color: transparent;
-                  background-clip: text;
-                  background-size: 200% auto;
-                  animation: wordFlipIn 0.52s cubic-bezier(0.16,1,0.3,1) both, textShimmer 6s ease infinite;
-                  letter-spacing: -0.045em;
-                }
-              `}</style>
-              <span
-                key={wordIndex}
-                className="hero-word-anim"
-              >
-                {HERO_WORDS[wordIndex]}
+            {/* "We build [word]" locked on one line */}
+            <span style={{ display: "block", whiteSpace: "nowrap" }}>
+              We build{" "}
+              {/* Dynamic animated word — no overflow:hidden so gold text is never clipped */}
+              <span style={{ display: "inline-block", position: "relative", verticalAlign: "bottom" }}>
+                <style>{`
+                  @keyframes wordFlipIn {
+                    0%   { opacity: 0; transform: translateY(60%) skewY(4deg); }
+                    100% { opacity: 1; transform: translateY(0%)  skewY(0deg); }
+                  }
+                  .hero-word-anim {
+                    display: inline-block;
+                    font-style: italic;
+                    font-weight: 300;
+                    background: linear-gradient(110deg, #9C7A1E 0%, #C9A84C 40%, #E8C870 65%, #C9A84C 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    background-size: 200% auto;
+                    animation: wordFlipIn 0.52s cubic-bezier(0.16,1,0.3,1) both, textShimmer 6s ease infinite;
+                    letter-spacing: -0.045em;
+                    /* Italic glyphs overhang the padding-box on the right/bottom,
+                       which clips the background-clip:text gradient.
+                       Padding expands the box to cover the overhang;
+                       negative margin compensates so layout is unaffected. */
+                    padding-right: 0.2em;
+                    padding-bottom: 0.05em;
+                    margin-right: -0.2em;
+                  }
+                `}</style>
+                <span
+                  key={wordIndex}
+                  className="hero-word-anim"
+                >
+                  {HERO_WORDS[wordIndex]}
+                </span>
               </span>
             </span>
-            <br />
-            systems.
+            {/* "systems." always on its own second line */}
+            <span style={{ display: "block" }}>systems.</span>
           </h1>
 
           {/* Subheadline */}

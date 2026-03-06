@@ -59,11 +59,16 @@ export default function Header() {
         }}>
           {/* Logo */}
           <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0, zIndex: 2 }}>
+            <img
+              src="/wesee_logo.gif"
+              alt="WeSee logo"
+              style={{ height: 42, width: "auto", objectFit: "contain", mixBlendMode: "multiply" }}
+            />
             <span style={{
               fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 650,
               color: "var(--ink)", letterSpacing: "-0.035em", lineHeight: 1,
             }}>
-              WeSee<span style={{ color: "var(--accent)", fontWeight: 700 }}>.</span>
+              WeSee
             </span>
           </Link>
 
