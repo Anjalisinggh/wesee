@@ -173,7 +173,7 @@ export default function Home() {
               letterSpacing: "-0.04em",
               lineHeight: 1.03,
               color: "var(--ink)",
-              maxWidth: 800,
+              maxWidth: 1100,
               animationDelay: "0.18s",
             }}
           >
