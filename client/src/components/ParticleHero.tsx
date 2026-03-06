@@ -83,10 +83,10 @@ export default function ParticleHero({ className = "", style = {} }: ParticleHer
 
         function drawParticle(p: Particle) {
             const alpha = p.opacity * (p.life < 30 ? p.life / 30 : p.life > p.maxLife - 40 ? (p.maxLife - p.life) / 40 : 1);
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fillStyle = p.color + alpha.toFixed(3) + ")";
-            ctx.fill();
+            ctx!.beginPath();
+            ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx!.fillStyle = p.color + alpha.toFixed(3) + ")";
+            ctx!.fill();
         }
 
         function drawConnections(dt: number) {
@@ -98,12 +98,12 @@ export default function ParticleHero({ className = "", style = {} }: ParticleHer
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < 100) {
                         const alpha = (1 - dist / 100) * 0.07;
-                        ctx.beginPath();
-                        ctx.moveTo(ps[i].x, ps[i].y);
-                        ctx.lineTo(ps[j].x, ps[j].y);
-                        ctx.strokeStyle = `rgba(17,19,23,${alpha.toFixed(3)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
+                        ctx!.beginPath();
+                        ctx!.moveTo(ps[i].x, ps[i].y);
+                        ctx!.lineTo(ps[j].x, ps[j].y);
+                        ctx!.strokeStyle = `rgba(17,19,23,${alpha.toFixed(3)})`;
+                        ctx!.lineWidth = 0.5;
+                        ctx!.stroke();
                     }
                 }
             }
