@@ -58,12 +58,13 @@ export default function Header() {
           position: "relative",
         }}>
           {/* Logo */}
-          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0, zIndex: 2 }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0, zIndex: 2, gap: 8 }}>
+            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663374526873/i7vThuKaRmDbUwRVJzPJ6B/1732588234062_77d46430.jpg" alt="WeSee Logo" style={{ height: 28, width: "auto" }} />
             <span style={{
               fontFamily: "Inter, sans-serif", fontSize: 16, fontWeight: 650,
               color: "var(--ink)", letterSpacing: "-0.035em", lineHeight: 1,
             }}>
-              WeSee<span style={{ color: "var(--accent)", fontWeight: 700 }}>.</span>
+              WeSee
             </span>
           </Link>
 

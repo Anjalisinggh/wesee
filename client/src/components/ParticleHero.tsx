@@ -100,12 +100,12 @@ export default function ParticleHero({ className = "", style = {} }: ParticleHer
                     const dist = Math.sqrt(dx * dx + dy * dy);
                     if (dist < 100) {
                         const alpha = (1 - dist / 100) * 0.07;
-                        ctx.beginPath();
-                        ctx.moveTo(ps[i].x, ps[i].y);
-                        ctx.lineTo(ps[j].x, ps[j].y);
-                        ctx.strokeStyle = `rgba(17,19,23,${alpha.toFixed(3)})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.stroke();
+                        ctx!.beginPath();
+                        ctx!.moveTo(ps[i].x, ps[i].y);
+                        ctx!.lineTo(ps[j].x, ps[j].y);
+                        ctx!.strokeStyle = `rgba(17,19,23,${alpha.toFixed(3)})`;
+                        ctx!.lineWidth = 0.5;
+                        ctx!.stroke();
                     }
                 }
             }
