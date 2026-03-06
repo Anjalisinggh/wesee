@@ -173,7 +173,7 @@ export default function Home() {
               letterSpacing: "-0.04em",
               lineHeight: 1.03,
               color: "var(--ink)",
-              maxWidth: "14ch",
+              maxWidth: 800,
               animationDelay: "0.18s",
             }}
           >
@@ -205,7 +205,8 @@ export default function Home() {
               >
                 {HERO_WORDS[wordIndex]}
               </span>
-            </span>{" "}
+            </span>
+            <br />
             systems.
           </h1>
 
