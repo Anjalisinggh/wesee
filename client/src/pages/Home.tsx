@@ -69,11 +69,11 @@ export default function Home() {
   const [counted, setCounted] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
 
-  /* Cycle hero headline word every 2.2s */
+  /* Cycle hero headline word every 5s */
   useEffect(() => {
     const id = setInterval(() => {
       setWordIndex(i => (i + 1) % HERO_WORDS.length);
-    }, 2200);
+    }, 5000);
     return () => clearInterval(id);
   }, []);
 
