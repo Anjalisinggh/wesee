@@ -179,7 +179,7 @@ export default function Home() {
           >
             We build{" "}
             {/* Dynamic animated word */}
-            <span style={{ display: "inline-block", position: "relative", overflow: "hidden", verticalAlign: "bottom" }}>
+            <span style={{ display: "inline-block", position: "relative", overflow: "visible", verticalAlign: "bottom" }}>
               <style>{`
                 @keyframes wordFlipIn {
                   0%   { opacity: 0; transform: translateY(60%) skewY(4deg); }
@@ -197,6 +197,8 @@ export default function Home() {
                   background-size: 200% auto;
                   animation: wordFlipIn 0.52s cubic-bezier(0.16,1,0.3,1) both, textShimmer 6s ease infinite;
                   letter-spacing: -0.045em;
+                  padding-right: 0.12em;
+                  padding-bottom: 0.08em;
                 }
               `}</style>
               <span
