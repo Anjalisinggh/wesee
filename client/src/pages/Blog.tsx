@@ -5,6 +5,7 @@ import TextReveal from "@/components/TextReveal";
 import ImageReveal from "@/components/ImageReveal";
 import TiltCard from "@/components/TiltCard";
 import StaggerReveal from "@/components/StaggerReveal";
+import ParticleWrapper from "@/components/ParticleWrapper";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -107,8 +108,9 @@ export default function Blog() {
           <StaggerReveal stagger={0.15} y={30}>
             <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 32 }}>
               {grid.map((article) => (
-                <TiltCard key={article.slug} maxTilt={5} scale={1.01}>
-                  <Link href={`/blog/${article.slug}`} className="block group">
+                <ParticleWrapper key={article.slug}>
+                  <TiltCard maxTilt={5} scale={1.01}>
+                    <Link href={`/blog/${article.slug}`} className="block group">
                     <div className="img-hover-zoom" style={{ height: 240, overflow: "hidden" }}>
                       <img src={article.image} alt={article.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
                     </div>

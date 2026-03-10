@@ -3,8 +3,10 @@ import { Link, useSearch } from "wouter";
 import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
 import CircularGallery from "@/components/CircularGallery";
+import RotorGallery from "@/components/RotorGallery";
 import TextReveal from "@/components/TextReveal";
 import TiltCard from "@/components/TiltCard";
+import ParticleWrapper from "@/components/ParticleWrapper";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -137,15 +139,24 @@ export default function Services() {
     setSelectedStatus(null);
   };
 
-  // Prepare ring items
+  // Prepare ring items - duplicate to reach 90 items
   const ringItems = useMemo(() => {
-    return filtered.map((s, i) => ({
+    const baseItems = filtered.map((s, i) => ({
       title: s.name,
       image: getServiceImage(s, i),
       url: `/services/${s.slug}`,
       category: s.category,
       categoryId: s.categoryId,
     }));
+    
+    // Duplicate items to reach 90 total
+    const targetCount = 90;
+    const repeatedItems: typeof baseItems = [];
+    for (let i = 0; i < targetCount; i++) {
+      repeatedItems.push(baseItems[i % baseItems.length]);
+    }
+    
+    return repeatedItems;
   }, [filtered]);
 
   // Category labels for ring
@@ -171,36 +182,40 @@ export default function Services() {
     <>
       {/* ═══ FILTER PANEL — slides from LEFT with staggered items ═══ */}
       <div
+        className="w-full sm:w-80 lg:w-96"
         style={{
           position: "fixed",
           left: 0,
           top: 0,
           height: "100vh",
-          width: 360,
           background: "#FFFFFF",
           borderRight: "1px solid #EEEEEE",
           zIndex: 100,
           transform: filterOpen ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
           overflowY: "auto",
-          padding: "32px 24px",
+          padding: "clamp(20px, 3vw, 32px) clamp(16px, 2vw, 24px)",
         }}
       >
-        <div className="flex items-center justify-between" style={{ marginBottom: 32 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: "clamp(24px, 3vw, 32px)" }}>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A" }}>Filter Services ({filtered.length})</div>
-            <button onClick={clearAll} className="cta-link" style={{ fontSize: 13, color: "#888888", marginTop: 4 }}>
-              Clear all
-            </button>
+            <div style={{ fontSize: "clamp(20px, 2.5vw, 24px)", fontWeight: 600, color: "#1A1A1A" }}>Filter Services ({filtered.length})</div>
+            <ParticleWrapper>
+              <button onClick={clearAll} className="cta-link" style={{ fontSize: "clamp(11px, 2vw, 13px)", color: "#888888", marginTop: "clamp(2px, 0.5vw, 4px)" }}>
+                Clear all
+              </button>
+            </ParticleWrapper>
           </div>
-          <button
-            onClick={() => setFilterOpen(false)}
-            style={{ fontSize: 24, color: "#1A1A1A", padding: 8, transition: "transform 0.3s ease" }}
-            onMouseEnter={e => e.currentTarget.style.transform = "rotate(90deg)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "rotate(0)"}
-          >
-            ×
-          </button>
+          <ParticleWrapper>
+            <button
+              onClick={() => setFilterOpen(false)}
+              style={{ fontSize: "clamp(20px, 4vw, 24px)", color: "#1A1A1A", padding: "clamp(6px, 1.5vw, 8px)", transition: "transform 0.3s ease", cursor: "none" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "rotate(90deg)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "rotate(0)"}
+            >
+              ×
+            </button>
+          </ParticleWrapper>
         </div>
 
         {[
@@ -210,38 +225,42 @@ export default function Services() {
           { key: "status", label: "STATUS", items: [{ label: "All", value: null as any }, ...statuses.map(s => ({ label: s, value: s }))], selected: selectedStatus, onSelect: setSelectedStatus },
         ].map((group) => (
           <div key={group.key} style={{ borderTop: "1px solid #EEEEEE" }}>
-            <button
-              onClick={() => setExpandedFilter(expandedFilter === group.key ? null : group.key)}
-              className="w-full flex items-center justify-between"
-              style={{ padding: "16px 0", fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}
-            >
-              {group.label}
-              <span style={{ fontSize: 16, transition: "transform 0.3s ease", transform: expandedFilter === group.key ? "rotate(45deg)" : "rotate(0)" }}>+</span>
-            </button>
+            <ParticleWrapper>
+              <button
+                onClick={() => setExpandedFilter(expandedFilter === group.key ? null : group.key)}
+                className="w-full flex items-center justify-between"
+                style={{ padding: "clamp(12px, 2vw, 16px) 0", fontSize: "clamp(10px, 1.8vw, 11px)", fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", cursor: "none" }}
+              >
+                {group.label}
+                <span style={{ fontSize: "clamp(14px, 2.5vw, 16px)", transition: "transform 0.3s ease", transform: expandedFilter === group.key ? "rotate(45deg)" : "rotate(0)" }}>+</span>
+              </button>
+            </ParticleWrapper>
             <div
               style={{
-                maxHeight: expandedFilter === group.key ? 600 : 0,
+                maxHeight: expandedFilter === group.key ? "clamp(400px, 80vh, 600px)" : 0,
                 overflow: "hidden",
                 transition: "max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             >
-              <div style={{ paddingBottom: 16 }}>
+              <div style={{ paddingBottom: "clamp(12px, 2vw, 16px)" }}>
                 {group.items.map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => group.onSelect(item.value)}
-                    className="block w-full text-left service-row-hover"
-                    style={{
-                      padding: "8px 0",
-                      fontSize: 14,
-                      fontWeight: group.selected === item.value ? 600 : 400,
-                      color: group.selected === item.value ? "#1A1A1A" : "#3A3A3A",
-                      transition: "all 0.3s ease",
-                    }}
-                  >
-                    {item.label}
-                    {group.selected === item.value && <span style={{ marginLeft: 8, fontSize: 11 }}>●</span>}
-                  </button>
+                  <ParticleWrapper key={i}>
+                    <button
+                      onClick={() => group.onSelect(item.value)}
+                      className="block w-full text-left service-row-hover"
+                      style={{
+                        padding: "clamp(6px, 1.5vw, 8px) 0",
+                        fontSize: "clamp(12px, 2.2vw, 14px)",
+                        fontWeight: group.selected === item.value ? 600 : 400,
+                        color: group.selected === item.value ? "#1A1A1A" : "#3A3A3A",
+                        transition: "all 0.3s ease",
+                        cursor: "none",
+                      }}
+                    >
+                      {item.label}
+                      {group.selected === item.value && <span style={{ marginLeft: "clamp(6px, 1.5vw, 8px)", fontSize: "clamp(10px, 1.8vw, 11px)" }}>●</span>}
+                    </button>
+                  </ParticleWrapper>
                 ))}
               </div>
             </div>
@@ -266,60 +285,91 @@ export default function Services() {
       {/* ═══ RING VIEW ═══ */}
       {viewMode === "ring" && (
         <div style={{ position: "relative" }}>
-          <div style={{ position: "fixed", top: 80, left: 24, zIndex: 60 }}>
-            <button
-              onClick={() => setFilterOpen(true)}
-              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", letterSpacing: "0.02em", background: "rgba(248,248,246,0.88)", backdropFilter: "blur(8px)", border: "1px solid rgba(17,19,23,0.12)", borderRadius: 20, padding: "6px 16px", cursor: "pointer" }}
-            >
-              Filter Services +
-            </button>
+          <div className="fixed top-12 sm:top-16 md:top-20 left-3 sm:left-4 md:left-6 lg:left-8 z-[60]">
+            <ParticleWrapper>
+              <button
+                onClick={() => setFilterOpen(true)}
+                className="font-medium text-[var(--ink)] tracking-[0.02em] bg-[rgba(248,248,246,0.88)] backdrop-blur-md border border-[rgba(17,19,23,0.12)] rounded-[20px]"
+                style={{ 
+                  fontSize: "clamp(10px, 2vw, 13px)",
+                  padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
+                  cursor: "none"
+                }}
+              >
+                Filter Services +
+              </button>
+            </ParticleWrapper>
           </div>
-          <div style={{ position: "fixed", top: 80, right: 24, zIndex: 60 }}>
-            <button
-              onClick={() => setViewMode("grid")}
-              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", letterSpacing: "0.02em", background: "rgba(248,248,246,0.88)", backdropFilter: "blur(8px)", border: "1px solid rgba(17,19,23,0.12)", borderRadius: 20, padding: "6px 16px", cursor: "pointer" }}
-            >
-              Grid view ⊞
-            </button>
+          <div className="fixed top-12 sm:top-16 md:top-20 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
+            <ParticleWrapper>
+              <button
+                onClick={() => setViewMode("grid")}
+                className="font-medium text-[var(--ink)] tracking-[0.02em] bg-[rgba(248,248,246,0.88)] backdrop-blur-md border border-[rgba(17,19,23,0.12)] rounded-[20px]"
+                style={{ 
+                  fontSize: "clamp(10px, 2vw, 13px)",
+                  padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
+                  cursor: "none"
+                }}
+              >
+                Grid view ⊞
+              </button>
+            </ParticleWrapper>
           </div>
-          <CircularGallery items={ringItems} categoryLabels={ringCategoryLabels} />
+          <ParticleWrapper>
+            <RotorGallery 
+              items={ringItems} 
+              gapPx={500}
+              speedSec={31}
+              camY={5}
+            />
+          </ParticleWrapper>
         </div>
       )}
 
       {/* ═══ GRID VIEW — Enhanced with TiltCard and stagger ═══ */}
       {viewMode === "grid" && (
-        <div style={{ paddingTop: 64 }}>
-          <div style={{ position: "fixed", top: 80, right: 24, zIndex: 60 }}>
-            <button
-              onClick={() => setViewMode("ring")}
-              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", letterSpacing: "0.02em", background: "rgba(248,248,246,0.88)", backdropFilter: "blur(8px)", border: "1px solid rgba(17,19,23,0.12)", borderRadius: 20, padding: "6px 16px", cursor: "pointer" }}
-            >
-              Ring view ○
-            </button>
+        <div className="pt-10 sm:pt-12 md:pt-16 lg:pt-20">
+          <div className="fixed top-12 sm:top-16 md:top-20 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
+            <ParticleWrapper>
+              <button
+                onClick={() => setViewMode("ring")}
+                className="font-medium text-[var(--ink)] tracking-[0.02em] bg-[rgba(248,248,246,0.88)] backdrop-blur-md border border-[rgba(17,19,23,0.12)] rounded-[20px]"
+                style={{ 
+                  fontSize: "clamp(10px, 2vw, 13px)",
+                  padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
+                  cursor: "none"
+                }}
+              >
+                Ring view ○
+              </button>
+            </ParticleWrapper>
           </div>
 
           <div className="section-padding">
             <div className="container">
               <div className="gsap-reveal">
                 <SectionLabel number="01" title="SERVICES" />
-                <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06}>
+                <TextReveal as="h1" style={{ fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06}>
                   Our services.
                 </TextReveal>
-                <p className="body-text" style={{ marginTop: 24, maxWidth: 640 }}>
+                <p className="body-text" style={{ marginTop: "clamp(16px, 2vw, 24px)", maxWidth: "min(640px, 100%)" }}>
                   9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
                 </p>
               </div>
 
-              <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: 24 }}>
-                Filter Services +
-              </button>
+              <ParticleWrapper>
+                <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: "clamp(16px, 3vw, 24px)", fontSize: "clamp(12px, 2.2vw, 14px)" }}>
+                  Filter Services +
+                </button>
+              </ParticleWrapper>
 
               {/* Service Cards Grid — 3 cols, TiltCard hover, image zoom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: 64 }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: "clamp(40px, 6vw, 64px)" }}>
                 {filtered.map((service, i) => (
-                  <TiltCard key={service.id} maxTilt={5} scale={1.01}>
-                    <Link href={`/services/${service.slug}`} className="block group">
-                      <div className="img-hover-zoom" style={{ height: 280, overflow: "hidden" }}>
+                  <ParticleWrapper key={service.id}>
+                    <TiltCard maxTilt={5} scale={1.01}>
+                      <Link href={`/services/${service.slug}`} className="block group">
+                      <div className="img-hover-zoom" style={{ height: "clamp(240px, 30vw, 280px)", overflow: "hidden" }}>
                         <img
                           src={getServiceImage(service, i)}
                           alt={service.name}
@@ -327,21 +377,24 @@ export default function Services() {
                           loading="lazy"
                         />
                       </div>
-                      <div style={{ padding: "16px 0 4px" }}>
-                        <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">
+                      <div style={{ padding: "clamp(12px, 1.5vw, 16px) 0 clamp(2px, 0.5vw, 4px)" }}>
+                        <div style={{ fontSize: "clamp(16px, 2vw, 18px)", fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">
                           {service.name}
                         </div>
-                        <div style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{service.category}</div>
+                        <div style={{ fontSize: "clamp(11px, 1.2vw, 12px)", fontWeight: 400, color: "#888888" }}>{service.category}</div>
                       </div>
                     </Link>
-                  </TiltCard>
+                    </TiltCard>
+                  </ParticleWrapper>
                 ))}
               </div>
 
               {filtered.length === 0 && (
-                <div style={{ textAlign: "center", padding: "80px 0" }}>
-                  <p style={{ fontSize: 16, color: "#888888" }}>No services match your filters.</p>
-                  <button onClick={clearAll} className="cta-link" style={{ marginTop: 16 }}>Clear all filters +</button>
+                <div style={{ textAlign: "center", padding: "clamp(40px, 10vw, 80px) 0" }}>
+                  <p style={{ fontSize: "clamp(14px, 2.5vw, 16px)", color: "#888888" }}>No services match your filters.</p>
+                  <ParticleWrapper>
+                    <button onClick={clearAll} className="cta-link" style={{ marginTop: "clamp(12px, 2vw, 16px)", fontSize: "clamp(12px, 2.2vw, 14px)" }}>Clear all filters +</button>
+                  </ParticleWrapper>
                 </div>
               )}
             </div>

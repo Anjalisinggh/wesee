@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import ParticleHero from "@/components/ParticleHero";
 import StaggerReveal from "@/components/StaggerReveal";
+import HoverParticles from "@/components/HoverParticles";
+import ParticleWrapper from "@/components/ParticleWrapper";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -9,13 +11,13 @@ gsap.registerPlugin(ScrollTrigger);
 
 /* ─── Dynamic hero words ──────────────────────────────────────── */
 const HERO_WORDS = [
-  "intelligent",
-  "automated",
-  "revenue-driven",
-  "scalable",
-  "AI-powered",
-  "high-converting",
-  "future-ready",
+  "growth",
+  "revenue",
+  "operations",
+  "customers",
+  "automation",
+  "efficiency",
+  "next level",
   "unstoppable",
 ];
 
@@ -41,25 +43,25 @@ const clients = [
 
 const stats = [
   { display: "35+", label: "Projects Delivered", sub: "End-to-end AI systems shipped" },
-  { display: "80+", label: "Automations Deployed", sub: "Workflows running 24/7" },
+  { display: "100+", label: "Automations Deployed", sub: "Workflows running 24/7" },
   { display: "15K+", label: "Hours Saved Monthly", sub: "Manual work eliminated" },
-  { display: "12+", label: "AI Specialists", sub: "Engineers & strategists" },
+  { display: "50+", label: "Efficiency Increase", sub: "Productivity improvements across clients." },
 ];
 
 const features = [
-  { icon: "◆", title: "AI Agents", desc: "Conversational agents that talk, think, and act — fully integrated into your stack." },
-  { icon: "⟲", title: "Workflow Automation", desc: "End-to-end process automation that eliminates manual work at any scale." },
-  { icon: "◎", title: "Growth Systems", desc: "Performance marketing, SEO, and revenue operations working as one engine." },
-  { icon: "⬡", title: "Infrastructure", desc: "The cloud, data, and operational backbone that modern businesses run on." },
+  { icon: "◆", title: "AI Agents", desc: "Intelligent AI agents that understand requests, make decisions, and take actions across your business systems." },
+  { icon: "⟲", title: "Workflow Automation", desc: "End to end automation that removes manual work, connects your tools, and keeps operations running around the clock." },
+  { icon: "◎", title: "Growth Systems", desc: "Data driven marketing and revenue systems designed to attract customers, convert demand, and scale growth." },
+  { icon: "⬡", title: "Infrastructure", desc: "Reliable cloud, data, and system architecture that supports your business operations and keeps everything running smoothly." },
 ];
 
 const workImages = [
-  { src: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&q=80", h: 220, label: "AI Infrastructure" },
-  { src: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80", h: 160, label: "Workspace" },
-  { src: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80", h: 160, label: "Operations" },
-  { src: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=800&q=80", h: 220, label: "Tech Systems" },
-  { src: "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80", h: 190, label: "Team at Work" },
-  { src: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&q=80", h: 190, label: "Cloud Scale" },
+  { src: "https://plus.unsplash.com/premium_photo-1676637656166-cb7b3a43b81a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YWklMjB0ZWNobm9sb2d5fGVufDB8fDB8fHww", h: 220, label: "AI Infrastructure" },
+  { src: "https://plus.unsplash.com/premium_photo-1721936170663-dde917b6e7d7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fG1vZGVybiUyMHdvcmtzcGFjZXxlbnwwfHwwfHx8MA%3D%3D", h: 160, label: "Workspace" },
+  { src: "https://images.unsplash.com/photo-1655393001768-d946c97d6fd1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZnV0dXJpc3RpYyUyMHRlY2hub2xvZ3l8ZW58MHx8MHx8fDA%3D", h: 160, label: "Operations" },
+  { src: "https://plus.unsplash.com/premium_photo-1677094310947-c8ffdc3d3355?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGJ1c2luZXNzJTIwYXV0b21hdGlvbnxlbnwwfHwwfHx8MA%3D%3D", h: 220, label: "Tech Systems" },
+  { src: "https://plus.unsplash.com/premium_photo-1682309712356-bf909c90c02d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGVyZm9ybWFuY2UlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D", h: 190, label: "Team at Work" },
+  { src: "https://media.istockphoto.com/id/1335891887/photo/server-room.webp?a=1&b=1&s=612x612&w=0&k=20&c=wYyLnSxs17lh8sEsyvAO2xBl7AKr6LO33oZMHTmmDT4=", h: 190, label: "Cloud Scale" },
 ];
 
 /* ─── Component ───────────────────────────────────────────────── */
@@ -163,12 +165,12 @@ export default function Home() {
               background: "rgba(201,168,76,0.15)",
               fontSize: 10, color: "var(--accent)",
             }}>✦</span>
-            India's leading AI Automation Agency
+         AI Agents That Work For You 24/7
           </div>
 
-          {/* Hero headline — 2 lines: "We build [word]" / "systems." */}
+          {/* Hero headline — responsive single line */}
           <h1
-            className="fade-up"
+            className="fade-up hero-headline-responsive"
             style={{
               margin: 0,
               fontSize: "clamp(52px, 7.5vw, 102px)",
@@ -179,9 +181,9 @@ export default function Home() {
               animationDelay: "0.18s",
             }}
           >
-            {/* "We build [word]" locked on one line */}
-            <span style={{ display: "block", whiteSpace: "nowrap" }}>
-              We build{" "}
+            {/* "WeSee your [word] systems." all on one line */}
+            <span className="hero-text-line">
+              WeSee your {" "}
               {/* Dynamic animated word — no overflow:hidden so gold text is never clipped */}
               <span style={{ display: "inline-block", position: "relative", verticalAlign: "bottom" }}>
                 <style>{`
@@ -208,6 +210,21 @@ export default function Home() {
                     padding-bottom: 0.05em;
                     margin-right: -0.2em;
                   }
+                  .hero-headline-responsive {
+                    white-space: normal;
+                  }
+                  .hero-text-line {
+                    display: inline;
+                    white-space: normal;
+                  }
+                  @media (min-width: 768px) {
+                    .hero-headline-responsive {
+                      white-space: nowrap;
+                    }
+                    .hero-text-line {
+                      white-space: nowrap;
+                    }
+                  }
                 `}</style>
                 <span
                   key={wordIndex}
@@ -216,9 +233,8 @@ export default function Home() {
                   {HERO_WORDS[wordIndex]}
                 </span>
               </span>
+              {" "}systems.
             </span>
-            {/* "systems." always on its own second line */}
-            <span style={{ display: "block" }}>systems.</span>
           </h1>
 
           {/* Subheadline */}
@@ -234,9 +250,7 @@ export default function Home() {
               animationDelay: "0.27s",
             }}
           >
-            A cross-functional team of AI specialists, developers, and growth
-            strategists — building automation systems that drive revenue and
-            scale effortlessly.
+           A team of AI engineers, developers, and growth strategists building intelligent systems that automate operations, increase conversions, and scale businesses.
           </p>
 
           {/* CTA row */}
@@ -248,56 +262,60 @@ export default function Home() {
               animationDelay: "0.35s",
             }}
           >
-            <a
-              href="https://cal.com/wesee/discovery"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
+            <ParticleWrapper>
+              <a
+                href="https://cal.com/wesee/discovery"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "13px 26px",
+                  background: "var(--ink)",
+                  color: "#fff",
+                  fontSize: 13.5, fontWeight: 500,
+                  borderRadius: 999, border: "none",
+                  textDecoration: "none",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  cursor: "none",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(17,19,23,0.25)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                }}
+              >
+                Book a Discovery Call
+                <span style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
+              </a>
+            </ParticleWrapper>
+            <ParticleWrapper>
+              <Link href="/services" style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "13px 26px",
-                background: "var(--ink)",
-                color: "#fff",
-                fontSize: 13.5, fontWeight: 500,
-                borderRadius: 999, border: "none",
+                padding: "12px 22px",
+                background: "rgba(255,255,255,0.80)",
+                backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+                color: "var(--ink)",
+                fontSize: 13.5, fontWeight: 450,
+                borderRadius: 999, border: "1px solid rgba(17,19,23,0.11)",
                 textDecoration: "none",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                transition: "background 0.3s ease, border-color 0.3s ease, transform 0.3s ease",
                 cursor: "none",
               }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(17,19,23,0.25)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "none";
-              }}
-            >
-              Book a Discovery Call
-              <span style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
-            </a>
-            <Link href="/services" style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              padding: "12px 22px",
-              background: "rgba(255,255,255,0.80)",
-              backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-              color: "var(--ink)",
-              fontSize: 13.5, fontWeight: 450,
-              borderRadius: 999, border: "1px solid rgba(17,19,23,0.11)",
-              textDecoration: "none",
-              transition: "background 0.3s ease, border-color 0.3s ease, transform 0.3s ease",
-              cursor: "none",
-            }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.95)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.80)";
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-              }}
-            >
-              Explore Services
-            </Link>
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.95)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.80)";
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                }}
+              >
+                Explore Services
+              </Link>
+            </ParticleWrapper>
           </div>
 
           {/* Mini stat row */}
@@ -311,7 +329,7 @@ export default function Home() {
           >
             {[
               { val: "35+", label: "Projects" },
-              { val: "80+", label: "Automations" },
+              { val: "100+", label: "Automations" },
               { val: "15K+", label: "Hours Saved / Month" },
             ].map((s) => (
               <div key={s.label} style={{
@@ -322,7 +340,8 @@ export default function Home() {
                 border: "1px solid rgba(255,255,255,0.90)",
                 borderRadius: 16,
                 boxShadow: "0 2px 16px rgba(17,19,23,0.06)",
-                minWidth: 110,
+                width: 150,
+                height: 80,
               }}>
                 <span style={{ fontSize: 22, fontWeight: 650, color: "var(--ink)", letterSpacing: "-0.045em", lineHeight: 1 }}>
                   {s.val}
@@ -368,7 +387,16 @@ export default function Home() {
             gap: 14,
           }}>
             {features.map((f, i) => (
-              <div key={i} className="sr feature-card" style={{ "--delay": `${i * 60}ms` } as React.CSSProperties}>
+              <div 
+                key={i} 
+                className="sr feature-card" 
+                style={{ 
+                  "--delay": `${i * 60}ms`,
+                  position: "relative",
+                  overflow: "hidden",
+                } as React.CSSProperties}
+              >
+                <HoverParticles />
                 {/* Icon */}
                 <div style={{
                   width: 46, height: 46,
@@ -379,6 +407,8 @@ export default function Home() {
                   fontSize: 18, color: "var(--accent)",
                   marginBottom: 22,
                   flexShrink: 0,
+                  position: "relative",
+                  zIndex: 2,
                 }}>
                   {f.icon}
                 </div>
@@ -386,10 +416,19 @@ export default function Home() {
                   fontSize: 17, fontWeight: 580,
                   color: "var(--ink)", letterSpacing: "-0.025em",
                   marginBottom: 10, lineHeight: 1.2,
+                  position: "relative",
+                  zIndex: 2,
                 }}>
                   {f.title}
                 </h3>
-                <p style={{ fontSize: 14, color: "rgba(17,19,23,0.48)", lineHeight: 1.72, margin: 0 }}>
+                <p style={{ 
+                  fontSize: 14, 
+                  color: "rgba(17,19,23,0.48)", 
+                  lineHeight: 1.72, 
+                  margin: 0,
+                  position: "relative",
+                  zIndex: 2,
+                }}>
                   {f.desc}
                 </p>
               </div>
@@ -401,8 +440,8 @@ export default function Home() {
       {/* ══════════════════════════ OUR WORK ══════════════════════════ */}
       <section className="section-pad" style={{ background: "var(--paper)" }}>
         <div className="container">
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "start" }} className="max-lg:grid-cols-1">
+          <div className="flex flex-col gap-0">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-start">
               {/* Text col */}
               <div>
                 <div className="section-label sr">Our Work</div>
@@ -413,40 +452,28 @@ export default function Home() {
                   We build AI that works<em style={{ fontWeight: 300, fontStyle: "italic", color: "rgba(17,19,23,0.45)" }}>.</em>
                 </h2>
                 <p className="sr" style={{ fontSize: 15, color: "rgba(17,19,23,0.50)", lineHeight: 1.8, marginTop: 20 }}>
-                  Our work focuses on the most critical functions in today's businesses — sales automation, AI-powered customer engagement, and end-to-end workflow intelligence.
+                  Our work focuses on the most critical functions in today's businesses sales automation, AI-powered customer engagement, and end-to-end workflow intelligence.
                 </p>
                 <p className="sr" style={{ fontSize: 15, color: "rgba(17,19,23,0.50)", lineHeight: 1.8, marginTop: 14 }}>
-                  We design solutions that place the business outcome at centre stage — building AI agents and automated pipelines that drive revenue, reduce cost, and scale effortlessly.
+                  We design solutions that place the business outcome at centre stage  building AI agents and automated pipelines that drive revenue, reduce cost, and scale effortlessly.
                 </p>
-                <Link href="/services" className="sr" style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  marginTop: 32, fontSize: 13.5, fontWeight: 500,
-                  color: "var(--ink)", textDecoration: "none",
-                  borderBottom: "1px solid rgba(17,19,23,0.20)",
-                  paddingBottom: 2,
-                  transition: "border-color 0.3s ease",
-                }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "var(--ink)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(17,19,23,0.20)"; }}
-                >
-                  View all services →
-                </Link>
+                <ParticleWrapper>
+                  <Link href="/services" className="sr inline-flex items-center gap-1.5 mt-8 text-[13.5px] font-medium text-[var(--ink)] no-underline border-b border-[rgba(17,19,23,0.20)] pb-0.5 transition-[border-color] duration-300 ease-in-out hover:border-[var(--ink)]"
+                  >
+                    View all services →
+                  </Link>
+                </ParticleWrapper>
 
                 {/* Vertical stats */}
-                <div style={{ marginTop: 52, display: "flex", flexDirection: "column", gap: 0 }}>
+                <div className="flex flex-col gap-0 mt-[52px]">
                   {stats.map((s, i) => (
-                    <div key={i} className="sr" style={{
-                      display: "flex", alignItems: "center", gap: 20,
-                      padding: "18px 0",
-                      borderTop: "1px solid rgba(17,19,23,0.08)",
-                      borderBottom: i === stats.length - 1 ? "1px solid rgba(17,19,23,0.08)" : "none",
-                    }}>
-                      <span style={{ fontSize: "clamp(28px, 3vw, 40px)", fontWeight: 650, color: "var(--accent)", letterSpacing: "-0.05em", lineHeight: 1, minWidth: 80 }}>
+                    <div key={i} className={`sr flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 py-[18px] border-t border-[rgba(17,19,23,0.08)] ${i === stats.length - 1 ? 'border-b border-[rgba(17,19,23,0.08)]' : ''}`}>
+                      <span className="text-[clamp(28px,3vw,40px)] font-[650] text-[var(--accent)] leading-none sm:min-w-[80px]" style={{ letterSpacing: "-0.05em" }}>
                         {s.display}
                       </span>
                       <div>
-                        <div style={{ fontSize: 14, fontWeight: 520, color: "var(--ink)", letterSpacing: "-0.02em" }}>{s.label}</div>
-                        <div style={{ fontSize: 12, color: "rgba(17,19,23,0.35)", marginTop: 2 }}>{s.sub}</div>
+                        <div className="text-sm font-[520] text-[var(--ink)]" style={{ fontSize: 14, letterSpacing: "-0.02em" }}>{s.label}</div>
+                        <div className="text-xs text-[rgba(17,19,23,0.35)] mt-0.5" style={{ fontSize: 12 }}>{s.sub}</div>
                       </div>
                     </div>
                   ))}
@@ -456,19 +483,14 @@ export default function Home() {
               {/* Image mosaic */}
               <div>
                 <StaggerReveal stagger={0.07} y={20}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {workImages.map((img, i) => (
-                      <div key={i} style={{
-                        overflow: "hidden", borderRadius: 16, height: img.h,
-                        background: "#E8E8E5",
-                      }}>
+                      <div key={i} className="overflow-hidden rounded-2xl bg-[#E8E8E5]" style={{ height: img.h, borderRadius: 16 }}>
                         <img
                           src={img.src}
                           alt={img.label}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.9s cubic-bezier(0.16,1,0.3,1)" }}
+                          className="w-full h-full object-cover block transition-transform duration-[0.9s] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105"
                           loading="lazy"
-                          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.05)"; }}
-                          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
                         />
                       </div>
                     ))}
@@ -521,6 +543,10 @@ export default function Home() {
                 background: "linear-gradient(110deg, #9C7A1E 0%, #C9A84C 45%, #E8C870 100%)",
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
+                display: "inline-block",
+                paddingRight: "0.2em",
+                paddingBottom: "0.05em",
+                marginRight: "-0.2em",
               }}>
                 signal
               </em>{" "}
@@ -530,17 +556,17 @@ export default function Home() {
               fontSize: 16, color: "rgba(255,255,255,0.38)",
               lineHeight: 1.82, marginTop: 26,
             }}>
-              At WeSee, every engagement begins with finding the signal — the unique automation opportunity hidden within every client's operations. It requires deep discovery, rigorous analysis, and bold thinking to uncover. Our job is to find it, amplify it, and build intelligent systems around it.
+              At WeSee, every engagement begins with finding the signal the unique automation opportunity hidden within every client's operations. It requires deep discovery, rigorous analysis, and bold thinking to uncover. Our job is to find it, amplify it, and build intelligent systems around it.
             </p>
           </div>
 
           {/* 4-step process grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {[
-              { num: "01", title: "Discover & Audit", body: "Map workflows, identify bottlenecks, find the highest-leverage automation opportunities." },
-              { num: "02", title: "Design & Build", body: "Our AI engineers craft precise, scalable systems — custom-built, not out-of-the-box." },
-              { num: "03", title: "Deploy & Scale", body: "Launch, monitor, and continuously improve — from first automation to enterprise scale." },
-              { num: "04", title: "Owned Results", body: "You own every workflow, agent, and dataset. No vendor lock-in, ever." },
+              { num: "01", title: "Discover & Audit", body: "Map workflows, identify bottlenecks, find the highest leverage automation opportunities." },
+              { num: "02", title: "Design & Build", body: "Our AI engineers craft precise, scalable systems custom-built, not out-of-the-box." },
+              { num: "03", title: "Deploy & Scale", body: "Launch, monitor, and continuously improve from first automation to enterprise scale." },
+              { num: "04", title: "Owned Results", body: "You own every workflow, agent, and dataset. No vendor lock in, ever." },
             ].map((step, i) => (
               <div key={i} className="sr" style={{
                 padding: "28px 26px",
@@ -579,46 +605,49 @@ export default function Home() {
                 fontSize: "clamp(28px, 3.5vw, 48px)", fontWeight: 450,
                 letterSpacing: "-0.03em", marginTop: 10, lineHeight: 1.1,
               }}>
-                9 categories of expertise.
+               Built for Growth. Powered by AI. Driven by Automation.
               </h2>
             </div>
-            <Link href="/services" className="sr" style={{
-              fontSize: 13, fontWeight: 500, color: "rgba(17,19,23,0.48)",
-              textDecoration: "none",
-              borderBottom: "1px solid rgba(17,19,23,0.15)", paddingBottom: 2,
-              transition: "color 0.25s ease",
-            }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--ink)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.48)"; }}
-            >
-              View all →
-            </Link>
+            <ParticleWrapper>
+              <Link href="/services" className="sr" style={{
+                fontSize: 13, fontWeight: 500, color: "rgba(17,19,23,0.48)",
+                textDecoration: "none",
+                borderBottom: "1px solid rgba(17,19,23,0.15)", paddingBottom: 2,
+                transition: "color 0.25s ease",
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--ink)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.48)"; }}
+              >
+                View all →
+              </Link>
+            </ParticleWrapper>
           </div>
 
           {services.map((svc, i) => (
-            <Link key={i} href={svc.href} className="sr" style={{
-              display: "flex", alignItems: "flex-start",
-              gap: 20, padding: "20px 0",
-              borderTop: "1px solid rgba(17,19,23,0.08)",
-              borderBottom: i === services.length - 1 ? "1px solid rgba(17,19,23,0.08)" : "none",
-              cursor: "pointer",
-              position: "relative",
-              transition: "padding-left 0.4s cubic-bezier(0.16,1,0.3,1)",
-              textDecoration: "none",
-            }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.paddingLeft = "12px";
-                const arrow = el.querySelector(".svc-arrow") as HTMLElement;
-                if (arrow) { arrow.style.transform = "translateX(4px)"; arrow.style.color = "var(--ink)"; }
+            <ParticleWrapper key={i}>
+              <Link href={svc.href} className="sr" style={{
+                display: "flex", alignItems: "flex-start",
+                gap: 20, padding: "20px 0",
+                borderTop: "1px solid rgba(17,19,23,0.08)",
+                borderBottom: i === services.length - 1 ? "1px solid rgba(17,19,23,0.08)" : "none",
+                cursor: "pointer",
+                position: "relative",
+                transition: "padding-left 0.4s cubic-bezier(0.16,1,0.3,1)",
+                textDecoration: "none",
               }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.paddingLeft = "0px";
-                const arrow = el.querySelector(".svc-arrow") as HTMLElement;
-                if (arrow) { arrow.style.transform = "translateX(0)"; arrow.style.color = "rgba(17,19,23,0.20)"; }
-              }}
-            >
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.paddingLeft = "12px";
+                  const arrow = el.querySelector(".svc-arrow") as HTMLElement;
+                  if (arrow) { arrow.style.transform = "translateX(4px)"; arrow.style.color = "var(--ink)"; }
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLElement;
+                  el.style.paddingLeft = "0px";
+                  const arrow = el.querySelector(".svc-arrow") as HTMLElement;
+                  if (arrow) { arrow.style.transform = "translateX(0)"; arrow.style.color = "rgba(17,19,23,0.20)"; }
+                }}
+              >
               <span style={{ fontSize: 10, fontWeight: 650, color: "var(--accent)", letterSpacing: "0.12em", paddingTop: 3.5, flexShrink: 0, width: 22 }}>
                 {svc.num}
               </span>
@@ -636,7 +665,8 @@ export default function Home() {
                 transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), color 0.25s ease",
                 display: "block",
               }}>→</span>
-            </Link>
+              </Link>
+            </ParticleWrapper>
           ))}
         </div>
       </section>
@@ -737,53 +767,57 @@ export default function Home() {
           </p>
 
           <div className="sr" style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 44, flexWrap: "wrap" }}>
-            <a
-              href="https://cal.com/wesee/discovery"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "14px 28px",
-                background: "#FFFFFF", color: "var(--ink)",
-                fontSize: 14, fontWeight: 500,
-                borderRadius: 999, border: "none",
-                textDecoration: "none", cursor: "none",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.4)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "none";
-              }}
-            >
-              Book a Discovery Call <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
-            </a>
-            <a
-              href="mailto:hello@wesee.in"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "13px 24px",
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.14)",
-                color: "rgba(255,255,255,0.60)",
-                fontSize: 14, fontWeight: 450,
-                borderRadius: 999, textDecoration: "none", cursor: "none",
-                transition: "background 0.3s ease, color 0.3s ease",
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.10)";
-                (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.90)";
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
-                (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.60)";
-              }}
-            >
-              hello@wesee.in
-            </a>
+            <ParticleWrapper>
+              <a
+                href="https://cal.com/wesee/discovery"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "14px 28px",
+                  background: "#FFFFFF", color: "var(--ink)",
+                  fontSize: 14, fontWeight: 500,
+                  borderRadius: 999, border: "none",
+                  textDecoration: "none", cursor: "none",
+                  transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.4)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                }}
+              >
+                Book a Discovery Call <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
+              </a>
+            </ParticleWrapper>
+            <ParticleWrapper>
+              <a
+                href="mailto:hello@wesee.in"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "13px 24px",
+                  background: "rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  color: "rgba(255,255,255,0.60)",
+                  fontSize: 14, fontWeight: 450,
+                  borderRadius: 999, textDecoration: "none", cursor: "none",
+                  transition: "background 0.3s ease, color 0.3s ease",
+                }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.10)";
+                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.90)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)";
+                  (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.60)";
+                }}
+              >
+                hello@wesee.in
+              </a>
+            </ParticleWrapper>
           </div>
         </div>
       </section>

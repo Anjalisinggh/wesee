@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
+import ParticleWrapper from "./ParticleWrapper";
 
 const navItems = [
   { label: "Services", href: "/services" },
@@ -92,26 +93,27 @@ export default function Header() {
               {navItems.map((item) => {
                 const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    style={{
-                      padding: "6px 13px",
-                      borderRadius: 999,
-                      fontSize: 13,
-                      fontWeight: isActive ? 550 : 400,
-                      color: isActive ? "var(--ink)" : "rgba(17,19,23,0.48)",
-                      textDecoration: "none",
-                      transition: "color 0.22s ease, background 0.22s ease",
-                      background: isActive ? "rgba(17,19,23,0.07)" : "transparent",
-                      letterSpacing: "0.003em",
-                      whiteSpace: "nowrap",
-                    }}
-                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--ink)"; }}
-                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.48)"; }}
-                  >
-                    {item.label}
-                  </Link>
+                  <ParticleWrapper key={item.href} style={{ display: "inline-block" }}>
+                    <Link
+                      href={item.href}
+                      style={{
+                        padding: "6px 13px",
+                        borderRadius: 999,
+                        fontSize: 13,
+                        fontWeight: isActive ? 550 : 400,
+                        color: isActive ? "var(--ink)" : "rgba(17,19,23,0.48)",
+                        textDecoration: "none",
+                        transition: "color 0.22s ease, background 0.22s ease",
+                        background: isActive ? "rgba(17,19,23,0.07)" : "transparent",
+                        letterSpacing: "0.003em",
+                        whiteSpace: "nowrap",
+                      }}
+                      onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "var(--ink)"; }}
+                      onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.48)"; }}
+                    >
+                      {item.label}
+                    </Link>
+                  </ParticleWrapper>
                 );
               })}
             </nav>
@@ -121,33 +123,35 @@ export default function Header() {
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, zIndex: 2 }}>
             {/* Book a Call — desktop only */}
             {isDesktop && (
-              <a
-                href="https://cal.com/wesee/discovery"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  padding: "8px 18px",
-                  background: "var(--ink)",
-                  color: "#fff",
-                  fontSize: 13, fontWeight: 500, letterSpacing: "0.005em",
-                  borderRadius: 999,
-                  border: "1.5px solid var(--ink)",
-                  textDecoration: "none",
-                  transition: "background 0.25s ease, transform 0.25s ease",
-                  whiteSpace: "nowrap",
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.background = "#2a2d33";
-                  (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.background = "var(--ink)";
-                  (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
-                }}
-              >
-                Book a Call <span style={{ fontSize: 11, opacity: 0.75 }}>↗</span>
-              </a>
+              <ParticleWrapper>
+                <a
+                  href="https://cal.com/wesee/discovery"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    padding: "8px 18px",
+                    background: "var(--ink)",
+                    color: "#fff",
+                    fontSize: 13, fontWeight: 500, letterSpacing: "0.005em",
+                    borderRadius: 999,
+                    border: "1.5px solid var(--ink)",
+                    textDecoration: "none",
+                    transition: "background 0.25s ease, transform 0.25s ease",
+                    whiteSpace: "nowrap",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.background = "#2a2d33";
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.background = "var(--ink)";
+                    (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                  }}
+                >
+                  Book a Call <span style={{ fontSize: 11, opacity: 0.75 }}>↗</span>
+                </a>
+              </ParticleWrapper>
             )}
 
             {/* Hamburger — mobile only */}
@@ -227,28 +231,29 @@ export default function Header() {
 
           <nav style={{ width: "100%" }}>
             {navItems.map((item, i) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: "block",
-                  fontSize: "clamp(32px, 8vw, 52px)",
-                  fontWeight: 400,
-                  letterSpacing: "-0.035em",
-                  color: location === item.href ? "var(--ink)" : "rgba(17,19,23,0.28)",
-                  padding: "9px 0",
-                  opacity: open ? 1 : 0,
-                  transform: open ? "translateX(0)" : "translateX(-20px)",
-                  transition: `opacity 0.45s ease ${i * 45}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 45}ms, color 0.25s ease`,
-                  textDecoration: "none",
-                }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
-                onMouseLeave={e => {
-                  if (location !== item.href) (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.28)";
-                }}
-              >
-                {item.label}
-              </Link>
+              <ParticleWrapper key={item.href}>
+                <Link
+                  href={item.href}
+                  style={{
+                    display: "block",
+                    fontSize: "clamp(32px, 8vw, 52px)",
+                    fontWeight: 400,
+                    letterSpacing: "-0.035em",
+                    color: location === item.href ? "var(--ink)" : "rgba(17,19,23,0.28)",
+                    padding: "9px 0",
+                    opacity: open ? 1 : 0,
+                    transform: open ? "translateX(0)" : "translateX(-20px)",
+                    transition: `opacity 0.45s ease ${i * 45}ms, transform 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 45}ms, color 0.25s ease`,
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
+                  onMouseLeave={e => {
+                    if (location !== item.href) (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.28)";
+                  }}
+                >
+                  {item.label}
+                </Link>
+              </ParticleWrapper>
             ))}
           </nav>
 
@@ -258,20 +263,22 @@ export default function Header() {
             transform: open ? "translateY(0)" : "translateY(10px)",
             transition: "opacity 0.5s ease 0.3s, transform 0.5s cubic-bezier(0.16,1,0.3,1) 0.3s",
           }}>
-            <a
-              href="https://cal.com/wesee/discovery"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "14px 28px",
-                background: "var(--ink)", color: "#fff",
-                fontSize: 14, fontWeight: 500, borderRadius: 999,
-                textDecoration: "none",
-              }}
-            >
-              Book a Discovery Call ↗
-            </a>
+            <ParticleWrapper>
+              <a
+                href="https://cal.com/wesee/discovery"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  padding: "14px 28px",
+                  background: "var(--ink)", color: "#fff",
+                  fontSize: 14, fontWeight: 500, borderRadius: 999,
+                  textDecoration: "none",
+                }}
+              >
+                Book a Discovery Call ↗
+              </a>
+            </ParticleWrapper>
             <p style={{ fontSize: 13, color: "rgba(17,19,23,0.30)", marginTop: 20, letterSpacing: "0.02em" }}>
               hello@wesee.in
             </p>

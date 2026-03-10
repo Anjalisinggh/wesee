@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import ParticleWrapper from "./ParticleWrapper";
 
 const serviceLinks = [
   { label: "AI Agents", href: "/services?category=1" },
@@ -61,30 +62,34 @@ export default function Footer() {
             </h2>
 
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <a
-                href="https://cal.com/wesee/discovery"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn-primary shine-on-hover"
-                style={{
-                  background: "#FFFFFF",
-                  color: "var(--ink)",
-                  border: "1.5px solid #FFFFFF",
-                  padding: "13px 28px",
-                  fontSize: 14,
+              <ParticleWrapper>
+                <a
+                  href="https://cal.com/wesee/discovery"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary shine-on-hover"
+                  style={{
+                    background: "#FFFFFF",
+                    color: "var(--ink)",
+                    border: "1.5px solid #FFFFFF",
+                    padding: "13px 28px",
+                    fontSize: 14,
+                  }}
+                >
+                  Book Discovery Call ↗
+                </a>
+              </ParticleWrapper>
+              <ParticleWrapper>
+                <a href="mailto:hello@wesee.in" style={{
+                  fontSize: 14, color: "rgba(255,255,255,0.35)",
+                  transition: "color 0.3s ease", textDecoration: "none",
                 }}
-              >
-                Book Discovery Call ↗
-              </a>
-              <a href="mailto:hello@wesee.in" style={{
-                fontSize: 14, color: "rgba(255,255,255,0.35)",
-                transition: "color 0.3s ease", textDecoration: "none",
-              }}
-                onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
-                onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
-              >
-                hello@wesee.in
-              </a>
+                  onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
+                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
+                >
+                  hello@wesee.in
+                </a>
+              </ParticleWrapper>
             </div>
           </div>
         </div>
@@ -106,13 +111,15 @@ export default function Footer() {
             </p>
             <div style={{ display: "flex", gap: 16, marginTop: 20 }}>
               {socials.map(s => (
-                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                  style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", transition: "color 0.3s ease", textDecoration: "none" }}
-                  onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
-                  onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
-                >
-                  {s.label}
-                </a>
+                <ParticleWrapper key={s.label}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", transition: "color 0.3s ease", textDecoration: "none" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "var(--accent)")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.25)")}
+                  >
+                    {s.label}
+                  </a>
+                </ParticleWrapper>
               ))}
             </div>
           </div>
@@ -125,14 +132,16 @@ export default function Footer() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
               {serviceLinks.map(l => (
                 <li key={l.label}>
-                  <Link href={l.href} style={{
-                    fontSize: 14, color: "rgba(255,255,255,0.35)", transition: "color 0.3s ease", textDecoration: "none",
-                  }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.9)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)"; }}
-                  >
-                    {l.label}
-                  </Link>
+                  <ParticleWrapper>
+                    <Link href={l.href} style={{
+                      fontSize: 14, color: "rgba(255,255,255,0.35)", transition: "color 0.3s ease", textDecoration: "none",
+                    }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.9)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)"; }}
+                    >
+                      {l.label}
+                    </Link>
+                  </ParticleWrapper>
                 </li>
               ))}
             </ul>
@@ -146,14 +155,16 @@ export default function Footer() {
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 10 }}>
               {companyLinks.map(l => (
                 <li key={l.label}>
-                  <Link href={l.href} style={{
-                    fontSize: 14, color: "rgba(255,255,255,0.35)", transition: "color 0.3s ease", textDecoration: "none",
-                  }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.9)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)"; }}
-                  >
-                    {l.label}
-                  </Link>
+                  <ParticleWrapper>
+                    <Link href={l.href} style={{
+                      fontSize: 14, color: "rgba(255,255,255,0.35)", transition: "color 0.3s ease", textDecoration: "none",
+                    }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.9)"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.35)"; }}
+                    >
+                      {l.label}
+                    </Link>
+                  </ParticleWrapper>
                 </li>
               ))}
             </ul>
