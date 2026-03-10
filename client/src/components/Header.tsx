@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
+import { TrendingUp } from "lucide-react";
 import ParticleWrapper from "./ParticleWrapper";
 
 const navItems = [
@@ -11,32 +12,121 @@ const navItems = [
   { label: "Contact", href: "/contact", hasDropdown: false },
 ];
 
-// 5 pillars + sub-services (NinjaPromo-style: outcome-driven, tag cloud)
-const servicePillars = [
+// 10 service categories with expandable sub-services
+const serviceCategories = [
   {
-    name: "Strategy",
-    description: "We develop full-funnel marketing strategies tailored to your goals, audience, and business model — with a clear focus on growth, not guesswork.",
-    subServices: ["Go-to-Market", "Channel Planning", "Growth Mapping", "Funnel Architecture", "KPI Alignment", "Budget Modeling", "Execution Roadmaps"],
+    name: "Autonomous AI Agents",
+    description: "AI-powered agents that talk, think, and act on behalf of businesses — handling sales, support, appointments, and calls 24/7.",
+    subServices: [
+      "AI Sales Agent",
+      "AI Customer Support Bot",
+      "AI Receptionist & Scheduler",
+      "Internal Knowledge AI (HR / IT / Ops)",
+      "Voice AI & Smart IVR",
+      "Custom AI Agent Development",
+    ],
   },
   {
-    name: "Digital",
-    description: "From paid media to SEO and content — we run data-backed digital campaigns that drive qualified traffic and turn attention into revenue.",
-    subServices: ["SEO & PPC", "Social Ads", "Email Flows", "Lead Generation", "Paid Scaling", "Traffic Growth", "Conversion Strategy"],
+    name: "Workflow Automation & Systems Integration",
+    description: "Connect your existing tools and eliminate manual work using n8n, Zapier, Make, and custom code.",
+    subServices: [
+      "No-Code Workflow Automation",
+      "Document & Invoice Automation",
+      "Smart Lead Routing & Assignment",
+      "ERP & Multi-System Integration",
+      "Alerts, Escalations & Notification Engines",
+    ],
   },
   {
-    name: "Design & Creative",
-    description: "We create brand-consistent designs and scroll-stopping creatives that not only look great — but drive clicks, leads, and results across all channels.",
-    subServices: ["Social Creatives", "Landing Pages", "Branding Assets", "Ad Banners", "Motion Graphics", "Email Design", "Reels & Video"],
+    name: "Performance Marketing & Paid Media",
+    description: "ROI-driven advertising across Meta, Google, YouTube, LinkedIn — every rupee tracked and optimized.",
+    subServices: [
+      "Meta Ads — Facebook & Instagram",
+      "Google Ads — Search, Display & Shopping",
+      "YouTube Video Advertising",
+      "LinkedIn B2B Campaigns",
+      "Retargeting & Programmatic",
+      "Influencer-Paid Hybrid Campaigns",
+    ],
   },
   {
-    name: "Development",
-    description: "Our dev team builds fast, conversion-focused websites and landing pages designed for performance, integrations, and scale.",
-    subServices: ["Webflow & WordPress", "Custom Integrations", "Landing Pages", "Speed Optimization", "Mobile UX", "Tracking Setup", "E-commerce Builds"],
+    name: "Search Dominance & Organic Discovery",
+    description: "Long-term organic visibility through technical SEO, content strategy, and authority building.",
+    subServices: [
+      "Technical & On-Page SEO",
+      "Local SEO & Google Business",
+      "Content Strategy & Authority Building",
+      "AI-Powered Content at Scale",
+      "Answer Engine Optimisation (AEO)",
+    ],
   },
   {
-    name: "Analytics",
-    description: "We turn raw data into strategic action — with dashboards, attribution, and performance insights that help you scale smarter and faster.",
-    subServices: ["Performance Dashboards", "Funnel Reporting", "GA4 Setup", "FB Pixel & API", "Attribution Models", "Conversion Tracking", "Paid Media Insights", "Weekly Reports"],
+    name: "Conversational Marketing & Messaging",
+    description: "Automated multi-channel communication via WhatsApp, email, SMS, and push notifications.",
+    subServices: [
+      "WhatsApp Business API & Automation",
+      "Email Marketing & Drip Campaigns",
+      "SMS & RCS Rich Messaging",
+      "Omnichannel Unified Inbox",
+      "Push Notifications & In-App Messaging",
+    ],
+  },
+  {
+    name: "Digital Experience & Creative Studio",
+    description: "High-converting websites, brand identities, and video content designed for performance.",
+    subServices: [
+      "High-Performance Website Design & Dev",
+      "Landing Pages & Conversion Optimisation",
+      "Brand Identity & Visual Systems",
+      "Video Production & Motion Graphics",
+      "UI/UX Design & Prototyping",
+      "Social Media Creative & Content Design",
+    ],
+  },
+  {
+    name: "E-Commerce & D2C Growth Engine",
+    description: "Full-stack e-commerce solutions from store setup to marketplace management and optimization.",
+    subServices: [
+      "D2C Brand Launch & Growth",
+      "E-Commerce Storefront Design",
+      "Marketplace Onboarding & Management",
+      "Product Listing & Catalog Optimisation",
+      "Subscription & Recurring Revenue Systems",
+    ],
+  },
+  {
+    name: "Revenue Operations & Sales Automation",
+    description: "Systems that capture, nurture, convert, and retain customers — engineered for revenue.",
+    subServices: [
+      "CRM Setup & Pipeline Optimisation",
+      "Sales Funnel & Conversion Automation",
+      "Lead Generation — Inbound & Outbound",
+      "Influencer & Affiliate Program Management",
+      "Loyalty, Referral & Retention Programs",
+    ],
+  },
+  {
+    name: "Data Intelligence & Analytics",
+    description: "Custom dashboards and BI solutions that turn raw data into actionable insights for smarter decision-making.",
+    subServices: [
+      "Custom BI Dashboards & Reporting",
+      "Marketing Attribution & ROI Tracking",
+      "Customer Analytics & Churn Prediction",
+      "A/B Testing & Experimentation Frameworks",
+      "AI-Powered Forecasting & Trend Analysis",
+    ],
+  },
+  {
+    name: "Cloud, Security & Business Operations",
+    description: "Cloud infrastructure, analytics dashboards, HR automation, and operational excellence.",
+    subServices: [
+      "Cloud Architecture & DevOps",
+      "Cybersecurity & Compliance",
+      "HR & Recruitment Automation",
+      "Reputation & Review Management",
+      "Business Strategy & Growth Consulting",
+      "Government Subsidy & Scheme Marketing",
+    ],
   },
 ];
 
@@ -49,6 +139,7 @@ export default function Header() {
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobilePillarOpen, setMobilePillarOpen] = useState<number | null>(null);
+  const [expandedCategoryIndex, setExpandedCategoryIndex] = useState<number | null>(null);
   const dropdownTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const headerRef = useRef<HTMLElement>(null);
   const [location] = useLocation();
@@ -59,7 +150,10 @@ export default function Header() {
   };
   const closeServicesDropdown = () => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
-    dropdownTimeoutRef.current = setTimeout(() => setServicesDropdownOpen(false), DROPDOWN_HOVER_DELAY_MS);
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setServicesDropdownOpen(false);
+      setExpandedCategoryIndex(null);
+    }, DROPDOWN_HOVER_DELAY_MS);
   };
   const keepServicesDropdownOpen = () => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
@@ -216,17 +310,17 @@ export default function Header() {
                     top: "calc(100% + 6px)",
                     left: "50%",
                     transform: "translateX(-50%)",
-                    width: "min(860px, 94vw)",
+                    width: "min(1100px, 96vw)",
                     minWidth: 340,
+                    minHeight: "400px",
                     zIndex: 9999,
                     background: "#fff",
                     borderRadius: 14,
                     boxShadow: "0 16px 40px rgba(17,19,23,0.1), 0 6px 20px rgba(17,19,23,0.06)",
                     border: "1px solid rgba(17,19,23,0.07)",
-                    // padding: "18px 22px 20px",
                     display: "grid",
                     gridTemplateColumns: "minmax(182px, 1.1fr) minmax(0, 3fr)",
-                    alignItems: "start",
+                    alignItems: "stretch",
                     animation: "dropdownFade 0.2s ease-out",
                   }}
                 >
@@ -274,112 +368,107 @@ export default function Header() {
                       View all <span style={{ fontSize: 10 }}>→</span>
                     </Link>
                   </div>
-                  {/* Right: pillars grid (with its own padding) */}
+                  {/* Right: categories grid (with its own padding) */}
                   <div
                     style={{
                       minWidth: 0,
                       padding: "18px 22px 20px",
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                      gridAutoRows: "min-content",
-                      gap: "16px 22px",
-                      alignItems: "start",
+                      display: "flex",
+                      flexDirection: "row",
+                      gap: 20,
+                      alignItems: "stretch",
+                      height: "100%",
                     }}
                   >
-                    {/* Strategy */}
-                    <div style={{ minWidth: 0 }}>
-                      <div>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink)", letterSpacing: "0.02em", margin: "0 0 5px 0", textTransform: "uppercase" }}>{servicePillars[0].name}</p>
-                        <div style={{ display: "grid", gap: 6, alignContent: "start" }}>
-                          {servicePillars[0].subServices.map((sub) => (
-                            <Link
-                              key={sub}
-                              href={`/services#${servicePillars[0].name.toLowerCase().replace(/\s+/g, "-")}`}
-                              style={{ fontSize: 11, color: "rgba(17,19,23,0.62)", textDecoration: "none", lineHeight: 1.25, whiteSpace: "normal", overflowWrap: "anywhere" }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
-                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.62)"}
-                            >
-                              {sub}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
+                    {/* Category names column - 60% width */}
+                    <div
+                      style={{
+                        width: "60%",
+                        flexShrink: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "14px",
+                        borderRight: "1px solid rgba(17,19,23,0.1)",
+                        paddingRight: 20,
+                      }}
+                    >
+                      {serviceCategories.map((category, idx) => {
+                        const isExpanded = expandedCategoryIndex === idx;
+                        return (
+                          <p 
+                            key={idx}
+                            style={{ 
+                              fontSize: 13, 
+                              fontWeight: 600, 
+                              color: isExpanded ? "var(--ink)" : "rgba(17,19,23,0.7)", 
+                              letterSpacing: "0.02em", 
+                              margin: 0, 
+                              textTransform: "uppercase",
+                              whiteSpace: "nowrap",
+                              cursor: "pointer",
+                              transition: "color 0.2s ease",
+                            }}
+                            onMouseEnter={() => setExpandedCategoryIndex(idx)}
+                          >
+                            {category.name}
+                          </p>
+                        );
+                      })}
                     </div>
-                    {/* Design & Creative */}
-                    <div style={{ minWidth: 0 }}>
-                      <div>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink)", letterSpacing: "0.02em", margin: "0 0 5px 0", textTransform: "uppercase" }}>{servicePillars[2].name}</p>
-                        <div style={{ display: "grid", gap: 6, alignContent: "start" }}>
-                          {servicePillars[2].subServices.map((sub) => (
+                    {/* Subcategories column - 40% width */}
+                    <div
+                      style={{
+                        width: "40%",
+                        flexShrink: 0,
+                        minWidth: 0,
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "flex-start",
+                        alignItems: "flex-start",
+                        alignSelf: "stretch",
+                      }}
+                      onMouseLeave={() => setExpandedCategoryIndex(null)}
+                    >
+                      {expandedCategoryIndex !== null && (
+                        <div style={{ 
+                          display: "flex", 
+                          flexDirection: "column", 
+                          gap: 14,
+                          width: "100%",
+                          alignSelf: "stretch",
+                          paddingTop: 16,
+                          paddingRight: 20,
+                        }}>
+                          {serviceCategories[expandedCategoryIndex].subServices.map((sub) => (
                             <Link
                               key={sub}
-                              href={`/services#${servicePillars[2].name.toLowerCase().replace(/\s+/g, "-")}`}
-                              style={{ fontSize: 11, color: "rgba(17,19,23,0.62)", textDecoration: "none", lineHeight: 1.25, whiteSpace: "normal", overflowWrap: "anywhere" }}
+                              href={`/services#${serviceCategories[expandedCategoryIndex].name.toLowerCase().replace(/\s+/g, "-")}`}
+                              style={{ 
+                                fontSize: 13, 
+                                color: "rgba(17,19,23,0.62)", 
+                                textDecoration: "none", 
+                                lineHeight: 1.25, 
+                                whiteSpace: "normal", 
+                                overflowWrap: "break-word",
+                                wordBreak: "break-word",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 4,
+                                width: "100%",
+                              }}
                               onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
                               onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.62)"}
+                              onClick={() => {
+                                setServicesDropdownOpen(false);
+                                setExpandedCategoryIndex(null);
+                              }}
                             >
-                              {sub}
+                              <span style={{ flex: 1 }}>{sub}</span>
+                              <TrendingUp size={14} style={{ flexShrink: 0, marginLeft: 8 }} />
                             </Link>
                           ))}
                         </div>
-                      </div>
-                    </div>
-                    {/* Analytics */}
-                    <div style={{ minWidth: 0 }}>
-                      <div>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink)", letterSpacing: "0.02em", margin: "0 0 5px 0", textTransform: "uppercase" }}>{servicePillars[4].name}</p>
-                        <div style={{ display: "grid", gap: 6, alignContent: "start" }}>
-                          {servicePillars[4].subServices.map((sub) => (
-                            <Link
-                              key={sub}
-                              href={`/services#${servicePillars[4].name.toLowerCase().replace(/\s+/g, "-")}`}
-                              style={{ fontSize: 11, color: "rgba(17,19,23,0.62)", textDecoration: "none", lineHeight: 1.25, whiteSpace: "normal", overflowWrap: "anywhere" }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
-                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.62)"}
-                            >
-                              {sub}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    {/* Digital */}
-                    <div style={{ minWidth: 0 }}>
-                      <div>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink)", letterSpacing: "0.02em", margin: "0 0 5px 0", textTransform: "uppercase" }}>{servicePillars[1].name}</p>
-                        <div style={{ display: "grid", gap: 6, alignContent: "start" }}>
-                          {servicePillars[1].subServices.map((sub) => (
-                            <Link
-                              key={sub}
-                              href={`/services#${servicePillars[1].name.toLowerCase().replace(/\s+/g, "-")}`}
-                              style={{ fontSize: 11, color: "rgba(17,19,23,0.62)", textDecoration: "none", lineHeight: 1.25, whiteSpace: "normal", overflowWrap: "anywhere" }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
-                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.62)"}
-                            >
-                              {sub}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    {/* Development */}
-                    <div style={{ minWidth: 0 }}>
-                      <div>
-                        <p style={{ fontSize: 11, fontWeight: 600, color: "var(--ink)", letterSpacing: "0.02em", margin: "0 0 5px 0", textTransform: "uppercase" }}>{servicePillars[3].name}</p>
-                        <div style={{ display: "grid", gap: 6, alignContent: "start" }}>
-                          {servicePillars[3].subServices.map((sub) => (
-                            <Link
-                              key={sub}
-                              href={`/services#${servicePillars[3].name.toLowerCase().replace(/\s+/g, "-")}`}
-                              style={{ fontSize: 11, color: "rgba(17,19,23,0.62)", textDecoration: "none", lineHeight: 1.25, whiteSpace: "normal", overflowWrap: "anywhere" }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.color = "var(--ink)"}
-                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.color = "rgba(17,19,23,0.62)"}
-                            >
-                              {sub}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -548,8 +637,8 @@ export default function Header() {
                           paddingBottom: 8,
                         }}
                       >
-                        {servicePillars.map((pillar, idx) => (
-                          <div key={pillar.name} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        {serviceCategories.map((category, idx) => (
+                          <div key={category.name} style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                             <button
                               type="button"
                               onClick={() => setMobilePillarOpen((v) => (v === idx ? null : idx))}
@@ -571,7 +660,7 @@ export default function Header() {
                                 fontFamily: "inherit",
                               }}
                             >
-                              {pillar.name}
+                              {category.name}
                               <span
                                 style={{
                                   fontSize: 12,
@@ -592,20 +681,24 @@ export default function Header() {
                                   paddingBottom: 8,
                                 }}
                               >
-                                {pillar.subServices.map((sub) => (
+                                {category.subServices.map((sub) => (
                                   <Link
                                     key={sub}
-                                    href={`/services#${pillar.name.toLowerCase().replace(/\s+/g, "-")}`}
+                                    href={`/services#${category.name.toLowerCase().replace(/\s+/g, "-")}`}
                                     style={{
                                       fontSize: 13,
                                       color: "rgba(17,19,23,0.7)",
                                       textDecoration: "none",
                                       padding: "6px 12px",
                                       borderRadius: 6,
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 4,
                                     }}
                                     onClick={() => setOpen(false)}
                                   >
                                     {sub}
+                                    <TrendingUp size={14} style={{ flexShrink: 0 }} />
                                   </Link>
                                 ))}
                               </div>
