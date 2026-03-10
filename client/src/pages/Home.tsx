@@ -191,6 +191,15 @@ export default function Home() {
                     0%   { opacity: 0; transform: translateY(60%) skewY(4deg); }
                     100% { opacity: 1; transform: translateY(0%)  skewY(0deg); }
                   }
+                  .hero-line {
+                    display: block;
+                    white-space: nowrap;
+                  }
+                  @media (max-width: 520px) {
+                    .hero-line {
+                      white-space: normal;
+                    }
+                  }
                   .hero-word-anim {
                     display: inline-block;
                     font-style: italic;

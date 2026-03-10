@@ -98,12 +98,12 @@ function App() {
           <GrainOverlay />
           <CustomCursor />
           <LoadingScreen onComplete={() => setLoadingDone(true)} />
+          <ScrollToTop />
+          <Header />
           <div
             className={loadingDone ? "page-enter" : ""}
-            style={{ opacity: loadingDone ? 1 : 0 }}
+            style={{ opacity: loadingDone ? 1 : 0, display: "relative" }}
           >
-            <ScrollToTop />
-            <Header />
             <main>
               <Router />
             </main>

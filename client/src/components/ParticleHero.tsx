@@ -1,186 +1,123 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo } from "react";
+
+declare module "particles.js";
 
 interface ParticleHeroProps {
     className?: string;
     style?: React.CSSProperties;
 }
 
-interface Particle {
-    x: number;
-    y: number;
-    vx: number;
-    vy: number;
-    size: number;
-    opacity: number;
-    targetOpacity: number;
-    color: string;
-    life: number;
-    maxLife: number;
+declare global {
+    interface Window {
+        particlesJS?: (tagId: string, params: unknown) => void;
+        pJSDom?: Array<{
+            pJS?: {
+                canvas?: { el?: { id?: string } };
+                fn?: { vendors?: { destroy?: () => void } };
+            };
+        }>;
+    }
 }
 
-const COLORS = [
-    "rgba(17,19,23,",
-    "rgba(17,19,23,",
-    "rgba(17,19,23,",
-    "rgba(201,168,76,",
-    "rgba(17,19,23,",
-];
-
 export default function ParticleHero({ className = "", style = {} }: ParticleHeroProps) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const animRef = useRef<number>(0);
-    const particles = useRef<Particle[]>([]);
-    const mouse = useRef({ x: -1000, y: -1000 });
-    const timeRef = useRef(0);
+    const containerId = useMemo(
+        () => `particles-hero-${Math.random().toString(36).slice(2)}`,
+        []
+    );
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        let destroyed = false;
 
-        const dpr = window.devicePixelRatio || 1;
+        const init = async () => {
+            try {
+                // `particles.js` is a legacy library; depending on bundling it may attach
+                // `particlesJS` to `window` OR export it from the module.
+                const mod = await import("particles.js");
+                if (destroyed) return;
 
-        const resize = () => {
-            canvas.width = canvas.offsetWidth * dpr;
-            canvas.height = canvas.offsetHeight * dpr;
-            ctx.scale(dpr, dpr);
-        };
-        resize();
-        window.addEventListener("resize", resize, { passive: true });
+                const particlesJS: undefined | ((tagId: string, params: unknown) => void) =
+                    window.particlesJS ??
+                    (mod as unknown as { particlesJS?: (tagId: string, params: unknown) => void }).particlesJS ??
+                    (mod as unknown as { default?: { particlesJS?: (tagId: string, params: unknown) => void } }).default
+                        ?.particlesJS ??
+                    (typeof (mod as unknown as { default?: unknown }).default === "function"
+                        ? ((mod as unknown as { default: (tagId: string, params: unknown) => void }).default)
+                        : undefined);
 
-        const onMouseMove = (e: MouseEvent) => {
-            const rect = canvas.getBoundingClientRect();
-            mouse.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-        };
-        const onMouseLeave = () => { mouse.current = { x: -1000, y: -1000 }; };
-        canvas.addEventListener("mousemove", onMouseMove, { passive: true });
-        canvas.addEventListener("mouseleave", onMouseLeave);
+                if (!particlesJS) return;
 
-        // Seed initial particles
-        const COUNT = 80;
-        particles.current = Array.from({ length: COUNT }, () => spawnParticle(canvas));
+                particlesJS(containerId, {
+                particles: {
+                    number: { value: 80, density: { enable: true, value_area: 900 } },
+                    color: { value: ["#111317", "#c9a84c"] },
+                    shape: { type: "circle" },
+                    opacity: { value: 0.55, random: true },
+                    size: { value: 3.2, random: true },
+                    line_linked: {
+                        enable: true,
+                        distance: 110,
+                        color: "#111317",
+                        opacity: 0.18,
+                        width: 1,
+                    },
+                    move: { enable: true, speed: 0.7, direction: "none", random: true, out_mode: "out" },
+                },
+                interactivity: {
+                    detect_on: "canvas",
+                    events: {
+                        onhover: { enable: true, mode: "repulse" },
+                        onclick: { enable: false, mode: "push" },
+                        resize: true,
+                    },
+                    modes: {
+                        repulse: { distance: 120, duration: 0.4 },
+                        push: { particles_nb: 2 },
+                    },
+                },
+                retina_detect: true,
+                });
 
-        const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
-        function spawnParticle(c: HTMLCanvasElement): Particle {
-            const w = c.offsetWidth;
-            const h = c.offsetHeight;
-            const maxLife = 200 + Math.random() * 300;
-            return {
-                x: Math.random() * w,
-                y: Math.random() * h,
-                vx: (Math.random() - 0.5) * 0.35,
-                vy: (Math.random() - 0.5) * 0.35,
-                size: 1.5 + Math.random() * 3.5,
-                opacity: 0,
-                targetOpacity: 0.1 + Math.random() * 0.25,
-                color: COLORS[Math.floor(Math.random() * COLORS.length)],
-                life: 0,
-                maxLife,
-            };
-        }
-
-        function drawParticle(p: Particle) {
-            const alpha = p.opacity * (p.life < 30 ? p.life / 30 : p.life > p.maxLife - 40 ? (p.maxLife - p.life) / 40 : 1);
-            ctx!.beginPath();
-            ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx!.fillStyle = p.color + alpha.toFixed(3) + ")";
-            ctx!.fill();
-        }
-
-        function drawConnections(dt: number) {
-            const ps = particles.current;
-            for (let i = 0; i < ps.length; i++) {
-                for (let j = i + 1; j < ps.length; j++) {
-                    const dx = ps[i].x - ps[j].x;
-                    const dy = ps[i].y - ps[j].y;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 100) {
-                        const alpha = (1 - dist / 100) * 0.07;
-                        ctx!.beginPath();
-                        ctx!.moveTo(ps[i].x, ps[i].y);
-                        ctx!.lineTo(ps[j].x, ps[j].y);
-                        ctx!.strokeStyle = `rgba(17,19,23,${alpha.toFixed(3)})`;
-                        ctx!.lineWidth = 0.5;
-                        ctx!.stroke();
-                    }
-                }
+                // Ensure the injected canvas fills the container and sits behind content.
+                requestAnimationFrame(() => {
+                    const el = document.getElementById(containerId);
+                    const canvas = el?.querySelector("canvas") as HTMLCanvasElement | null;
+                    if (!canvas) return;
+                    canvas.style.position = "absolute";
+                    canvas.style.inset = "0";
+                    canvas.style.width = "100%";
+                    canvas.style.height = "100%";
+                    canvas.style.zIndex = "0";
+                    canvas.style.pointerEvents = "none";
+                });
+            } catch {
+                // If the import fails, don't crash the page—just render no particles.
             }
-        }
-
-        const animate = () => {
-            timeRef.current++;
-            const w = canvas.offsetWidth;
-            const h = canvas.offsetHeight;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Draw connections
-            drawConnections(timeRef.current);
-
-            // Update and draw particles
-            particles.current = particles.current.map((p) => {
-                p.life++;
-
-                // Mouse repulsion
-                const mx = mouse.current.x;
-                const my = mouse.current.y;
-                const dx = p.x - mx;
-                const dy = p.y - my;
-                const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < 120) {
-                    const force = (1 - dist / 120) * 0.6;
-                    p.vx += (dx / dist) * force;
-                    p.vy += (dy / dist) * force;
-                }
-
-                // Gentle wave field
-                const wave = Math.sin(timeRef.current * 0.008 + p.x * 0.012) * 0.04;
-                p.vx += wave;
-                p.vy += Math.cos(timeRef.current * 0.006 + p.y * 0.009) * 0.025;
-
-                // Dampen
-                p.vx *= 0.97;
-                p.vy *= 0.97;
-
-                p.x += p.vx;
-                p.y += p.vy;
-
-                // Opacity lerp
-                p.opacity = lerp(p.opacity, p.targetOpacity, 0.04);
-
-                // Respawn at edges
-                if (p.x < -20) { p.x = w + 20; p.life = 0; }
-                if (p.x > w + 20) { p.x = -20; p.life = 0; }
-                if (p.y < -20) { p.y = h + 20; p.life = 0; }
-                if (p.y > h + 20) { p.y = -20; p.life = 0; }
-
-                // Respawn dead particles
-                if (p.life > p.maxLife) return spawnParticle(canvas);
-
-                drawParticle(p);
-                return p;
-            });
-
-            animRef.current = requestAnimationFrame(animate);
         };
 
-        animRef.current = requestAnimationFrame(animate);
+        void init();
 
         return () => {
-            cancelAnimationFrame(animRef.current);
-            window.removeEventListener("resize", resize);
-            canvas.removeEventListener("mousemove", onMouseMove);
-            canvas.removeEventListener("mouseleave", onMouseLeave);
+            destroyed = true;
+            const dom = window.pJSDom ?? [];
+            const idx = dom.findIndex((d) => d?.pJS?.canvas?.el?.id === containerId);
+            const inst = idx >= 0 ? dom[idx] : undefined;
+            inst?.pJS?.fn?.vendors?.destroy?.();
+            if (idx >= 0) dom.splice(idx, 1);
         };
-    }, []);
+    }, [containerId]);
 
     return (
-        <canvas
-            ref={canvasRef}
+        <div
+            id={containerId}
             className={className}
-            style={{ display: "block", width: "100%", height: "100%", ...style }}
+            style={{
+                width: "100%",
+                height: "100%",
+                position: "absolute",
+                inset: 0,
+                pointerEvents: "none",
+                ...style,
+            }}
         />
     );
 }

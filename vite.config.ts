@@ -172,6 +172,7 @@ export default defineConfig({
     strictPort: false, // Will find next available port if 3000 is busy
     host: true,
     allowedHosts: [
+      "penny-dramatic-perfect-accountability.trycloudflare.com",
       ".manuspre.computer",
       ".manus.computer",
       ".manus-asia.computer",
