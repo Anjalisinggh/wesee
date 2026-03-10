@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import SectionLabel from "@/components/SectionLabel";
 import TextReveal from "@/components/TextReveal";
-import ImageReveal from "@/components/ImageReveal";
 import TiltCard from "@/components/TiltCard";
 import StaggerReveal from "@/components/StaggerReveal";
 import ParticleWrapper from "@/components/ParticleWrapper";
@@ -51,6 +50,16 @@ export default function Blog() {
   useEffect(() => {
     window.scrollTo(0, 0);
     const timer = setTimeout(() => {
+      // Featured block: staggered reveal (image then text)
+      const featured = document.querySelector(".blog-featured");
+      if (featured) {
+        const featuredEls = featured.querySelectorAll(".blog-featured-reveal");
+        gsap.fromTo(featuredEls, { opacity: 0, y: 28 }, {
+          opacity: 1, y: 0, duration: 0.75, stagger: 0.14, ease: "power2.out",
+          scrollTrigger: { trigger: featured, start: "top 82%", toggleActions: "play none none none" }
+        });
+      }
+      // Rest of page
       const reveals = document.querySelectorAll(".gsap-reveal");
       reveals.forEach((el) => {
         gsap.fromTo(el, { opacity: 0, y: 30 }, {
@@ -79,17 +88,18 @@ export default function Blog() {
 
       {featured && (
         <section className="section-padding">
-          <div className="container">
-            <Link href={`/blog/${featured.slug}`} className="block group">
-              <ImageReveal
-                src={featured.image}
-                alt={featured.title}
-                direction="up"
-                duration={1.2}
-                zoom
-                style={{ height: 400 }}
-              />
-              <div style={{ marginTop: 24 }}>
+          <div className="container blog-featured">
+            <Link href={`/blog/${featured.slug}`} className="block">
+              <div className="blog-featured-reveal img-hover-zoom overflow-hidden rounded-2xl" style={{ height: 400, borderRadius: 16 }}>
+                <img
+                  src={featured.image}
+                  alt={featured.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)" }}
+                  className="group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <div className="blog-featured-reveal" style={{ marginTop: 24 }}>
                 <div className="flex items-center gap-4">
                   <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{featured.category}</span>
                   <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>({featured.date})</span>
@@ -110,12 +120,20 @@ export default function Blog() {
               {grid.map((article) => (
                 <ParticleWrapper key={article.slug}>
                   <TiltCard maxTilt={5} scale={1.01}>
-                    <Link href={`/blog/${article.slug}`} className="block group">
-                      <div className="img-hover-zoom" style={{ height: 240, overflow: "hidden" }}>
+                    <Link href={`/blog/${article.slug}`} className="block">
+                      <div
+                        className="img-hover-zoom"
+                        style={{ height: 240, overflow: "hidden" }}
+                      >
                         <img
                           src={article.image}
                           alt={article.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
                           loading="lazy"
                         />
                       </div>
@@ -132,7 +150,15 @@ export default function Blog() {
                           >
                             {article.category}
                           </span>
-                          <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{article.date}</span>
+                          <span
+                            style={{
+                              fontSize: 12,
+                              fontWeight: 400,
+                              color: "#888888",
+                            }}
+                          >
+                            {article.date}
+                          </span>
                         </div>
                         <h3
                           style={{
@@ -162,7 +188,14 @@ export default function Blog() {
                         >
                           {article.excerpt}
                         </p>
-                        <span className="cta-link" style={{ marginTop: 12, display: "inline-block", fontSize: 13 }}>
+                        <span
+                          className="cta-link"
+                          style={{
+                            marginTop: 12,
+                            display: "inline-block",
+                            fontSize: 13,
+                          }}
+                        >
                           Read article ↗
                         </span>
                       </div>

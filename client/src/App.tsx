@@ -21,6 +21,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogDetail = lazy(() => import("./pages/BlogDetail"));
 const Careers = lazy(() => import("./pages/Careers"));
+const BookCall = lazy(() => import("./pages/BookCall"));
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -53,6 +54,7 @@ function Router() {
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:slug" component={BlogDetail} />
         <Route path="/careers" component={Careers} />
+        <Route path="/book-call" component={BookCall} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -102,7 +104,7 @@ function App() {
           <Header />
           <div
             className={loadingDone ? "page-enter" : ""}
-            style={{ opacity: loadingDone ? 1 : 0, display: "relative" }}
+            style={{ opacity: loadingDone ? 1 : 0, position: "relative" }}
           >
             <main>
               <Router />

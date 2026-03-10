@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Link } from "wouter";
 import SectionLabel from "@/components/SectionLabel";
 import TextReveal from "@/components/TextReveal";
-import ImageReveal from "@/components/ImageReveal";
 import TiltCard from "@/components/TiltCard";
 import StaggerReveal from "@/components/StaggerReveal";
 import MagneticButton from "@/components/MagneticButton";
@@ -75,13 +74,42 @@ export default function Team() {
         </div>
       </div>
 
-      {/* 2x2 team collage with staggered image reveals */}
+      {/* 2x2 team collage — hover: blurred bg + smaller sharp center image */}
       <div className="container">
         <div className="grid grid-cols-2 gap-2">
-          <ImageReveal src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80" alt="" direction="left" delay={0} style={{ height: 320 }} />
-          <ImageReveal src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80" alt="" direction="right" delay={0.15} style={{ height: 220 }} />
-          <ImageReveal src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80" alt="" direction="left" delay={0.3} style={{ height: 220 }} />
-          <ImageReveal src="https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80" alt="" direction="right" delay={0.45} style={{ height: 320 }} />
+          {[
+            { src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80", h: 320 },
+            { src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80", h: 220 },
+            { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80", h: 220 },
+            { src: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80", h: 320 },
+          ].map((img, i) => (
+            <div
+              key={i}
+              className="group relative overflow-hidden rounded-2xl bg-[#E8E8E5] cursor-pointer"
+              style={{ height: img.h, borderRadius: 16 }}
+            >
+              {/* Blurred background — same image, visible on hover */}
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 ease-out"
+                aria-hidden
+              >
+                <img
+                  src={img.src}
+                  alt=""
+                  className="w-full h-full object-cover block scale-105"
+                  style={{ filter: "blur(14px)" }}
+                />
+              </div>
+              {/* Sharp center image — shrinks on hover to reveal blurred bg */}
+              <img
+                src={img.src}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover block transition-transform duration-400 ease-out group-hover:scale-95 rounded-[20px]"
+                style={{ transformOrigin: "center center" }}
+                loading="lazy"
+              />
+            </div>
+          ))}
         </div>
       </div>
 
@@ -96,12 +124,15 @@ export default function Team() {
               {directors.map((d) => (
                 <TiltCard key={d.name} maxTilt={5} scale={1.01}>
                   <div className="group">
-                    <div className="overflow-hidden" style={{ width: 280, height: 400 }}>
+                    <div className="group relative overflow-hidden cursor-pointer rounded-2xl" style={{ width: 280, height: 400, borderRadius: 16 }}>
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 ease-out" aria-hidden>
+                        <img src={d.photo} alt="" className="w-full h-full object-cover block scale-105" style={{ filter: "blur(14px)" }} />
+                      </div>
                       <img
                         src={d.photo}
                         alt={d.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%)", transition: "filter 0.6s ease, transform 0.6s ease" }}
-                        className="group-hover:!grayscale-0 group-hover:scale-105"
+                        className="absolute inset-0 w-full h-full object-cover block transition-transform duration-400 ease-out group-hover:scale-90"
+                        style={{ transformOrigin: "center center" }}
                       />
                     </div>
                     <div style={{ marginTop: 16 }}>
@@ -131,16 +162,19 @@ export default function Team() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {teamMembers.map((m) => (
                 <div key={m.name} className="group">
-                  <div className="overflow-hidden" style={{ width: 208, height: 280 }}>
+                  <div className="group relative overflow-hidden cursor-pointer rounded-2xl" style={{ width: 208, height: 280, borderRadius: 16 }}>
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 ease-out" aria-hidden>
+                      <img src={m.photo} alt="" className="w-full h-full object-cover block scale-105" style={{ filter: "blur(14px)" }} />
+                    </div>
                     <img
                       src={m.photo}
                       alt={m.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", filter: "grayscale(100%)", transition: "filter 0.6s ease, transform 0.6s ease" }}
-                      className="group-hover:!grayscale-0 group-hover:scale-105"
+                      className="absolute inset-0 w-full h-full object-cover block transition-transform duration-400 ease-out group-hover:scale-90"
+                      style={{ transformOrigin: "center center" }}
                     />
                   </div>
                   <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">{m.name}</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="">{m.name}</div>
                     <div style={{ fontSize: 13, fontWeight: 400, color: "#888888", marginTop: 2 }}>{m.title}</div>
                   </div>
                 </div>

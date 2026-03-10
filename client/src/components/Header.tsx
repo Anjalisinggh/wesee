@@ -481,10 +481,8 @@ export default function Header() {
             {/* Book a Call — desktop only */}
             {isDesktop && (
               <ParticleWrapper>
-                <a
-                  href="https://cal.com/wesee/discovery"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  href="/book-call"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 6,
                     padding: "8px 18px",
@@ -507,7 +505,7 @@ export default function Header() {
                   }}
                 >
                   Book a Call <span style={{ fontSize: 11, opacity: 0.75 }}>↗</span>
-                </a>
+                </Link>
               </ParticleWrapper>
             )}
 
@@ -755,10 +753,8 @@ export default function Header() {
               marginRight: "auto",
             }}
           >
-            <a
-              href="https://cal.com/wesee/discovery"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/book-call"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -777,7 +773,7 @@ export default function Header() {
               onClick={() => setOpen(false)}
             >
               Book a Call <span style={{ fontSize: 12, opacity: 0.85 }}>↗</span>
-            </a>
+            </Link>
           </div>
         </div>
       )}

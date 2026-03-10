@@ -69,16 +69,14 @@ export default function Contact() {
         </div>
       </div>
 
-      <ImageReveal
-        src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=2000&q=80"
-        alt="City"
-        direction="up"
-        duration={1.4}
-        parallax
-        parallaxAmount={50}
-        zoom={false}
-        style={{ width: "100%", height: 400 }}
-      />
+      <div style={{ width: "100%", height: 400, overflow: "hidden" }}>
+        <img
+          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=2000&q=80"
+          alt="City"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          loading="lazy"
+        />
+      </div>
 
       {/* Contact types with hover effect */}
       <section className="section-padding">

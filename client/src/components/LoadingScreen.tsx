@@ -1,21 +1,45 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function LoadingScreen({ onComplete }: { onComplete: () => void }) {
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
   const [visible, setVisible] = useState(true);
+  const completedRef = useRef(false);
+
+  const safeSessionGet = (key: string) => {
+    try {
+      return window.sessionStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  };
+
+  const safeSessionSet = (key: string, value: string) => {
+    try {
+      window.sessionStorage.setItem(key, value);
+    } catch {
+      // ignore (storage can be unavailable in some contexts)
+    }
+  };
 
   useEffect(() => {
-    if (sessionStorage.getItem("wesee-loaded")) {
-      setVisible(false);
+    const completeOnce = () => {
+      if (completedRef.current) return;
+      completedRef.current = true;
       onComplete();
+    };
+
+    if (safeSessionGet("wesee-loaded")) {
+      setVisible(false);
+      completeOnce();
       return;
     }
 
-    setTimeout(() => setPhase(1), 200);
-    setTimeout(() => setPhase(2), 600);
-    setTimeout(() => setPhase(3), 900);
+    const timeouts: number[] = [];
+    timeouts.push(window.setTimeout(() => setPhase(1), 200));
+    timeouts.push(window.setTimeout(() => setPhase(2), 600));
+    timeouts.push(window.setTimeout(() => setPhase(3), 900));
 
     let current = 0;
     const DURATION = 1800;
@@ -25,19 +49,22 @@ export default function LoadingScreen({ onComplete }: { onComplete: () => void }
       setProgress(current);
       if (current >= 100) {
         clearInterval(id);
-        setTimeout(() => {
+        timeouts.push(window.setTimeout(() => {
           setFadeOut(true);
-          setTimeout(() => {
+          timeouts.push(window.setTimeout(() => {
             setVisible(false);
-            sessionStorage.setItem("wesee-loaded", "true");
-            onComplete();
-          }, 600);
-        }, 200);
+            safeSessionSet("wesee-loaded", "true");
+            completeOnce();
+          }, 600));
+        }, 200));
       }
     }, DURATION / STEPS);
 
-    return () => clearInterval(id);
-  }, []);
+    return () => {
+      clearInterval(id);
+      timeouts.forEach((t) => clearTimeout(t));
+    };
+  }, [onComplete]);
 
   if (!visible) return null;
 

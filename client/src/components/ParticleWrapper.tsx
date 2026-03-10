@@ -17,7 +17,7 @@ export default function ParticleWrapper({ children, className = "", style = {} }
         ...style 
       }}
     >
-      <HoverParticles />
+      {/* <HoverParticles /> */}
       <div style={{ position: "relative", zIndex: 2 }}>
         {children}
       </div>

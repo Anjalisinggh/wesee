@@ -301,9 +301,7 @@ export default function RotorGallery({
       }
       if (onItemClick) {
         onItemClick(item);
-      } else {
-        navigate(item.url);
-      }
+      } 
     },
     [onItemClick, navigate]
   );
@@ -372,6 +370,10 @@ export default function RotorGallery({
     };
 
     const updateClosestImage = (clientX: number, clientY: number) => {
+      // On desktop we rely on direct card hover to determine the active card.
+      // The angle-based mapping is only needed on mobile / touch, where there is no hover.
+      if (!isMobile) return;
+
       const now = performance.now();
       if (now - lastMouseUpdateRef.current < 16) return;
       lastMouseUpdateRef.current = now;
@@ -380,14 +382,14 @@ export default function RotorGallery({
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
       
-      // Store mouse position for image positioning
+      // Store touch position for image positioning
       mousePosRef.current = { x: clientX, y: clientY };
       
-      // Calculate cursor position relative to center
+      // Calculate touch position relative to center
       const dx = clientX - centerX;
       const dy = clientY - centerY;
       
-      // Convert cursor position to angle (in degrees)
+      // Convert touch position to angle (in degrees)
       // atan2 gives angle from positive x-axis: 0° = right, 90° = down, 180° = left, 270° = up
       let cursorAngle = Math.atan2(dy, dx) * (180 / Math.PI);
       cursorAngle = (cursorAngle + 360) % 360;
@@ -395,18 +397,16 @@ export default function RotorGallery({
       // Calculate angle per card
       const anglePerCard = 360 / safeCount;
       
-      // Find the card closest to the cursor by checking ALL cards
-      // This ensures perfect sync between hover effect and center image
-      // Card at index i appears at visual angle: angleRef.current - (i * anglePerCard)
+      // Find the card closest to the touch position by checking ALL cards
       let minDistance = Infinity;
       let activeIndex = 0;
       
       for (let i = 0; i < safeCount; i++) {
         // Calculate where this card appears visually (accounting for ring rotation)
-        let cardAngle = (angleRef.current - (i * anglePerCard)) % 360;
+        let cardAngle = (angleRef.current - i * anglePerCard) % 360;
         if (cardAngle < 0) cardAngle += 360;
         
-        // Calculate angular distance between cursor and card
+        // Calculate angular distance between touch and card
         let distance = Math.abs(cursorAngle - cardAngle);
         // Handle wrap-around (e.g., 350° and 10° are only 20° apart)
         if (distance > 180) distance = 360 - distance;
@@ -419,17 +419,13 @@ export default function RotorGallery({
       }
       
       // Ensure index is within valid range
-      if (activeIndex < 0) activeIndex = (activeIndex % safeCount + safeCount) % safeCount;
+      if (activeIndex < 0) activeIndex = ((activeIndex % safeCount) + safeCount) % safeCount;
       
       // Only update if the active card changed
       if (activeCardIndexRef.current !== activeIndex) {
         activeCardIndexRef.current = activeIndex;
-        
         // Update React state for UI re-renders
         setActiveCardIndex(activeIndex);
-        
-        // Don't rotate the ring automatically - only update the active card for center reveal
-        // Ring rotation only happens on drag or auto-rotation
       }
     };
 
@@ -840,11 +836,14 @@ export default function RotorGallery({
             baseCardRotX={cardRotXDeg + rotateCardDeg}
             baseCardRotY={cardRotYDeg}
             baseCardRotZ={cardRotZDeg}
-                cardOpacity={1}
-                isHovered={activeCardIndex === i}
-                onMouseEnter={() => {}}
-                onMouseLeave={() => {}}
-                onClick={() => handleItemClick(item)}
+            cardOpacity={1}
+            isHovered={activeCardIndex === i}
+            onMouseEnter={() => {
+              activeCardIndexRef.current = i;
+              setActiveCardIndex(i);
+            }}
+            onMouseLeave={() => {}}
+            onClick={() => handleItemClick(item)}
           />
         ))}
       </div>

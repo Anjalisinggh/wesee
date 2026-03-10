@@ -64,7 +64,7 @@ export default function Footer() {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <ParticleWrapper>
                 <a
-                  href="https://cal.com/wesee/discovery"
+                  href="/book-call"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-primary shine-on-hover"

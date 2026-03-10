@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Link, useParams } from "wouter";
 import TextReveal from "@/components/TextReveal";
-import ImageReveal from "@/components/ImageReveal";
 import MagneticButton from "@/components/MagneticButton";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -89,6 +88,15 @@ export default function BlogDetail() {
                     scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" },
                 });
             });
+            // Stagger body paragraphs when content block enters view
+            const contentBlock = document.querySelector(".blog-detail-content");
+            if (contentBlock) {
+                const paragraphs = contentBlock.querySelectorAll("p");
+                gsap.fromTo(paragraphs, { opacity: 0, y: 20 }, {
+                    opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out",
+                    scrollTrigger: { trigger: contentBlock, start: "top 82%", toggleActions: "play none none none" },
+                });
+            }
         }, 50);
         return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
     }, [slug]);
@@ -126,25 +134,20 @@ export default function BlogDetail() {
                     </p>
                 </div>
 
-                <div style={{ marginTop: 48 }}>
-                    <ImageReveal
+                <div className="gsap-reveal" style={{ marginTop: 48, width: "100%", overflow: "hidden" }}>
+                    <img
                         src={article.image}
                         alt={article.title}
-                        direction="up"
-                        duration={1.4}
-                        parallax
-                        parallaxAmount={60}
-                        zoom={false}
-                        style={{ width: "100%", height: 480 }}
+                        style={{ width: "100%", height: 480, objectFit: "cover", display: "block" }}
+                        loading="eager"
                     />
                 </div>
 
                 <div className="container" style={{ marginTop: 64 }}>
-                    <div style={{ maxWidth: 680 }}>
+                    <div className="blog-detail-content" style={{ maxWidth: 680 }}>
                         {article.content.map((paragraph, i) => (
                             <p
                                 key={i}
-                                className="gsap-reveal"
                                 style={{
                                     fontSize: 17,
                                     fontWeight: 400,
@@ -171,9 +174,7 @@ export default function BlogDetail() {
                     </p>
                     <MagneticButton
                         as="a"
-                        href="https://cal.com/wesee/discovery"
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href="/book-call"
                         className="btn-fill-sweep-dark"
                         style={{ display: "inline-block", marginTop: 24, padding: "16px 32px", background: "#FFFFFF", color: "#1A1A1A", fontSize: 13, fontWeight: 500, textDecoration: "none" }}
                         strength={0.25}

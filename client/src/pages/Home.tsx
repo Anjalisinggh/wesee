@@ -4,6 +4,7 @@ import ParticleHero from "@/components/ParticleHero";
 import StaggerReveal from "@/components/StaggerReveal";
 import HoverParticles from "@/components/HoverParticles";
 import ParticleWrapper from "@/components/ParticleWrapper";
+import ImageReveal from "@/components/ImageReveal";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -70,14 +71,36 @@ export default function Home() {
   const statsRef = useRef<HTMLDivElement>(null);
   const [counted, setCounted] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
+  const [typedText, setTypedText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  /* Cycle hero headline word every 2.2s */
+  /* Typewriter effect for hero headline word */
   useEffect(() => {
-    const id = setInterval(() => {
-      setWordIndex(i => (i + 1) % HERO_WORDS.length);
-    }, 5000);
-    return () => clearInterval(id);
-  }, []);
+    const fullWord = HERO_WORDS[wordIndex];
+    const typingSpeed = isDeleting ? 60 : 120;      // ms per character
+    const pauseAfterFull = 1400;                    // pause when word fully typed
+    const pauseAfterDelete = 500;                   // pause when word fully deleted
+
+    let timeout: number;
+
+    if (!isDeleting && typedText === fullWord) {
+      timeout = window.setTimeout(() => {
+        setIsDeleting(true);
+      }, pauseAfterFull);
+    } else if (isDeleting && typedText === "") {
+      timeout = window.setTimeout(() => {
+        setIsDeleting(false);
+        setWordIndex(prev => (prev + 1) % HERO_WORDS.length);
+      }, pauseAfterDelete);
+    } else {
+      timeout = window.setTimeout(() => {
+        const nextLength = typedText.length + (isDeleting ? -1 : 1);
+        setTypedText(fullWord.slice(0, nextLength));
+      }, typingSpeed);
+    }
+
+    return () => window.clearTimeout(timeout);
+  }, [typedText, isDeleting, wordIndex]);
 
   /* GSAP scroll reveals */
   useEffect(() => {
@@ -165,7 +188,7 @@ export default function Home() {
               background: "rgba(201,168,76,0.15)",
               fontSize: 10, color: "var(--accent)",
             }}>✦</span>
-         AI Agents That Work For You 24/7
+            AI Agents That Work For You 24/7
           </div>
 
           {/* Hero headline — responsive single line */}
@@ -179,71 +202,74 @@ export default function Home() {
               lineHeight: 1.08,
               color: "var(--ink)",
               animationDelay: "0.18s",
+              textAlign: "center",
             }}
           >
-            {/* "WeSee your [word] systems." all on one line */}
+            {/* "WeSee your [word] systems." — on mobile: word on second line, slot always reserved */}
             <span className="hero-text-line">
-              WeSee your {" "}
-              {/* Dynamic animated word — no overflow:hidden so gold text is never clipped */}
-              <span style={{ display: "inline-block", position: "relative", verticalAlign: "bottom" }}>
-                <style>{`
-                  @keyframes wordFlipIn {
-                    0%   { opacity: 0; transform: translateY(60%) skewY(4deg); }
-                    100% { opacity: 1; transform: translateY(0%)  skewY(0deg); }
-                  }
-                  .hero-line {
-                    display: block;
-                    white-space: nowrap;
-                  }
-                  @media (max-width: 520px) {
-                    .hero-line {
-                      white-space: normal;
-                    }
-                  }
-                  .hero-word-anim {
-                    display: inline-block;
-                    font-style: italic;
-                    font-weight: 300;
-                    background: linear-gradient(110deg, #9C7A1E 0%, #C9A84C 40%, #E8C870 65%, #C9A84C 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    background-clip: text;
-                    background-size: 200% auto;
-                    animation: wordFlipIn 0.52s cubic-bezier(0.16,1,0.3,1) both, textShimmer 6s ease infinite;
-                    letter-spacing: -0.045em;
-                    /* Italic glyphs overhang the padding-box on the right/bottom,
-                       which clips the background-clip:text gradient.
-                       Padding expands the box to cover the overhang;
-                       negative margin compensates so layout is unaffected. */
-                    padding-right: 0.2em;
-                    padding-bottom: 0.05em;
-                    margin-right: -0.2em;
-                  }
-                  .hero-headline-responsive {
-                    white-space: normal;
-                  }
-                  .hero-text-line {
-                    display: inline;
-                    white-space: normal;
-                  }
-                  @media (min-width: 768px) {
-                    .hero-headline-responsive {
-                      white-space: nowrap;
-                    }
-                    .hero-text-line {
-                      white-space: nowrap;
-                    }
-                  }
-                `}</style>
+              WeSee your{" "}
+              <br className="hero-br-mobile" aria-hidden="true" />
+              {/* Word slot: min-width reserves space so layout never jumps when word is empty */}
+              <span className="hero-word-slot">
                 <span
-                  key={wordIndex}
                   className="hero-word-anim"
                 >
-                  {HERO_WORDS[wordIndex]}
+                  {typedText || "\u00A0"}
                 </span>
-              </span>
-              {" "}systems.
+                <span className="hero-caret" aria-hidden="true" />
+              </span>{" "}systems.
             </span>
+            <style>{`
+              @keyframes wordFlipIn {
+                0%   { opacity: 0; transform: translateY(60%) skewY(4deg); }
+                100% { opacity: 1; transform: translateY(0%)  skewY(0deg); }
+              }
+              @keyframes caretBlink {
+                0%, 100% { opacity: 0; }
+                50%      { opacity: 1; }
+              }
+              .hero-line { display: block; white-space: nowrap; }
+              @media (max-width: 520px) { .hero-line { white-space: normal; } }
+              .hero-word-slot {
+                display: inline-block;
+                position: relative;
+                vertical-align: bottom;
+              }
+              .hero-word-anim {
+                display: inline-block;
+                font-style: italic;
+                font-weight: 300;
+                background: linear-gradient(110deg, #9C7A1E 0%, #C9A84C 40%, #E8C870 65%, #C9A84C 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                background-size: 200% auto;
+                animation: textShimmer 6s ease infinite;
+                letter-spacing: -0.045em;
+                padding-right: 0.2em;
+                padding-bottom: 0.05em;
+                margin-right: -0.2em;
+              }
+              .hero-caret {
+                display: inline-block;
+                width: 0.08em;
+                margin-left: 0.04em;
+                border-right: 1.5px solid rgba(201,168,76,0.85);
+                animation: caretBlink 1s step-end infinite;
+              }
+              .hero-br-mobile { display: none; }
+              @media (max-width: 767px) {
+                .hero-br-mobile { display: block; }
+                .hero-word-slot { min-width: 13ch; }
+              }
+              .hero-headline-responsive { white-space: normal; }
+              .hero-text-line { display: inline; white-space: normal; }
+              @media (min-width: 768px) {
+                .hero-headline-responsive { white-space: nowrap; }
+                .hero-text-line { white-space: nowrap; }
+                .hero-br-mobile { display: none; }
+              }
+            `}</style>
           </h1>
 
           {/* Subheadline */}
@@ -259,7 +285,7 @@ export default function Home() {
               animationDelay: "0.27s",
             }}
           >
-           A team of AI engineers, developers, and growth strategists building intelligent systems that automate operations, increase conversions, and scale businesses.
+            A team of AI engineers, developers, and growth strategists building intelligent systems that automate operations, increase conversions, and scale businesses.
           </p>
 
           {/* CTA row */}
@@ -272,10 +298,8 @@ export default function Home() {
             }}
           >
             <ParticleWrapper>
-              <a
-                href="https://cal.com/wesee/discovery"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/book-call"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "13px 26px",
@@ -298,7 +322,7 @@ export default function Home() {
               >
                 Book a Discovery Call
                 <span style={{ fontSize: 11, opacity: 0.7 }}>↗</span>
-              </a>
+              </Link>
             </ParticleWrapper>
             <ParticleWrapper>
               <Link href="/services" style={{
@@ -396,10 +420,10 @@ export default function Home() {
             gap: 14,
           }}>
             {features.map((f, i) => (
-              <div 
-                key={i} 
-                className="sr feature-card" 
-                style={{ 
+              <div
+                key={i}
+                className="sr feature-card"
+                style={{
                   "--delay": `${i * 60}ms`,
                   position: "relative",
                   overflow: "hidden",
@@ -430,10 +454,10 @@ export default function Home() {
                 }}>
                   {f.title}
                 </h3>
-                <p style={{ 
-                  fontSize: 14, 
-                  color: "rgba(17,19,23,0.48)", 
-                  lineHeight: 1.72, 
+                <p style={{
+                  fontSize: 14,
+                  color: "rgba(17,19,23,0.48)",
+                  lineHeight: 1.72,
                   margin: 0,
                   position: "relative",
                   zIndex: 2,
@@ -494,14 +518,15 @@ export default function Home() {
                 <StaggerReveal stagger={0.07} y={20}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {workImages.map((img, i) => (
-                      <div key={i} className="overflow-hidden rounded-2xl bg-[#E8E8E5]" style={{ height: img.h, borderRadius: 16 }}>
-                        <img
-                          src={img.src}
-                          alt={img.label}
-                          className="w-full h-full object-cover block transition-transform duration-[0.9s] ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105"
-                          loading="lazy"
-                        />
-                      </div>
+                      <ImageReveal
+                        key={i}
+                        src={img.src}
+                        alt={img.label}
+                        direction="left"
+                        loopOnScroll
+                        style={{ height: img.h, borderRadius: 16 }}
+                        className="rounded-2xl bg-[#E8E8E5]"
+                      />
                     ))}
                   </div>
                 </StaggerReveal>
@@ -614,7 +639,7 @@ export default function Home() {
                 fontSize: "clamp(28px, 3.5vw, 48px)", fontWeight: 450,
                 letterSpacing: "-0.03em", marginTop: 10, lineHeight: 1.1,
               }}>
-               Built for Growth. Powered by AI. Driven by Automation.
+                Built for Growth. Powered by AI. Driven by Automation.
               </h2>
             </div>
             <ParticleWrapper>
@@ -657,23 +682,23 @@ export default function Home() {
                   if (arrow) { arrow.style.transform = "translateX(0)"; arrow.style.color = "rgba(17,19,23,0.20)"; }
                 }}
               >
-              <span style={{ fontSize: 10, fontWeight: 650, color: "var(--accent)", letterSpacing: "0.12em", paddingTop: 3.5, flexShrink: 0, width: 22 }}>
-                {svc.num}
-              </span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 15.5, fontWeight: 520, color: "var(--ink)", letterSpacing: "-0.02em" }}>
-                  {svc.name}
+                <span style={{ fontSize: 10, fontWeight: 650, color: "var(--accent)", letterSpacing: "0.12em", paddingTop: 3.5, flexShrink: 0, width: 22 }}>
+                  {svc.num}
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15.5, fontWeight: 520, color: "var(--ink)", letterSpacing: "-0.02em" }}>
+                    {svc.name}
+                  </div>
+                  <div style={{ fontSize: 13, color: "rgba(17,19,23,0.40)", marginTop: 3, lineHeight: 1.55 }}>
+                    {svc.desc}
+                  </div>
                 </div>
-                <div style={{ fontSize: 13, color: "rgba(17,19,23,0.40)", marginTop: 3, lineHeight: 1.55 }}>
-                  {svc.desc}
-                </div>
-              </div>
-              <span className="svc-arrow" style={{
-                fontSize: 15, color: "rgba(17,19,23,0.20)",
-                flexShrink: 0, paddingTop: 2,
-                transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), color 0.25s ease",
-                display: "block",
-              }}>→</span>
+                <span className="svc-arrow" style={{
+                  fontSize: 15, color: "rgba(17,19,23,0.20)",
+                  flexShrink: 0, paddingTop: 2,
+                  transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), color 0.25s ease",
+                  display: "block",
+                }}>→</span>
               </Link>
             </ParticleWrapper>
           ))}
@@ -777,10 +802,8 @@ export default function Home() {
 
           <div className="sr" style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 44, flexWrap: "wrap" }}>
             <ParticleWrapper>
-              <a
-                href="https://cal.com/wesee/discovery"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/book-call"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "14px 28px",
@@ -800,7 +823,7 @@ export default function Home() {
                 }}
               >
                 Book a Discovery Call <span style={{ fontSize: 11, opacity: 0.6 }}>↗</span>
-              </a>
+              </Link>
             </ParticleWrapper>
             <ParticleWrapper>
               <a
