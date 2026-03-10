@@ -321,6 +321,7 @@ export default function Services() {
               gapPx={500}
               speedSec={31}
               camY={5}
+              categoryLabels={ringCategoryLabels}
             />
           </ParticleWrapper>
         </div>
