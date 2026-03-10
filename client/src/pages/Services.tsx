@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useSearch } from "wouter";
+import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
 import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
 import CircularGallery from "@/components/CircularGallery";
@@ -71,6 +72,102 @@ export function getServiceImage(service: { id: number }, _index: number): string
 const industries = ["Healthcare", "Real Estate", "E-Commerce", "SaaS", "Financial Services", "Education", "Hospitality", "Manufacturing", "Legal", "Logistics"];
 const engagementSizes = ["Starter", "Growth", "Enterprise"];
 const statuses = ["Live", "In Progress", "Case Study"];
+
+type ColumnProps = {
+  images: Array<{ src: string; title?: string; subtitle?: string }>;
+  y: MotionValue<number>;
+};
+
+const Column = ({ images, y }: ColumnProps) => {
+  return (
+    <motion.div
+      className="relative -top-[45%] flex h-full w-1/4 min-w-[250px] flex-col gap-[2vw] first:top-[-45%] [&:nth-child(2)]:top-[-95%] [&:nth-child(3)]:top-[-45%] [&:nth-child(4)]:top-[-75%]"
+      style={{ y }}
+    >
+      {images.map((item, i) => (
+        <div key={i} className="relative h-full w-full overflow-hidden group">
+          <img
+            src={item.src}
+            alt="image"
+            className="pointer-events-none object-cover h-full w-full"
+          />
+          {item.title && (
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+              <div className="text-white">
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                {item.subtitle && <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.9 }}>{item.subtitle}</div>}
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+    </motion.div>
+  );
+};
+
+const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string; name: string; category: string }> }) => {
+  const gallery = useRef<HTMLDivElement>(null);
+  const [dimension, setDimension] = useState({ width: 0, height: 0 });
+
+  const { scrollYProgress } = useScroll({
+    target: gallery,
+    offset: ["start end", "end start"],
+  });
+
+  const { height } = dimension;
+  const y = useTransform(scrollYProgress, [0, 1], [0, height * 2]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, height * 3.3]);
+  const y3 = useTransform(scrollYProgress, [0, 1], [0, height * 1.25]);
+  const y4 = useTransform(scrollYProgress, [0, 1], [0, height * 3]);
+
+  useEffect(() => {
+    const resize = () => {
+      setDimension({ width: window.innerWidth, height: window.innerHeight });
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+
+  // Use service data (looped to fill columns)
+  const pool = [...services, ...services, ...services];
+  const col1 = pool.slice(0, 3).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
+  const col2 = pool.slice(3, 6).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
+  const col3 = pool.slice(6, 9).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
+  const col4 = pool.slice(9, 12).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
+
+  return (
+    <div className="w-full bg-[#eee] text-black rounded-3xl overflow-hidden mt-6">
+      <div className="font-geist flex h-[25vh] items-center justify-center gap-2 relative">
+        <div className="absolute left-0 top-[50%] -translate-y-1/2 w-full max-w-6xl px-4 container mx-auto">
+          <div className="text-left">
+            <div style={{ fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05, marginBottom: "clamp(16px, 2vw, 24px)" }}>
+              Our services.
+            </div>
+            <p className="body-text" style={{ maxWidth: "min(640px, 100%)", fontSize: "clamp(14px, 1.8vw, 16px)", color: "#3A3A3A", lineHeight: 1.6 }}>
+              9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
+            </p>
+          </div>
+        </div>
+        <div className="absolute left-1/2 bottom-[10%] grid -translate-x-1/2 content-start justify-items-center gap-6 text-center text-black">
+          <span className="relative max-w-[12ch] text-xs uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:from-white after:to-black after:content-['']">
+            scroll down to see
+          </span>
+        </div>
+      </div>
+
+      <div
+        ref={gallery}
+        className="relative box-border flex h-[175vh] gap-[2vw] overflow-hidden bg-white p-[2vw]"
+      >
+        <Column images={col1} y={y} />
+        <Column images={col2} y={y2} />
+        <Column images={col3} y={y3} />
+        <Column images={col4} y={y4} />
+      </div>
+    </div>
+  );
+};
 
 export default function Services() {
   const search = useSearch();
@@ -350,12 +447,6 @@ export default function Services() {
             <div className="container">
               <div className="gsap-reveal">
                 <SectionLabel number="01" title="SERVICES" />
-                <TextReveal as="h1" style={{ fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06}>
-                  Our services.
-                </TextReveal>
-                <p className="body-text" style={{ marginTop: "clamp(16px, 2vw, 24px)", maxWidth: "min(640px, 100%)" }}>
-                  9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
-                </p>
               </div>
 
               <ParticleWrapper>
@@ -364,40 +455,12 @@ export default function Services() {
                 </button>
               </ParticleWrapper>
 
-              {/* Service Cards Grid — 3 cols, TiltCard hover, image zoom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: "clamp(40px, 6vw, 64px)" }}>
-                {filtered.map((service, i) => (
-                  <ParticleWrapper key={service.id}>
-                    <TiltCard maxTilt={5} scale={1.01}>
-                      <Link href={`/services/${service.slug}`} className="block group">
-                      <div className="img-hover-zoom" style={{ height: "clamp(240px, 30vw, 280px)", overflow: "hidden" }}>
-                        <img
-                          src={getServiceImage(service, i)}
-                          alt={service.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div style={{ padding: "clamp(12px, 1.5vw, 16px) 0 clamp(2px, 0.5vw, 4px)" }}>
-                        <div style={{ fontSize: "clamp(16px, 2vw, 18px)", fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">
-                          {service.name}
-                        </div>
-                        <div style={{ fontSize: "clamp(11px, 1.2vw, 12px)", fontWeight: 400, color: "#888888" }}>{service.category}</div>
-                      </div>
-                    </Link>
-                    </TiltCard>
-                  </ParticleWrapper>
-                ))}
-              </div>
-
-              {filtered.length === 0 && (
-                <div style={{ textAlign: "center", padding: "clamp(40px, 10vw, 80px) 0" }}>
-                  <p style={{ fontSize: "clamp(14px, 2.5vw, 16px)", color: "#888888" }}>No services match your filters.</p>
-                  <ParticleWrapper>
-                    <button onClick={clearAll} className="cta-link" style={{ marginTop: "clamp(12px, 2vw, 16px)", fontSize: "clamp(12px, 2.2vw, 14px)" }}>Clear all filters +</button>
-                  </ParticleWrapper>
-                </div>
-              )}
+              {/* Parallax gallery with service images */}
+              <ServicesParallaxGallery services={filtered.map((service, i) => ({
+                image: getServiceImage(service, i),
+                name: service.name,
+                category: service.category
+              }))} />
             </div>
           </div>
         </div>

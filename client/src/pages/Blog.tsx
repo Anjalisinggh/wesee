@@ -111,20 +111,64 @@ export default function Blog() {
                 <ParticleWrapper key={article.slug}>
                   <TiltCard maxTilt={5} scale={1.01}>
                     <Link href={`/blog/${article.slug}`} className="block group">
-                    <div className="img-hover-zoom" style={{ height: 240, overflow: "hidden" }}>
-                      <img src={article.image} alt={article.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-                    </div>
-                    <div style={{ marginTop: 16 }}>
-                      <div className="flex items-center gap-4">
-                        <span style={{ fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}>{article.category}</span>
-                        <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{article.date}</span>
+                      <div className="img-hover-zoom" style={{ height: 240, overflow: "hidden" }}>
+                        <img
+                          src={article.image}
+                          alt={article.title}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                          loading="lazy"
+                        />
                       </div>
-                      <h3 style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A", lineHeight: 1.3, marginTop: 8, transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">{article.title}</h3>
-                      <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, marginTop: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{article.excerpt}</p>
-                      <span className="cta-link" style={{ marginTop: 12, display: "inline-block", fontSize: 13 }}>Read article ↗</span>
-                    </div>
-                  </Link>
-                </TiltCard>
+                      <div style={{ marginTop: 16 }}>
+                        <div className="flex items-center gap-4">
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 400,
+                              letterSpacing: "0.12em",
+                              textTransform: "uppercase",
+                              color: "#888888",
+                            }}
+                          >
+                            {article.category}
+                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{article.date}</span>
+                        </div>
+                        <h3
+                          style={{
+                            fontSize: 20,
+                            fontWeight: 600,
+                            color: "#1A1A1A",
+                            lineHeight: 1.3,
+                            marginTop: 8,
+                            transition: "transform 0.3s ease",
+                          }}
+                          className="group-hover:translate-x-2"
+                        >
+                          {article.title}
+                        </h3>
+                        <p
+                          style={{
+                            fontSize: 14,
+                            fontWeight: 400,
+                            color: "#3A3A3A",
+                            lineHeight: 1.6,
+                            marginTop: 8,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {article.excerpt}
+                        </p>
+                        <span className="cta-link" style={{ marginTop: 12, display: "inline-block", fontSize: 13 }}>
+                          Read article ↗
+                        </span>
+                      </div>
+                    </Link>
+                  </TiltCard>
+                </ParticleWrapper>
               ))}
             </div>
           </StaggerReveal>
