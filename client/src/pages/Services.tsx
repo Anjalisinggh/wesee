@@ -76,31 +76,39 @@ const statuses = ["Live", "In Progress", "Case Study"];
 type ColumnProps = {
   images: Array<{ src: string; title?: string; subtitle?: string }>;
   y: MotionValue<number>;
+  isMobile?: boolean;
 };
 
-const Column = ({ images, y }: ColumnProps) => {
+const Column = ({ images, y, isMobile = false }: ColumnProps) => {
   return (
     <motion.div
-      className="relative -top-[45%] flex h-full w-1/4 min-w-[250px] flex-col gap-[2vw] first:top-[-45%] [&:nth-child(2)]:top-[-95%] [&:nth-child(3)]:top-[-45%] [&:nth-child(4)]:top-[-75%]"
-      style={{ y }}
+      className={`relative flex h-full flex-col ${isMobile ? '-top-[45%] first:top-[-45%] [&:nth-child(2)]:top-[-95%]' : '-top-[45%] flex-1 min-w-[280px] gap-[1.5vw] first:top-[-45%] [&:nth-child(2)]:top-[-95%] [&:nth-child(3)]:top-[-45%] [&:nth-child(4)]:top-[-75%]'}`}
+      style={{ 
+        y,
+        ...(isMobile && { width: "49%", flex: "0 0 49%", gap: "8px" })
+      }}
     >
-      {images.map((item, i) => (
-        <div key={i} className="relative h-full w-full overflow-hidden group">
-          <img
-            src={item.src}
-            alt="image"
-            className="pointer-events-none object-cover h-full w-full"
-          />
-          {item.title && (
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-              <div className="text-white">
-                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
-                {item.subtitle && <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.9 }}>{item.subtitle}</div>}
+      {images.map((item, i) => {
+        const minHeight = isMobile ? "600px" : "500px";
+        return (
+          <div key={i} className={`relative w-full overflow-hidden group ${isMobile ? '' : 'flex-1'}`} style={{ minHeight: isMobile ? undefined : undefined, flex: isMobile ? "0 0 auto" : "1 1 auto", display: isMobile ? "block" : "flex", alignItems: isMobile ? "normal" : "center", justifyContent: isMobile ? "normal" : "center", marginBottom: isMobile ? "0" : undefined }}>
+            <img
+              src={item.src}
+              alt="image"
+              className={`pointer-events-none w-full ${isMobile ? "object-contain" : "object-cover"}`}
+              style={{ height: isMobile ? "auto" : "100%", minHeight: isMobile ? undefined : undefined, maxHeight: isMobile ? "none" : "none", display: "block", width: "100%" }}
+            />
+            {item.title && (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                <div className="text-white">
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                  {item.subtitle && <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.9 }}>{item.subtitle}</div>}
+                </div>
               </div>
-            </div>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        );
+      })}
     </motion.div>
   );
 };
@@ -108,6 +116,7 @@ const Column = ({ images, y }: ColumnProps) => {
 const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string; name: string; category: string }> }) => {
   const gallery = useRef<HTMLDivElement>(null);
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
+  const [isMobile, setIsMobile] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: gallery,
@@ -123,18 +132,96 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
   useEffect(() => {
     const resize = () => {
       setDimension({ width: window.innerWidth, height: window.innerHeight });
+      setIsMobile(window.innerWidth < 768);
     };
     resize();
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   }, []);
 
-  // Use service data (looped to fill columns)
-  const pool = [...services, ...services, ...services];
-  const col1 = pool.slice(0, 3).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
-  const col2 = pool.slice(3, 6).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
-  const col3 = pool.slice(6, 9).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
-  const col4 = pool.slice(9, 12).map(s => ({ src: s.image, title: s.name, subtitle: s.category }));
+  // Distribute all services evenly across columns
+  // For mobile: 2 columns with all images
+  // For desktop: 4 columns with all images
+  const totalServices = services.length;
+  
+  // Create columns by distributing services evenly
+  const col1: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col2: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col3: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col4: Array<{ src: string; title: string; subtitle: string }> = [];
+  
+  // Mobile columns (2 columns with all images)
+  const mobileCol1: Array<{ src: string; title: string; subtitle: string }> = [];
+  const mobileCol2: Array<{ src: string; title: string; subtitle: string }> = [];
+  
+  services.forEach((service, index) => {
+    const item = { src: service.image, title: service.name, subtitle: service.category };
+    
+    // Desktop: Distribute evenly across 4 columns
+    const columnIndex = index % 4;
+    if (columnIndex === 0) col1.push(item);
+    else if (columnIndex === 1) col2.push(item);
+    else if (columnIndex === 2) col3.push(item);
+    else col4.push(item);
+    
+    // Mobile: Distribute images with more in column 2
+    // Use a 3-item cycle: 2 items go to col2, 1 item goes to col1
+    // This gives approximately 33% to col1 and 67% to col2
+    const cyclePosition = index % 3;
+    if (cyclePosition === 0) {
+      mobileCol1.push(item);
+    } else {
+      mobileCol2.push(item);
+    }
+  });
+  
+  // Ensure column 2 has more images - move any extras from col1 to col2
+  while (mobileCol1.length >= mobileCol2.length && mobileCol1.length > 0) {
+    const extraImage = mobileCol1.pop();
+    if (extraImage) {
+      mobileCol2.push(extraImage);
+    }
+  }
+  
+  // Duplicate images to fill columns for better parallax effect (ensure each column has at least 5-6 images)
+  const imagesPerColumn = Math.ceil(totalServices / 4);
+  const minImagesPerColumn = Math.max(imagesPerColumn, 6);
+  const duplicateIfNeeded = (col: typeof col1) => {
+    if (col.length < minImagesPerColumn) {
+      const needed = minImagesPerColumn - col.length;
+      const duplicated = [...col];
+      for (let i = 0; i < needed; i++) {
+        duplicated.push(col[i % col.length]);
+      }
+      return duplicated;
+    }
+    return col;
+  };
+  
+  // Desktop columns
+  const finalCol1 = duplicateIfNeeded(col1);
+  const finalCol2 = duplicateIfNeeded(col2);
+  const finalCol3 = duplicateIfNeeded(col3);
+  const finalCol4 = duplicateIfNeeded(col4);
+  
+  // Mobile columns - duplicate to ensure smooth parallax scrolling
+  // Each mobile column should have enough images for smooth scrolling
+  const mobileImagesPerColumn = Math.ceil(totalServices / 2);
+  const minMobileImagesPerColumn = Math.max(mobileImagesPerColumn, 10);
+  const duplicateMobileIfNeeded = (col: typeof mobileCol1) => {
+    if (col.length < minMobileImagesPerColumn) {
+      const needed = minMobileImagesPerColumn - col.length;
+      const duplicated = [...col];
+      for (let i = 0; i < needed; i++) {
+        duplicated.push(col[i % col.length]);
+      }
+      return duplicated;
+    }
+    return col;
+  };
+  
+  const finalMobileCol1 = duplicateMobileIfNeeded(mobileCol1);
+  const finalMobileCol2 = duplicateMobileIfNeeded(mobileCol2);
 
   return (
     <div className="w-full bg-[#eee] text-black rounded-3xl overflow-hidden mt-6">
@@ -158,12 +245,26 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
 
       <div
         ref={gallery}
-        className="relative box-border flex h-[175vh] gap-[2vw] overflow-hidden bg-white p-[2vw]"
+        className="relative box-border flex overflow-hidden bg-white"
+        style={{ 
+          height: isMobile ? "350vh" : "300vh",
+          gap: isMobile ? "1vw" : "1vw",
+          padding: isMobile ? "0" : "1.5vw"
+        }}
       >
-        <Column images={col1} y={y} />
-        <Column images={col2} y={y2} />
-        <Column images={col3} y={y3} />
-        <Column images={col4} y={y4} />
+        {isMobile ? (
+          <>
+            <Column images={finalMobileCol1} y={y} isMobile={isMobile} />
+            <Column images={finalMobileCol2} y={y2} isMobile={isMobile} />
+          </>
+        ) : (
+          <>
+            <Column images={finalCol1} y={y} isMobile={isMobile} />
+            <Column images={finalCol2} y={y2} isMobile={isMobile} />
+            <Column images={finalCol3} y={y3} isMobile={isMobile} />
+            <Column images={finalCol4} y={y4} isMobile={isMobile} />
+          </>
+        )}
       </div>
     </div>
   );
