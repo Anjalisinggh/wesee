@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SectionLabel from "@/components/SectionLabel";
 import TextReveal from "@/components/TextReveal";
-import ImageReveal from "@/components/ImageReveal";
 import StaggerReveal from "@/components/StaggerReveal";
 import MagneticButton from "@/components/MagneticButton";
 import gsap from "gsap";
@@ -42,6 +41,16 @@ const jobs = [
 
 export default function Careers() {
   const [openJob, setOpenJob] = useState<number | null>(null);
+  const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Stagger animate accordion content when a job opens
+  useEffect(() => {
+    if (openJob === null) return;
+    const el = contentRefs.current[openJob];
+    if (!el) return;
+    const blocks = el.querySelectorAll(".job-block");
+    gsap.fromTo(blocks, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.07, ease: "power2.out" });
+  }, [openJob]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -71,16 +80,14 @@ export default function Careers() {
         </div>
       </div>
 
-      <ImageReveal
-        src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=2000&q=80"
-        alt="Team"
-        direction="up"
-        duration={1.4}
-        parallax
-        parallaxAmount={50}
-        zoom={false}
-        style={{ width: "100%", height: 400 }}
-      />
+      <div style={{ width: "100%", height: 400, overflow: "hidden" }}>
+        <img
+          src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=2000&q=80"
+          alt="Team"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          loading="lazy"
+        />
+      </div>
 
       <section className="section-padding">
         <div className="container">
@@ -107,30 +114,39 @@ export default function Careers() {
                   </div>
                   <span style={{ fontSize: 24, fontWeight: 300, color: "#888888", transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)", transform: openJob === i ? "rotate(45deg)" : "none" }}>+</span>
                 </button>
-                <div style={{
-                  maxHeight: openJob === i ? 600 : 0,
-                  overflow: "hidden",
-                  transition: "max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
-                }}>
-                  <div style={{ paddingBottom: 32 }}>
-                    <div style={{ fontSize: 12, fontWeight: 400, color: "#888888", letterSpacing: "0.1em", textTransform: "uppercase" }}>Skills</div>
-                    <div style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", marginTop: 4 }}>{job.skills}</div>
-
-                    <div style={{ fontSize: 12, fontWeight: 400, color: "#888888", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 24 }}>Your Profile</div>
-                    <p style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 4 }}>{job.profile}</p>
-
-                    <div style={{ fontSize: 12, fontWeight: 400, color: "#888888", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 24 }}>Job Description</div>
-                    <p style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 4 }}>{job.description}</p>
-
-                    <MagneticButton
-                      as="a"
-                      href="mailto:jobs@wesee.in"
-                      className="btn-fill-sweep"
-                      style={{ display: "inline-block", marginTop: 24, padding: "12px 24px", background: "#1A1A1A", color: "#FFFFFF", fontSize: 13, fontWeight: 500, textDecoration: "none" }}
-                      strength={0.2}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateRows: openJob === i ? "1fr" : "0fr",
+                    transition: "grid-template-rows 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+                  }}
+                >
+                  <div style={{ minHeight: 0, overflow: "hidden" }}>
+                    <div
+                      ref={(el) => { contentRefs.current[i] = el; }}
+                      style={{ paddingBottom: 32 }}
                     >
-                      Apply now +
-                    </MagneticButton>
+                      <div className="job-block" style={{ fontSize: 12, fontWeight: 400, color: "#888888", letterSpacing: "0.1em", textTransform: "uppercase" }}>Skills</div>
+                      <div className="job-block" style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", marginTop: 4 }}>{job.skills}</div>
+
+                      <div className="job-block" style={{ fontSize: 12, fontWeight: 400, color: "#888888", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 24 }}>Your Profile</div>
+                      <p className="job-block" style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 4 }}>{job.profile}</p>
+
+                      <div className="job-block" style={{ fontSize: 12, fontWeight: 400, color: "#888888", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 24 }}>Job Description</div>
+                      <p className="job-block" style={{ fontSize: 15, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 4 }}>{job.description}</p>
+
+                      <div className="job-block" style={{ marginTop: 24 }}>
+                        <MagneticButton
+                          as="a"
+                          href="mailto:jobs@wesee.in"
+                          className="btn-fill-sweep"
+                          style={{ display: "inline-block", padding: "12px 24px", background: "#1A1A1A", color: "#FFFFFF", fontSize: 13, fontWeight: 500, textDecoration: "none" }}
+                          strength={0.2}
+                        >
+                          Apply now +
+                        </MagneticButton>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

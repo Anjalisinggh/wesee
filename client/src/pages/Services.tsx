@@ -1,10 +1,13 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Link, useSearch } from "wouter";
+import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
 import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
 import CircularGallery from "@/components/CircularGallery";
+import RotorGallery from "@/components/RotorGallery";
 import TextReveal from "@/components/TextReveal";
 import TiltCard from "@/components/TiltCard";
+import ParticleWrapper from "@/components/ParticleWrapper";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -69,6 +72,203 @@ export function getServiceImage(service: { id: number }, _index: number): string
 const industries = ["Healthcare", "Real Estate", "E-Commerce", "SaaS", "Financial Services", "Education", "Hospitality", "Manufacturing", "Legal", "Logistics"];
 const engagementSizes = ["Starter", "Growth", "Enterprise"];
 const statuses = ["Live", "In Progress", "Case Study"];
+
+type ColumnProps = {
+  images: Array<{ src: string; title?: string; subtitle?: string }>;
+  y: MotionValue<number>;
+  isMobile?: boolean;
+};
+
+const Column = ({ images, y, isMobile = false }: ColumnProps) => {
+  return (
+    <motion.div
+      className={`relative flex h-full flex-col ${isMobile ? '-top-[45%] first:top-[-45%] [&:nth-child(2)]:top-[-95%]' : '-top-[45%] flex-1 min-w-[280px] gap-[1.5vw] first:top-[-45%] [&:nth-child(2)]:top-[-95%] [&:nth-child(3)]:top-[-45%] [&:nth-child(4)]:top-[-75%]'}`}
+      style={{ 
+        y,
+        ...(isMobile && { width: "49%", flex: "0 0 49%", gap: "8px" })
+      }}
+    >
+      {images.map((item, i) => {
+        const minHeight = isMobile ? "600px" : "500px";
+        return (
+          <div key={i} className={`relative w-full overflow-hidden group ${isMobile ? '' : 'flex-1'}`} style={{ minHeight: isMobile ? undefined : undefined, flex: isMobile ? "0 0 auto" : "1 1 auto", display: isMobile ? "block" : "flex", alignItems: isMobile ? "normal" : "center", justifyContent: isMobile ? "normal" : "center", marginBottom: isMobile ? "0" : undefined }}>
+            <img
+              src={item.src}
+              alt="image"
+              className={`pointer-events-none w-full ${isMobile ? "object-contain" : "object-cover"}`}
+              style={{ height: isMobile ? "auto" : "100%", minHeight: isMobile ? undefined : undefined, maxHeight: isMobile ? "none" : "none", display: "block", width: "100%" }}
+            />
+            {item.title && (
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                <div className="text-white">
+                  <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
+                  {item.subtitle && <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.9 }}>{item.subtitle}</div>}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </motion.div>
+  );
+};
+
+const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string; name: string; category: string }> }) => {
+  const gallery = useRef<HTMLDivElement>(null);
+  const [dimension, setDimension] = useState({ width: 0, height: 0 });
+  const [isMobile, setIsMobile] = useState(false);
+
+  const { scrollYProgress } = useScroll({
+    target: gallery,
+    offset: ["start end", "end start"],
+  });
+
+  const { height } = dimension;
+  const y = useTransform(scrollYProgress, [0, 1], [0, height * 2]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [0, height * 3.3]);
+  const y3 = useTransform(scrollYProgress, [0, 1], [0, height * 1.25]);
+  const y4 = useTransform(scrollYProgress, [0, 1], [0, height * 3]);
+
+  useEffect(() => {
+    const resize = () => {
+      setDimension({ width: window.innerWidth, height: window.innerHeight });
+      setIsMobile(window.innerWidth < 768);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+
+  // Distribute all services evenly across columns
+  // For mobile: 2 columns with all images
+  // For desktop: 4 columns with all images
+  const totalServices = services.length;
+  
+  // Create columns by distributing services evenly
+  const col1: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col2: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col3: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col4: Array<{ src: string; title: string; subtitle: string }> = [];
+  
+  // Mobile columns (2 columns with all images)
+  const mobileCol1: Array<{ src: string; title: string; subtitle: string }> = [];
+  const mobileCol2: Array<{ src: string; title: string; subtitle: string }> = [];
+  
+  services.forEach((service, index) => {
+    const item = { src: service.image, title: service.name, subtitle: service.category };
+    
+    // Desktop: Distribute evenly across 4 columns
+    const columnIndex = index % 4;
+    if (columnIndex === 0) col1.push(item);
+    else if (columnIndex === 1) col2.push(item);
+    else if (columnIndex === 2) col3.push(item);
+    else col4.push(item);
+    
+    // Mobile: Distribute images with more in column 2
+    // Use a 3-item cycle: 2 items go to col2, 1 item goes to col1
+    // This gives approximately 33% to col1 and 67% to col2
+    const cyclePosition = index % 3;
+    if (cyclePosition === 0) {
+      mobileCol1.push(item);
+    } else {
+      mobileCol2.push(item);
+    }
+  });
+  
+  // Ensure column 2 has more images - move any extras from col1 to col2
+  while (mobileCol1.length >= mobileCol2.length && mobileCol1.length > 0) {
+    const extraImage = mobileCol1.pop();
+    if (extraImage) {
+      mobileCol2.push(extraImage);
+    }
+  }
+  
+  // Duplicate images to fill columns for better parallax effect (ensure each column has at least 5-6 images)
+  const imagesPerColumn = Math.ceil(totalServices / 4);
+  const minImagesPerColumn = Math.max(imagesPerColumn, 6);
+  const duplicateIfNeeded = (col: typeof col1) => {
+    if (col.length < minImagesPerColumn) {
+      const needed = minImagesPerColumn - col.length;
+      const duplicated = [...col];
+      for (let i = 0; i < needed; i++) {
+        duplicated.push(col[i % col.length]);
+      }
+      return duplicated;
+    }
+    return col;
+  };
+  
+  // Desktop columns
+  const finalCol1 = duplicateIfNeeded(col1);
+  const finalCol2 = duplicateIfNeeded(col2);
+  const finalCol3 = duplicateIfNeeded(col3);
+  const finalCol4 = duplicateIfNeeded(col4);
+  
+  // Mobile columns - duplicate to ensure smooth parallax scrolling
+  // Each mobile column should have enough images for smooth scrolling
+  const mobileImagesPerColumn = Math.ceil(totalServices / 2);
+  const minMobileImagesPerColumn = Math.max(mobileImagesPerColumn, 10);
+  const duplicateMobileIfNeeded = (col: typeof mobileCol1) => {
+    if (col.length < minMobileImagesPerColumn) {
+      const needed = minMobileImagesPerColumn - col.length;
+      const duplicated = [...col];
+      for (let i = 0; i < needed; i++) {
+        duplicated.push(col[i % col.length]);
+      }
+      return duplicated;
+    }
+    return col;
+  };
+  
+  const finalMobileCol1 = duplicateMobileIfNeeded(mobileCol1);
+  const finalMobileCol2 = duplicateMobileIfNeeded(mobileCol2);
+
+  return (
+    <div className="w-full bg-[#eee] text-black rounded-3xl overflow-hidden mt-6">
+      <div className="font-geist flex h-[25vh] items-center justify-center gap-2 relative">
+        <div className="absolute left-0 top-[50%] -translate-y-1/2 w-full max-w-6xl px-4 container mx-auto">
+          <div className="text-left">
+            <div style={{ fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05, marginBottom: "clamp(16px, 2vw, 24px)" }}>
+              Our services.
+            </div>
+            <p className="body-text" style={{ maxWidth: "min(640px, 100%)", fontSize: "clamp(14px, 1.8vw, 16px)", color: "#3A3A3A", lineHeight: 1.6 }}>
+              9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
+            </p>
+          </div>
+        </div>
+        <div className="absolute left-1/2 bottom-[10%] grid -translate-x-1/2 content-start justify-items-center gap-6 text-center text-black">
+          <span className="relative max-w-[12ch] text-xs uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:from-white after:to-black after:content-['']">
+            scroll down to see
+          </span>
+        </div>
+      </div>
+
+      <div
+        ref={gallery}
+        className="relative box-border flex overflow-hidden bg-white"
+        style={{ 
+          height: isMobile ? "350vh" : "300vh",
+          gap: isMobile ? "1vw" : "1vw",
+          padding: isMobile ? "0" : "1.5vw"
+        }}
+      >
+        {isMobile ? (
+          <>
+            <Column images={finalMobileCol1} y={y} isMobile={isMobile} />
+            <Column images={finalMobileCol2} y={y2} isMobile={isMobile} />
+          </>
+        ) : (
+          <>
+            <Column images={finalCol1} y={y} isMobile={isMobile} />
+            <Column images={finalCol2} y={y2} isMobile={isMobile} />
+            <Column images={finalCol3} y={y3} isMobile={isMobile} />
+            <Column images={finalCol4} y={y4} isMobile={isMobile} />
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default function Services() {
   const search = useSearch();
@@ -137,15 +337,24 @@ export default function Services() {
     setSelectedStatus(null);
   };
 
-  // Prepare ring items
+  // Prepare ring items - duplicate to reach 90 items
   const ringItems = useMemo(() => {
-    return filtered.map((s, i) => ({
+    const baseItems = filtered.map((s, i) => ({
       title: s.name,
       image: getServiceImage(s, i),
       url: `/services/${s.slug}`,
       category: s.category,
       categoryId: s.categoryId,
     }));
+    
+    // Duplicate items to reach 90 total
+    const targetCount = 90;
+    const repeatedItems: typeof baseItems = [];
+    for (let i = 0; i < targetCount; i++) {
+      repeatedItems.push(baseItems[i % baseItems.length]);
+    }
+    
+    return repeatedItems;
   }, [filtered]);
 
   // Category labels for ring
@@ -171,36 +380,40 @@ export default function Services() {
     <>
       {/* ═══ FILTER PANEL — slides from LEFT with staggered items ═══ */}
       <div
+        className="w-full sm:w-80 lg:w-96"
         style={{
           position: "fixed",
           left: 0,
           top: 0,
           height: "100vh",
-          width: 360,
           background: "#FFFFFF",
           borderRight: "1px solid #EEEEEE",
           zIndex: 100,
           transform: filterOpen ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
           overflowY: "auto",
-          padding: "32px 24px",
+          padding: "clamp(20px, 3vw, 32px) clamp(16px, 2vw, 24px)",
         }}
       >
-        <div className="flex items-center justify-between" style={{ marginBottom: 32 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: "clamp(24px, 3vw, 32px)" }}>
           <div>
-            <div style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A" }}>Filter Services ({filtered.length})</div>
-            <button onClick={clearAll} className="cta-link" style={{ fontSize: 13, color: "#888888", marginTop: 4 }}>
-              Clear all
-            </button>
+            <div style={{ fontSize: "clamp(20px, 2.5vw, 24px)", fontWeight: 600, color: "#1A1A1A" }}>Filter Services ({filtered.length})</div>
+            <ParticleWrapper>
+              <button onClick={clearAll} className="cta-link" style={{ fontSize: "clamp(11px, 2vw, 13px)", color: "#888888", marginTop: "clamp(2px, 0.5vw, 4px)" }}>
+                Clear all
+              </button>
+            </ParticleWrapper>
           </div>
-          <button
-            onClick={() => setFilterOpen(false)}
-            style={{ fontSize: 24, color: "#1A1A1A", padding: 8, transition: "transform 0.3s ease" }}
-            onMouseEnter={e => e.currentTarget.style.transform = "rotate(90deg)"}
-            onMouseLeave={e => e.currentTarget.style.transform = "rotate(0)"}
-          >
-            ×
-          </button>
+          <ParticleWrapper>
+            <button
+              onClick={() => setFilterOpen(false)}
+              style={{ fontSize: "clamp(20px, 4vw, 24px)", color: "#1A1A1A", padding: "clamp(6px, 1.5vw, 8px)", transition: "transform 0.3s ease", cursor: "none" }}
+              onMouseEnter={e => e.currentTarget.style.transform = "rotate(90deg)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "rotate(0)"}
+            >
+              ×
+            </button>
+          </ParticleWrapper>
         </div>
 
         {[
@@ -210,38 +423,42 @@ export default function Services() {
           { key: "status", label: "STATUS", items: [{ label: "All", value: null as any }, ...statuses.map(s => ({ label: s, value: s }))], selected: selectedStatus, onSelect: setSelectedStatus },
         ].map((group) => (
           <div key={group.key} style={{ borderTop: "1px solid #EEEEEE" }}>
-            <button
-              onClick={() => setExpandedFilter(expandedFilter === group.key ? null : group.key)}
-              className="w-full flex items-center justify-between"
-              style={{ padding: "16px 0", fontSize: 11, fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888" }}
-            >
-              {group.label}
-              <span style={{ fontSize: 16, transition: "transform 0.3s ease", transform: expandedFilter === group.key ? "rotate(45deg)" : "rotate(0)" }}>+</span>
-            </button>
+            <ParticleWrapper>
+              <button
+                onClick={() => setExpandedFilter(expandedFilter === group.key ? null : group.key)}
+                className="w-full flex items-center justify-between"
+                style={{ padding: "clamp(12px, 2vw, 16px) 0", fontSize: "clamp(10px, 1.8vw, 11px)", fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", cursor: "none" }}
+              >
+                {group.label}
+                <span style={{ fontSize: "clamp(14px, 2.5vw, 16px)", transition: "transform 0.3s ease", transform: expandedFilter === group.key ? "rotate(45deg)" : "rotate(0)" }}>+</span>
+              </button>
+            </ParticleWrapper>
             <div
               style={{
-                maxHeight: expandedFilter === group.key ? 600 : 0,
+                maxHeight: expandedFilter === group.key ? "clamp(400px, 80vh, 600px)" : 0,
                 overflow: "hidden",
                 transition: "max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             >
-              <div style={{ paddingBottom: 16 }}>
+              <div style={{ paddingBottom: "clamp(12px, 2vw, 16px)" }}>
                 {group.items.map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => group.onSelect(item.value)}
-                    className="block w-full text-left service-row-hover"
-                    style={{
-                      padding: "8px 0",
-                      fontSize: 14,
-                      fontWeight: group.selected === item.value ? 600 : 400,
-                      color: group.selected === item.value ? "#1A1A1A" : "#3A3A3A",
-                      transition: "all 0.3s ease",
-                    }}
-                  >
-                    {item.label}
-                    {group.selected === item.value && <span style={{ marginLeft: 8, fontSize: 11 }}>●</span>}
-                  </button>
+                  <ParticleWrapper key={i}>
+                    <button
+                      onClick={() => group.onSelect(item.value)}
+                      className="block w-full text-left service-row-hover"
+                      style={{
+                        padding: "clamp(6px, 1.5vw, 8px) 0",
+                        fontSize: "clamp(12px, 2.2vw, 14px)",
+                        fontWeight: group.selected === item.value ? 600 : 400,
+                        color: group.selected === item.value ? "#1A1A1A" : "#3A3A3A",
+                        transition: "all 0.3s ease",
+                        cursor: "none",
+                      }}
+                    >
+                      {item.label}
+                      {group.selected === item.value && <span style={{ marginLeft: "clamp(6px, 1.5vw, 8px)", fontSize: "clamp(10px, 1.8vw, 11px)" }}>●</span>}
+                    </button>
+                  </ParticleWrapper>
                 ))}
               </div>
             </div>
@@ -266,84 +483,85 @@ export default function Services() {
       {/* ═══ RING VIEW ═══ */}
       {viewMode === "ring" && (
         <div style={{ position: "relative" }}>
-          <div style={{ position: "fixed", top: 80, left: 24, zIndex: 60 }}>
-            <button
-              onClick={() => setFilterOpen(true)}
-              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", letterSpacing: "0.02em", background: "rgba(248,248,246,0.88)", backdropFilter: "blur(8px)", border: "1px solid rgba(17,19,23,0.12)", borderRadius: 20, padding: "6px 16px", cursor: "pointer" }}
-            >
-              Filter Services +
-            </button>
+          <div className="fixed top-12 sm:top-16 md:top-20 left-3 sm:left-4 md:left-6 lg:left-8 z-[60]">
+            <ParticleWrapper>
+              <button
+                onClick={() => setFilterOpen(true)}
+                className="font-medium text-[var(--ink)] tracking-[0.02em] bg-[rgba(248,248,246,0.88)] backdrop-blur-md border border-[rgba(17,19,23,0.12)] rounded-[20px]"
+                style={{ 
+                  fontSize: "clamp(10px, 2vw, 13px)",
+                  padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
+                  cursor: "none"
+                }}
+              >
+                Filter Services +
+              </button>
+            </ParticleWrapper>
           </div>
-          <div style={{ position: "fixed", top: 80, right: 24, zIndex: 60 }}>
-            <button
-              onClick={() => setViewMode("grid")}
-              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", letterSpacing: "0.02em", background: "rgba(248,248,246,0.88)", backdropFilter: "blur(8px)", border: "1px solid rgba(17,19,23,0.12)", borderRadius: 20, padding: "6px 16px", cursor: "pointer" }}
-            >
-              Grid view ⊞
-            </button>
+          <div className="fixed top-12 sm:top-16 md:top-20 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
+            <ParticleWrapper>
+              <button
+                onClick={() => setViewMode("grid")}
+                className="font-medium text-[var(--ink)] tracking-[0.02em] bg-[rgba(248,248,246,0.88)] backdrop-blur-md border border-[rgba(17,19,23,0.12)] rounded-[20px]"
+                style={{ 
+                  fontSize: "clamp(10px, 2vw, 13px)",
+                  padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
+                  cursor: "none"
+                }}
+              >
+                Grid view ⊞
+              </button>
+            </ParticleWrapper>
           </div>
-          <CircularGallery items={ringItems} categoryLabels={ringCategoryLabels} />
+          <ParticleWrapper>
+            <RotorGallery 
+              items={ringItems} 
+              gapPx={500}
+              speedSec={31}
+              camY={5}
+              categoryLabels={ringCategoryLabels}
+            />
+          </ParticleWrapper>
         </div>
       )}
 
       {/* ═══ GRID VIEW — Enhanced with TiltCard and stagger ═══ */}
       {viewMode === "grid" && (
-        <div style={{ paddingTop: 64 }}>
-          <div style={{ position: "fixed", top: 80, right: 24, zIndex: 60 }}>
-            <button
-              onClick={() => setViewMode("ring")}
-              style={{ fontSize: 13, fontWeight: 500, color: "var(--ink)", letterSpacing: "0.02em", background: "rgba(248,248,246,0.88)", backdropFilter: "blur(8px)", border: "1px solid rgba(17,19,23,0.12)", borderRadius: 20, padding: "6px 16px", cursor: "pointer" }}
-            >
-              Ring view ○
-            </button>
+        <div className="pt-10 sm:pt-12 md:pt-16 lg:pt-20">
+          <div className="fixed top-12 sm:top-16 md:top-20 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
+            <ParticleWrapper>
+              <button
+                onClick={() => setViewMode("ring")}
+                className="font-medium text-[var(--ink)] tracking-[0.02em] bg-[rgba(248,248,246,0.88)] backdrop-blur-md border border-[rgba(17,19,23,0.12)] rounded-[20px]"
+                style={{ 
+                  fontSize: "clamp(10px, 2vw, 13px)",
+                  padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
+                  cursor: "none"
+                }}
+              >
+                Ring view ○
+              </button>
+            </ParticleWrapper>
           </div>
 
           <div className="section-padding">
             <div className="container">
               <div className="gsap-reveal">
                 <SectionLabel number="01" title="SERVICES" />
-                <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06}>
-                  Our services.
-                </TextReveal>
-                <p className="body-text" style={{ marginTop: 24, maxWidth: 640 }}>
-                  9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
-                </p>
               </div>
 
-              <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: 24 }}>
-                Filter Services +
-              </button>
+              <ParticleWrapper>
+                <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: "clamp(16px, 3vw, 24px)", fontSize: "clamp(12px, 2.2vw, 14px)" }}>
+                  Filter Services +
+                </button>
+              </ParticleWrapper>
 
-              {/* Service Cards Grid — 3 cols, TiltCard hover, image zoom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3" style={{ gap: 2, marginTop: 64 }}>
-                {filtered.map((service, i) => (
-                  <TiltCard key={service.id} maxTilt={5} scale={1.01}>
-                    <Link href={`/services/${service.slug}`} className="block group">
-                      <div className="img-hover-zoom" style={{ height: 280, overflow: "hidden" }}>
-                        <img
-                          src={getServiceImage(service, i)}
-                          alt={service.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                          loading="lazy"
-                        />
-                      </div>
-                      <div style={{ padding: "16px 0 4px" }}>
-                        <div style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease" }} className="group-hover:translate-x-2">
-                          {service.name}
-                        </div>
-                        <div style={{ fontSize: 12, fontWeight: 400, color: "#888888" }}>{service.category}</div>
-                      </div>
-                    </Link>
-                  </TiltCard>
-                ))}
-              </div>
-
-              {filtered.length === 0 && (
-                <div style={{ textAlign: "center", padding: "80px 0" }}>
-                  <p style={{ fontSize: 16, color: "#888888" }}>No services match your filters.</p>
-                  <button onClick={clearAll} className="cta-link" style={{ marginTop: 16 }}>Clear all filters +</button>
-                </div>
-              )}
+              {/* Parallax gallery with service images */}
+              <ServicesParallaxGallery services={filtered.map((service, i) => ({
+                image: getServiceImage(service, i),
+                name: service.name,
+                category: service.category
+              }))} />
             </div>
           </div>
         </div>

@@ -1,0 +1,2 @@
+declare module "particles.js";
+

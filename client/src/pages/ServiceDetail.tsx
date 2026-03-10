@@ -193,9 +193,7 @@ export default function ServiceDetail() {
             </p>
             <MagneticButton
               as="a"
-              href="https://cal.com/wesee/discovery"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/book-call"
               className="btn-fill-sweep-dark"
               style={{ display: "inline-block", marginTop: 24, padding: "16px 32px", background: "#FFFFFF", color: "#1A1A1A", fontSize: 13, fontWeight: 500, textDecoration: "none" }}
               strength={0.25}
