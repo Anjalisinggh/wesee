@@ -63,7 +63,7 @@ const Column = ({ images, y, isMobile = false }: ColumnProps) => {
       }}
     >
       {images.map((src, i) => (
-        <div key={i} className={`relative w-full overflow-hidden ${isMobile ? '' : 'h-full flex-1'}`} style={{ minHeight: isMobile ? undefined : undefined, flex: isMobile ? "0 0 auto" : "1 1 auto", display: isMobile ? "block" : "flex", alignItems: isMobile ? "normal" : "center", justifyContent: isMobile ? "normal" : "center" }}>
+        <div key={i} className={`relative w-full overflow-hidden ${isMobile ? '' : 'h-full flex-1'}`} style={{ flex: isMobile ? "0 0 auto" : "1 1 auto", display: isMobile ? "block" : "flex", alignItems: isMobile ? "normal" : "center", justifyContent: isMobile ? "normal" : "center" }}>
           <img
             src={src}
             alt="image"
@@ -155,7 +155,7 @@ const TeamParallaxGallery = () => {
 
   return (
     <div className="w-full bg-[#eee] text-black rounded-3xl overflow-hidden mt-10">
-      <div className="font-geist flex h-[25vh] items-center justify-center gap-2">
+      <div className="font-geist relative flex h-[25vh] items-center justify-center gap-2">
         <div className="absolute left-1/2 top-[10%] grid -translate-x-1/2 content-start justify-items-center gap-6 text-center text-black">
           <span className="relative max-w-[12ch] text-xs uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:from-white after:to-black after:content-['']">
             scroll down to see
@@ -308,9 +308,11 @@ export default function Team() {
 
       <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
         <div className="container">
-          <MagneticButton as="a" href="/careers" className="cta-link" style={{ fontSize: 18, fontWeight: 600 }} strength={0.3}>
-            Join our team +
-          </MagneticButton>
+          <Link href="/careers">
+            <MagneticButton as="div" className="cta-link" style={{ fontSize: 18, fontWeight: 600, cursor: "pointer" }} strength={0.3}>
+              Join our team +
+            </MagneticButton>
+          </Link>
         </div>
       </section>
     </div>
