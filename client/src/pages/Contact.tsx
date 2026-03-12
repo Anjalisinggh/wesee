@@ -19,7 +19,7 @@ const contactTypes = [
 ];
 
 const offices = [
-  { city: "Jaipur", country: "India", role: "Headquarters", address: "WeSee HQ, Malviya Nagar, Jaipur, Rajasthan 302017", phone: "+91 98290 XXXXX" },
+  { city: "Japan", country: "Japan", role: "Headquarters", address: "WeSee HQ, Tokyo, Japan", phone: "+81 98290 XXXXX" },
   { city: "Mumbai", country: "India", role: "Operations", address: "WeWork BKC, Bandra Kurla Complex, Mumbai 400051", phone: "+91 98200 XXXXX" },
   { city: "Dubai", country: "UAE", role: "MENA Office", address: "Dubai Internet City, Building 1, Dubai, UAE", phone: "+971 4 XXX XXXX" },
 ];
@@ -525,7 +525,7 @@ export default function Contact() {
                 className="btn-fill-sweep"
                 style={{ marginTop: "clamp(28px, 4vw, 40px)", padding: "clamp(14px, 2vw, 18px) clamp(28px, 4vw, 36px)", background: "#1A1A1A", color: "#FFFFFF", fontSize: "clamp(12px, 1.4vw, 14px)", fontWeight: 500, border: "none", borderRadius: "8px", transition: "all 0.3s ease", cursor: "pointer", boxShadow: "0 4px 12px rgba(26, 26, 26, 0.15)" }}
                 strength={0.2}
-                onMouseEnter={(e) => {
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
                   gsap.to(e.currentTarget, {
                     scale: 1.05,
                     boxShadow: "0 8px 24px rgba(26, 26, 26, 0.25)",
@@ -533,7 +533,7 @@ export default function Contact() {
                     ease: "power2.out"
                   });
                 }}
-                onMouseLeave={(e) => {
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
                   gsap.to(e.currentTarget, {
                     scale: 1,
                     boxShadow: "0 4px 12px rgba(26, 26, 26, 0.15)",

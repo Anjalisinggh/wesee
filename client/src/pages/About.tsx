@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import ParticleHero from "@/components/ParticleHero";
+import { useEffect, useRef, useState } from "react";
+import InteractiveParticles from "@/components/InteractiveParticles";
 import StaggerReveal from "@/components/StaggerReveal";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -7,7 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const milestones = [
-  { year: "2021", title: "Founded in Jaipur", desc: "WeSee started as a performance marketing agency with a vision for intelligent automation." },
+  { year: "2021", title: "Founded in Japan", desc: "WeSee started as a performance marketing agency with a vision for intelligent automation." },
   { year: "2022", title: "First AI systems deployed", desc: "Shipped first AI agents and workflow automations for e-commerce and SaaS clients." },
   { year: "2023", title: "Dubai expansion", desc: "Opened MENA operations to serve regional enterprises and ambitious startups." },
   { year: "2024", title: "35+ projects, 80+ workflows", desc: "Reached critical mass — 35 full-stack projects and over 80 live automation pipelines." },
@@ -22,6 +22,8 @@ const values = [
 ];
 
 export default function About() {
+  const [isTextHovered, setIsTextHovered] = useState(false);
+
   useEffect(() => {
     const t = setTimeout(() => {
       document.querySelectorAll(".gsap-reveal").forEach((el) => {
@@ -50,7 +52,10 @@ export default function About() {
         overflow: "hidden",
         paddingTop: 88, paddingBottom: 40,
       }}>
-        <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+        <InteractiveParticles 
+          style={{ position: "absolute", inset: 0, zIndex: 0 }} 
+          isHovered={isTextHovered}
+        />
 
         <div style={{
           position: "absolute",
@@ -72,34 +77,46 @@ export default function About() {
               background: "var(--accent)", display: "inline-block",
               animation: "glowPulse 2.5s ease infinite",
             }} />
-            Founded 2021 · Jaipur, India
+            Founded 2021 · Japan
           </div>
 
-          <h1 className="fade-up" style={{
-            fontSize: "clamp(52px, 8vw, 100px)",
-            fontWeight: 450, letterSpacing: "-0.04em", lineHeight: 1.03,
-            color: "var(--ink)", maxWidth: "14ch", textAlign: "center",
-            animationDelay: "0.15s", margin: 0,
-          }}>
-            We are{" "}
-            <span style={{
-              fontStyle: "italic", fontWeight: 300, letterSpacing: "-0.05em",
-              background: "linear-gradient(135deg, #B8922E 0%, var(--accent) 48%, #E8C870 100%)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              backgroundClip: "text", backgroundSize: "200% 100%",
-              animation: "textShimmer 5s ease infinite",
-            }}>
-              WeSee.
-            </span>
-          </h1>
+          <div
+            onMouseEnter={() => setIsTextHovered(true)}
+            onMouseLeave={() => setIsTextHovered(false)}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+          >
+            <h1 
+              className="fade-up" 
+              style={{
+                fontSize: "clamp(52px, 8vw, 100px)",
+                fontWeight: 450, letterSpacing: "-0.04em", lineHeight: 1.03,
+                color: "var(--ink)", maxWidth: "14ch", textAlign: "center",
+                animationDelay: "0.15s", margin: 0,
+              }}
+            >
+              We are{" "}
+              <span style={{
+                fontStyle: "italic", fontWeight: 300, letterSpacing: "-0.05em",
+                background: "linear-gradient(135deg, #B8922E 0%, var(--accent) 48%, #E8C870 100%)",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                backgroundClip: "text", backgroundSize: "200% 100%",
+                animation: "textShimmer 5s ease infinite",
+              }}>
+                WeSee.
+              </span>
+            </h1>
 
-          <p className="fade-up" style={{
-            fontSize: "clamp(16px, 2vw, 18px)", fontWeight: 400, color: "var(--ink-50)",
-            marginTop: 24, maxWidth: 540, lineHeight: 1.7,
-            animationDelay: "0.25s",
-          }}>
-            India's leading AI automation agency — a cross-functional team of AI engineers, operators, and growth strategists building the intelligent systems modern business runs on.
-          </p>
+            <p 
+              className="fade-up" 
+              style={{
+                fontSize: "clamp(16px, 2vw, 18px)", fontWeight: 400, color: "var(--ink-50)",
+                marginTop: 24, maxWidth: 540, lineHeight: 1.7,
+                animationDelay: "0.25s",
+              }}
+            >
+              India's leading AI automation agency — a cross-functional team of AI engineers, operators, and growth strategists building the intelligent systems modern business runs on.
+            </p>
+          </div>
         </div>
       </section>
 

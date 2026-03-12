@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 const jobs = [
   {
     title: "AI Solutions Architect",
-    location: "Jaipur",
+    location: "Japan",
     skills: "LangChain, OpenAI API, n8n, Zapier, Python",
     profile: "3+ years of experience building AI-powered applications. Deep understanding of LLM orchestration, prompt engineering, and workflow automation. Ability to translate business requirements into technical architecture.",
     description: "You will design and build end-to-end AI automation solutions for our clients — from discovery and architecture through deployment and optimization. You'll work directly with founders and operations teams to identify high-impact automation opportunities and deliver production-ready systems.",
@@ -32,7 +32,7 @@ const jobs = [
   },
   {
     title: "AI & Automation Internship",
-    location: "Jaipur / Remote",
+    location: "Japan / Remote",
     skills: "Python, curiosity, willingness to learn",
     profile: "Currently pursuing or recently completed a degree in Computer Science, Engineering, or related field. Basic programming skills in Python. Genuine interest in AI and automation.",
     description: "6-month paid internship where you'll learn to build AI agents, workflow automations, and intelligent business systems under the mentorship of our senior engineers. Stipend provided. High-performing interns will be offered full-time positions.",

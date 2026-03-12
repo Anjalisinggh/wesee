@@ -51,7 +51,7 @@ export default function CustomCursor() {
       // Dot
       dot.style.left = `${s.x}px`;
       dot.style.top = `${s.y}px`;
-      dot.style.background = s.dark ? "#ffffff" : "var(--ink, #111317)";
+      dot.style.background = s.dark ? "#ffffff" : "rgba(201,168,76) ";
 
       rafRef.current = requestAnimationFrame(animate);
     };
@@ -71,7 +71,7 @@ export default function CustomCursor() {
         position: "fixed",
         width: 10, height: 10,
         borderRadius: "50%",
-        background: "var(--ink, #111317)",
+        background: "rgba(201,168,76) ",
         transform: "translate(-50%,-50%)",
         pointerEvents: "none",
         zIndex: 99999,

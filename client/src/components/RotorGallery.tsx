@@ -196,8 +196,8 @@ function RotorItem({
 export default function RotorGallery({
   items,
   count = 90,
-  cardWidth = 140,
-  cardHeight = 120,
+  cardWidth = 100,
+  cardHeight = 80,
   borderRadius = 12,
   speedSec = 31,
   perspective = 2500,
@@ -205,8 +205,8 @@ export default function RotorGallery({
   camY = 5,
   camZ = -100,
   offsetX = 0,
-  offsetY = 0,
-  gapPx = 500,
+  offsetY = 30,
+  gapPx = 250,
   rotateCardDeg = 90,
   cardRotXDeg = 0,
   cardRotYDeg = 0,
@@ -219,6 +219,7 @@ export default function RotorGallery({
   const revealSceneRef = useRef<HTMLDivElement>(null);
   const revealLayerRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
+  const [currentRotation, setCurrentRotation] = useState(0); // Track rotation for label updates
   const activeCardIndexRef = useRef<number>(0);
   const [activeCardIndex, setActiveCardIndex] = useState<number>(0);
   const [isRevealVisible, setIsRevealVisible] = useState<boolean>(false);
@@ -236,9 +237,24 @@ export default function RotorGallery({
   const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const hasDraggedRef = useRef(false);
   const isHoveringRef = useRef(false);
+  const lastRotationUpdateRef = useRef(0);
 
   const isMobile = dimensions.w < 640;
   const list = useMemo(() => items.slice(0, safeCount), [items, safeCount]);
+
+  // Base ring radius (distance from center to card faces)
+  const LABEL_OFFSET_X_PX = 50; // horizontal label offset from ring (X‑axis)
+  const LABEL_OFFSET_Y_PX = 6; // vertical label offset from ring (Y‑axis)
+  const ringRadius = useMemo(() => {
+    if (categoryLabels.length === 0 || isMobile) return 0;
+
+    const effectiveCardWidth = isMobile ? cardWidth * 0.6 : cardWidth;
+    const effectiveCardHeight = isMobile ? cardHeight * 0.6 : cardHeight;
+    const cardDiagonal = Math.sqrt(effectiveCardWidth ** 2 + effectiveCardHeight ** 2);
+    const maxCardScale = 1.15;
+    const mobileGapPx = isMobile ? gapPx * 0.45 : gapPx;
+    return mobileGapPx + (cardDiagonal * maxCardScale) / 2;
+  }, [categoryLabels.length, isMobile, cardWidth, cardHeight, gapPx]);
 
   useEffect(() => {
     const update = () => setDimensions({ w: window.innerWidth, h: window.innerHeight });
@@ -286,6 +302,8 @@ export default function RotorGallery({
         sceneRef.current.style.setProperty("--global-rotation", rotVal);
       }
 
+      // Don't update labels during auto-rotation - only update after drag
+
       raf = requestAnimationFrame(tick);
     };
 
@@ -325,7 +343,31 @@ export default function RotorGallery({
 
       const now = performance.now();
       const dt = Math.max(now - lastPosRef.current.time, 1);
-      const dx = clientX - lastPosRef.current.x;
+      
+      // Calculate rotation based on angular movement around center
+      // This is more consistent than using dx directly
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      // Get angles for current and previous positions
+      const currentAngle = Math.atan2(clientY - centerY, clientX - centerX);
+      const prevAngle = Math.atan2(lastPosRef.current.y - centerY, lastPosRef.current.x - centerX);
+      
+      // Calculate angular difference, handling wrap-around
+      let angleDelta = currentAngle - prevAngle;
+      // Normalize to [-π, π]
+      if (angleDelta > Math.PI) angleDelta -= 2 * Math.PI;
+      if (angleDelta < -Math.PI) angleDelta += 2 * Math.PI;
+      
+      // Convert to degrees and apply to rotation
+      // Transform uses (globalRotation - itemAngle), so we need to match the direction
+      const rotationDelta = angleDelta * (180 / Math.PI);
+      angleRef.current += rotationDelta;
+      targetAngleRef.current = null;
+
+      // Calculate velocity for momentum
+      velocityRef.current = rotationDelta / (dt / 1000);
 
       // Track if user has actually dragged (moved more than 5px)
       if (dragStartPosRef.current) {
@@ -337,11 +379,6 @@ export default function RotorGallery({
         }
       }
 
-      const rotationSpeed = dx * 0.3;
-      angleRef.current += rotationSpeed;
-      targetAngleRef.current = null;
-
-      velocityRef.current = (dx / dt) * 0.3;
       lastPosRef.current = { x: clientX, y: clientY, time: now };
 
       if (sceneRef.current) {
@@ -350,6 +387,8 @@ export default function RotorGallery({
       if (revealSceneRef.current) {
         revealSceneRef.current.style.setProperty("--global-rotation", `${angleRef.current}deg`);
       }
+      
+      // Don't update labels during drag - only update after drag ends
     };
 
     const handleEnd = () => {
@@ -358,6 +397,10 @@ export default function RotorGallery({
       // Stop any momentum rotation immediately
       velocityRef.current = 0;
       targetAngleRef.current = null;
+      
+      // Update labels position after drag ends
+      setCurrentRotation(angleRef.current);
+      
       // Reset drag flag after a short delay to allow clicks again
       if (hasDraggedRef.current) {
         setTimeout(() => {
@@ -455,14 +498,9 @@ export default function RotorGallery({
 
     const onMouseUp = () => handleEnd();
 
-    // Show reveal when cursor enters the gallery container - STOP ROTATION
+    // Show reveal when cursor enters the gallery container
+    // NOTE: Rotation is NOT stopped here — it only stops when hovering a card
     const onMouseEnter = (e: MouseEvent) => {
-      // CRITICAL: Set hover to true to stop rotation immediately
-      isHoveringRef.current = true;
-      // Clear any velocity/momentum
-      velocityRef.current = 0;
-      targetAngleRef.current = null;
-      
       if (revealLayerRef.current) {
         revealLayerRef.current.style.opacity = "1";
         revealLayerRef.current.style.pointerEvents = "auto";
@@ -470,10 +508,11 @@ export default function RotorGallery({
       }
     };
 
-    // Hide reveal when cursor leaves - START ROTATION
+    // Hide reveal when cursor leaves container - rotation resumes via card onMouseLeave
     const onMouseLeave = (e: MouseEvent) => {
-      // CRITICAL: Set hover to false to start rotation immediately
+      // Ensure hover is cleared when leaving container entirely
       isHoveringRef.current = false;
+      velocityRef.current = 0;
       mousePosRef.current = null;
       targetAngleRef.current = null;
       // Reset active card to first card
@@ -486,46 +525,8 @@ export default function RotorGallery({
       }
     };
     
-    // PRIMARY METHOD: Check if cursor is over the ring area (distance from center)
-    // The container is 100vh so we check distance from center, not container bounds
-    const checkMousePosition = (e: MouseEvent) => {
-      const container = containerRef.current;
-      if (!container) {
-        isHoveringRef.current = false;
-        return;
-      }
-      
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      // Calculate distance from center of ring
-      const dx = e.clientX - centerX;
-      const dy = e.clientY - centerY;
-      const distance = Math.sqrt(dx * dx + dy * dy);
-      
-      // Ring radius is gapPx (distance cards are from center)
-      // Add padding for hover detection area (ring + some margin)
-      const ringDetectionRadius = gapPx + 300; // Add padding for easier detection
-      const isOverRing = distance <= ringDetectionRadius;
-      
-      // ALWAYS update hover state based on actual cursor position
-      // This is critical for rotation control
-      const wasHovering = isHoveringRef.current;
-      isHoveringRef.current = isOverRing;
-      
-      // If we just left the ring area, clear velocity to start rotation immediately
-      if (wasHovering && !isOverRing) {
-        velocityRef.current = 0;
-        targetAngleRef.current = null;
-      }
-      
-      // If we just entered the ring area, stop rotation immediately
-      if (!wasHovering && isOverRing) {
-        velocityRef.current = 0;
-        targetAngleRef.current = null;
-      }
-    };
+    // Hover detection is now handled by individual RotorItem onMouseEnter/onMouseLeave
+    // No need for distance-based detection from container center
 
     const onTouchStart = (e: TouchEvent) => {
       isHoveringRef.current = true;
@@ -567,20 +568,16 @@ export default function RotorGallery({
       handleEnd();
     };
 
-    // Window-level mouse move handler - PRIMARY METHOD for hover detection
+    // Window-level mouse move handler - handles drag and reveal
     const onWindowMouseMove = (e: MouseEvent) => {
-      // CRITICAL: Check mouse position FIRST on every mouse move
-      // This ensures rotation starts/stops immediately when cursor leaves/enters
-      checkMousePosition(e);
-      
-      // Only process interactions if we're inside the container
-      if (isHoveringRef.current) {
+      // Only process drag interactions at window level
+      if (isDraggingRef.current) {
         onMouseMove(e);
       }
     };
 
-    // Event listeners for rotation control
-    // mouseenter/mouseleave are the primary way to detect hover state
+    // Event listeners - mouseenter/mouseleave control reveal layer visibility
+    // Rotation pause/resume is handled by individual card hover events
     container.addEventListener("mouseenter", onMouseEnter as EventListener);
     container.addEventListener("mouseleave", onMouseLeave as EventListener);
     
@@ -607,7 +604,9 @@ export default function RotorGallery({
     };
   }, [safeCount, camY]);
 
-  const mobileGapPx = isMobile ? gapPx * 0.45 : gapPx;
+  // Overall ring scale — lower ] => smaller ring radius (cards closer to center)
+  const RING_SCALE = 0.85;
+  const mobileGapPx = (isMobile ? gapPx * 0.45 : gapPx) * RING_SCALE;
   const mobileCardWidth = isMobile ? cardWidth * 0.6 : cardWidth;
   const mobileCardHeight = isMobile ? cardHeight * 0.6 : cardHeight;
   const mobileOffsetX = isMobile ? (dimensions.w || window.innerWidth) * 0.4 : offsetX;
@@ -839,40 +838,50 @@ export default function RotorGallery({
             cardOpacity={1}
             isHovered={activeCardIndex === i}
             onMouseEnter={() => {
+              isHoveringRef.current = true;
+              velocityRef.current = 0;
+              targetAngleRef.current = null;
               activeCardIndexRef.current = i;
               setActiveCardIndex(i);
             }}
-            onMouseLeave={() => {}}
+            onMouseLeave={() => {
+              isHoveringRef.current = false;
+            }}
             onClick={() => handleItemClick(item)}
           />
         ))}
       </div>
 
-      {/* Category labels - stable positions outside the ring */}
-      {categoryLabels.length > 0 && !isMobile && (
+      {/* Category labels - dynamic positions that follow ring rotation */}
+      {categoryLabels.length > 0 && !isMobile && ringRadius > 0 && (
         <>
           {categoryLabels.map((label, i) => {
-            // Determine label radius based on category
-            const labelName = label.name.toLowerCase();
+            // Calculate dynamic position based on current rotation
+            // label.angle is in radians, currentRotation is in degrees
+            // Add current rotation to the base angle to make labels follow the ring
+            const rotationRad = (currentRotation * Math.PI) / 180;
+            const totalAngle = label.angle + rotationRad;
             
-            // Categories closer to ring (decreased spacing): Sales CRM, Web Design
-            const isCloserCategory = 
-              labelName.includes("sales") || 
-              labelName.includes("crm") || 
-              labelName.includes("web design");
+            // Calculate elliptical path to match carousel perspective
+            // The carousel is viewed from an angle (camX = -25°, camY = 5°), so the circle appears as an ellipse
+            // Compress Y-axis to match the visual perspective of the tilted ring
+            const camXRads = (camX * Math.PI) / 180;
+            // The vertical compression is primarily from the X-axis rotation
+            // cos(camX) gives us how much the vertical dimension is compressed
+            // For camX = -25°, cos(-25°) ≈ 0.906, but we want more visible compression
+            // Use a more pronounced ellipse ratio to match the visual appearance
+            const baseEllipseRatio = Math.cos(camXRads);
+            // Apply additional compression to make the ellipse more visible (typical range: 0.55-0.75)
+            const finalEllipseRatio = Math.max(0.55, Math.min(0.75, baseEllipseRatio * 0.75));
             
-            // All other categories have increased spacing (further outside)
-            let labelRadius;
-            if (isCloserCategory) {
-              labelRadius = gapPx * 0.92; // More closer to ring
-            } else {
-              labelRadius = gapPx * 1.35; // Increased spacing (further outside) for other four
-            }
+            // Label radii — separate control for X and Y distance from the ring
+            const labelRadiusX = ringRadius + LABEL_OFFSET_X_PX;
+            const labelRadiusY = ringRadius + LABEL_OFFSET_Y_PX;
             
-            // Calculate fixed position outside the ring (no rotation)
-            const angleRad = label.angle;
-            const x = Math.cos(angleRad) * labelRadius;
-            const y = Math.sin(angleRad) * labelRadius;
+            // Calculate elliptical position with independent X/Y offsets,
+            // then apply same offsetX/offsetY so labels share the same center as the cards
+            const x = Math.cos(totalAngle) * labelRadiusX + offsetX;
+            const y = Math.sin(totalAngle) * labelRadiusY * finalEllipseRatio + offsetY;
             
             return (
               <div
@@ -885,22 +894,25 @@ export default function RotorGallery({
                   zIndex: 500,
                   pointerEvents: "none",
                   whiteSpace: "nowrap",
+                  transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)", // Always smooth transition for repositioning
                 }}
               >
                 <span
                   style={{
-                    fontSize: 10,
-                    fontWeight: 500,
+                    fontSize: 11,
+                    fontWeight: 600,
                     color: "#111317",
-                    letterSpacing: "0.06em",
+                    letterSpacing: "0.08em",
                     textTransform: "uppercase",
                     display: "inline-block",
-                    background: "rgba(248,248,246,0.9)",
-                    backdropFilter: "blur(4px)",
-                    WebkitBackdropFilter: "blur(4px)",
-                    padding: "4px 10px",
+                    background: "rgba(255,255,255,0.95)",
+                    backdropFilter: "blur(8px)",
+                    WebkitBackdropFilter: "blur(8px)",
+                    padding: "6px 14px",
                     borderRadius: 20,
-                    border: "1px solid rgba(17,19,23,0.12)",
+                    border: "1px solid rgba(17,19,23,0.15)",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {label.name} ({label.count})
@@ -923,17 +935,6 @@ export default function RotorGallery({
           pointerEvents: "none",
         }}
       >
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 400,
-            color: "rgba(17,19,23,0.28)",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
-          scroll or drag to explore · click to open
-        </span>
       </div>
     </div>
   );

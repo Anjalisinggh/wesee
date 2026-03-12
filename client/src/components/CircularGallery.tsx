@@ -122,8 +122,19 @@ export default function CircularGallery({ items, categoryLabels, onSelectItem }:
       if (!el) continue;
 
       const angle = rot + categoryLabels[i].angle;
-      const lx = cx + rx * 1.28 * Math.cos(angle);
-      const ly = cy + ry * 1.28 * Math.sin(angle);
+      // Slightly outside the image ring
+      const baseMultiplier = 1.28;
+      const extraOffset = 60; // distance (px) further away from the photo circle
+
+      const cosA = Math.cos(angle);
+      const sinA = Math.sin(angle);
+
+      // Radius of label orbit: ring radius + extraOffset
+      const labelRx = rx * baseMultiplier + extraOffset;
+      const labelRy = ry * baseMultiplier + extraOffset;
+
+      const lx = cx + labelRx * cosA;
+      const ly = cy + labelRy * sinA;
 
       const depth = (Math.sin(angle) + 1) / 2;
       const labelOpacity = 0.12 + depth * 0.68;

@@ -176,7 +176,7 @@ export default function Footer() {
               Offices
             </h4>
             {[
-              { city: "Jaipur", sub: "India — HQ" },
+              { city: "Japan", sub: "Japan — HQ" },
               { city: "Mumbai", sub: "India — Operations" },
               { city: "Dubai", sub: "UAE — MENA" },
             ].map(o => (
