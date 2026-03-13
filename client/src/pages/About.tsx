@@ -6,6 +6,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
+
+
+
 const milestones = [
   { year: "2021", title: "Founded in Japan", desc: "WeSee started as a performance marketing agency with a vision for intelligent automation." },
   { year: "2022", title: "First AI systems deployed", desc: "Shipped first AI agents and workflow automations for e-commerce and SaaS clients." },
