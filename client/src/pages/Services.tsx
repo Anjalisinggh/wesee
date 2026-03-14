@@ -327,8 +327,9 @@ export default function Services() {
   const search = useSearch();
   const params = new URLSearchParams(search);
 
+  const isMobileDevice = typeof window !== "undefined" && window.innerWidth < 768;
   const [viewMode, setViewMode] = useState<"ring" | "grid">(
-    params.get("view") === "grid" ? "grid" : "ring"
+    params.get("view") === "grid" || isMobileDevice ? "grid" : "ring"
   );
   const [filterOpen, setFilterOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(params.get("category") ? Number(params.get("category")) : null);

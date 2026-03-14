@@ -90,7 +90,7 @@ export default function Blog() {
         <section className="section-padding">
           <div className="container blog-featured">
             <Link href={`/blog/${featured.slug}`} className="block">
-              <div className="blog-featured-reveal img-hover-zoom overflow-hidden rounded-2xl" style={{ height: 400, borderRadius: 16 }}>
+              <div className="blog-featured-reveal img-hover-zoom overflow-hidden rounded-2xl" style={{ height: "clamp(250px, 45vh, 400px)", borderRadius: 16 }}>
                 <img
                   src={featured.image}
                   alt={featured.title}
@@ -116,7 +116,7 @@ export default function Blog() {
       <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
         <div className="container">
           <StaggerReveal stagger={0.15} y={30}>
-            <div className="grid grid-cols-1 md:grid-cols-3" style={{ gap: 32 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3" style={{ gap: 32 }}>
               {grid.map((article) => (
                 <ParticleWrapper key={article.slug}>
                   <TiltCard maxTilt={5} scale={1.01}>

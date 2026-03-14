@@ -46,14 +46,14 @@ export default function About() {
     <>
       {/* ══════════════ HERO ══════════════ */}
       <section style={{
-        minHeight: "90vh",
+        minHeight: "clamp(60vh, 75vh, 90vh)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
         overflow: "hidden",
-        paddingTop: 88, paddingBottom: 40,
+        paddingTop: "clamp(60px, 10vw, 88px)", paddingBottom: 40,
       }}>
         <InteractiveParticles 
           style={{ position: "absolute", inset: 0, zIndex: 0 }} 
@@ -86,7 +86,9 @@ export default function About() {
           <div
             onMouseEnter={() => setIsTextHovered(true)}
             onMouseLeave={() => setIsTextHovered(false)}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+            onTouchStart={() => setIsTextHovered(true)}
+            onTouchEnd={() => setTimeout(() => setIsTextHovered(false), 4000)}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}
           >
             <h1 
               className="fade-up" 
@@ -127,8 +129,8 @@ export default function About() {
       <section className="section-pad" style={{ background: "var(--paper-dark)" }}>
         <div className="container">
           <div style={{
-            display: "grid", gridTemplateColumns: "1fr 1fr",
-            gap: 60, alignItems: "start",
+            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
+            gap: "clamp(28px, 5vw, 60px)", alignItems: "start",
           }}>
             <div>
               <span className="section-label gsap-reveal">(01) Our Mission</span>
@@ -151,7 +153,7 @@ export default function About() {
       {/* ══════════════ TEAM PHOTO ══════════════ */}
       <section style={{ background: "var(--paper-dark)" }}>
         <div className="container" style={{ paddingBottom: 80 }}>
-          <div className="img-zoom gsap-reveal" style={{ height: 420, borderRadius: "24px !important" }}>
+          <div className="img-zoom gsap-reveal" style={{ height: "clamp(220px, 40vw, 420px)", borderRadius: "24px !important" }}>
             <img
               src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=2000&q=80"
               alt="WeSee Team"

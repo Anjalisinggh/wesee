@@ -257,7 +257,7 @@ export default function Contact() {
         </div>
       </div>
 
-      <div style={{ width: "100%", height: 400, overflow: "hidden" }}>
+      <div style={{ width: "100%", height: "clamp(250px, 45vh, 400px)", overflow: "hidden" }}>
         <img
           src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=2000&q=80"
           alt="City"

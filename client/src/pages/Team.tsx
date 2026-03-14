@@ -220,12 +220,12 @@ export default function Team() {
 
       {/* 2x2 team collage — hover: blurred bg + smaller sharp center image */}
       <div className="container">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1 sm:gap-2">
           {[
-            { src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80", h: 320 },
-            { src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80", h: 220 },
-            { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80", h: 220 },
-            { src: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80", h: 320 },
+            { src: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80", h: "clamp(180px, 30vw, 320px)" },
+            { src: "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=600&q=80", h: "clamp(140px, 22vw, 220px)" },
+            { src: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80", h: "clamp(140px, 22vw, 220px)" },
+            { src: "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&q=80", h: "clamp(180px, 30vw, 320px)" },
           ].map((img, i) => (
             <div
               key={i}
@@ -268,7 +268,7 @@ export default function Team() {
               {directors.map((d) => (
                 <TiltCard key={d.name} maxTilt={5} scale={1.01}>
                   <div className="group">
-                    <div className="group relative overflow-hidden cursor-pointer rounded-2xl" style={{ width: 280, height: 400, borderRadius: 16 }}>
+                    <div className="group relative overflow-hidden cursor-pointer rounded-2xl w-full" style={{ maxWidth: 280, aspectRatio: "280/400", borderRadius: 16 }}>
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 ease-out" aria-hidden>
                         <img src={d.photo} alt="" className="w-full h-full object-cover block scale-105" style={{ filter: "blur(14px)" }} />
                       </div>

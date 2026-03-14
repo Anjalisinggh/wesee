@@ -229,7 +229,7 @@ export default function Home() {
                 50%      { opacity: 1; }
               }
               .hero-line { display: block; white-space: nowrap; }
-              @media (max-width: 520px) { .hero-line { white-space: normal; } }
+              @media (max-width: 639px) { .hero-line { white-space: normal; } }
               .hero-word-slot {
                 display: inline-block;
                 position: relative;
@@ -260,7 +260,7 @@ export default function Home() {
               .hero-br-mobile { display: none; }
               @media (max-width: 767px) {
                 .hero-br-mobile { display: block; }
-                .hero-word-slot { min-width: 13ch; }
+                .hero-word-slot { min-width: min(13ch, 85vw); }
               }
               .hero-headline-responsive { white-space: normal; }
               .hero-text-line { display: inline; white-space: normal; }
@@ -367,14 +367,15 @@ export default function Home() {
             ].map((s) => (
               <div key={s.label} style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
-                padding: "14px 24px",
+                padding: "clamp(10px, 2vw, 14px) clamp(14px, 3vw, 24px)",
                 background: "rgba(255,255,255,0.75)",
                 backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
                 border: "1px solid rgba(255,255,255,0.90)",
                 borderRadius: 16,
                 boxShadow: "0 2px 16px rgba(17,19,23,0.06)",
-                width: 150,
-                height: 80,
+                minWidth: 100,
+                flex: "1 1 auto",
+                maxWidth: 170,
               }}>
                 <span style={{ fontSize: 22, fontWeight: 650, color: "var(--ink)", letterSpacing: "-0.045em", lineHeight: 1 }}>
                   {s.val}

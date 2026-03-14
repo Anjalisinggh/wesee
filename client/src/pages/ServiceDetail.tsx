@@ -182,7 +182,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Inline CTA with floating particles */}
-        <div style={{ background: "#1A1A1A", padding: "64px 0", marginTop: 80, position: "relative", overflow: "hidden" }}>
+        <div style={{ background: "#1A1A1A", padding: "clamp(40px, 6vw, 64px) 0", marginTop: "clamp(40px, 8vw, 80px)", position: "relative", overflow: "hidden" }}>
           <FloatingParticles count={20} color="rgba(255, 255, 255, 0.04)" maxSize={2} speed={0.15} />
           <div className="container relative z-10" style={{ textAlign: "center" }}>
             <TextReveal as="h3" style={{ fontSize: 32, fontWeight: 600, color: "#FFFFFF" }} stagger={0.05}>
@@ -204,7 +204,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Related services with TiltCard */}
-        <div className="container" style={{ marginTop: 80, marginBottom: 80 }}>
+        <div className="container" style={{ marginTop: "clamp(40px, 8vw, 80px)", marginBottom: "clamp(40px, 8vw, 80px)" }}>
           <TextReveal as="h3" style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginBottom: 32 }} stagger={0.05}>
             Related services
           </TextReveal>
