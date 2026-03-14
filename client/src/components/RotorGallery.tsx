@@ -302,7 +302,11 @@ export default function RotorGallery({
         sceneRef.current.style.setProperty("--global-rotation", rotVal);
       }
 
-      // Don't update labels during auto-rotation - only update after drag
+      // Update category label positions periodically during auto-rotation (throttled to ~10fps)
+      if (t - lastRotationUpdateRef.current > 100) {
+        setCurrentRotation(angleRef.current);
+        lastRotationUpdateRef.current = t;
+      }
 
       raf = requestAnimationFrame(tick);
     };
