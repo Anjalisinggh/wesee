@@ -28,18 +28,20 @@ export default function About() {
   const [isTextHovered, setIsTextHovered] = useState(false);
 
   useEffect(() => {
+    const localTriggers: ScrollTrigger[] = [];
     const t = setTimeout(() => {
       document.querySelectorAll(".gsap-reveal").forEach((el) => {
-        gsap.fromTo(el,
+        const anim = gsap.fromTo(el,
           { opacity: 0, y: 28 },
           {
             opacity: 1, y: 0, duration: 0.85, ease: "power3.out",
             scrollTrigger: { trigger: el, start: "top 88%", toggleActions: "play none none none" },
           }
         );
+        if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
       });
     }, 100);
-    return () => { clearTimeout(t); ScrollTrigger.getAll().forEach(t => t.kill()); };
+    return () => { clearTimeout(t); localTriggers.forEach(t => t.kill()); };
   }, []);
 
   return (

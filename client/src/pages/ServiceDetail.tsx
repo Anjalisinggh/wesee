@@ -20,25 +20,28 @@ export default function ServiceDetail() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const localTriggers: ScrollTrigger[] = [];
     const timer = setTimeout(() => {
       const reveals = document.querySelectorAll(".gsap-reveal");
       reveals.forEach((el) => {
-        gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
+        const anim = gsap.fromTo(el, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
           scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" }
         });
+        if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
       });
       // Animate horizontal rules
       const hrs = document.querySelectorAll(".hr-animate");
       hrs.forEach((hr) => {
-        ScrollTrigger.create({
+        const t = ScrollTrigger.create({
           trigger: hr,
           start: "top 90%",
           once: true,
           onEnter: () => hr.classList.add("visible"),
         });
+        localTriggers.push(t);
       });
     }, 50);
-    return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
+    return () => { clearTimeout(timer); localTriggers.forEach(t => t.kill()); };
   }, [slug]);
 
   if (!service) {

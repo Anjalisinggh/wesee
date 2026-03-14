@@ -80,25 +80,27 @@ export default function BlogDetail() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
+        const localTriggers: ScrollTrigger[] = [];
         const timer = setTimeout(() => {
             const reveals = document.querySelectorAll(".gsap-reveal");
             reveals.forEach((el) => {
-                gsap.fromTo(el, { opacity: 0, y: 30 }, {
+                const anim = gsap.fromTo(el, { opacity: 0, y: 30 }, {
                     opacity: 1, y: 0, duration: 0.8, ease: "power2.out",
                     scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none none" },
                 });
+                if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
             });
             // Stagger body paragraphs when content block enters view
             const contentBlock = document.querySelector(".blog-detail-content");
             if (contentBlock) {
-                const paragraphs = contentBlock.querySelectorAll("p");
-                gsap.fromTo(paragraphs, { opacity: 0, y: 20 }, {
+                const anim = gsap.fromTo(contentBlock.querySelectorAll("p"), { opacity: 0, y: 20 }, {
                     opacity: 1, y: 0, duration: 0.6, stagger: 0.08, ease: "power2.out",
                     scrollTrigger: { trigger: contentBlock, start: "top 82%", toggleActions: "play none none none" },
                 });
+                if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
             }
         }, 50);
-        return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
+        return () => { clearTimeout(timer); localTriggers.forEach(t => t.kill()); };
     }, [slug]);
 
     if (!article) {

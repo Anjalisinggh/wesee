@@ -323,7 +323,9 @@ export default function RotorGallery({
       }
       if (onItemClick) {
         onItemClick(item);
-      } 
+      } else if (item.url) {
+        navigate(item.url);
+      }
     },
     [onItemClick, navigate]
   );

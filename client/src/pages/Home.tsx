@@ -104,9 +104,10 @@ export default function Home() {
 
   /* GSAP scroll reveals */
   useEffect(() => {
+    const localTriggers: ScrollTrigger[] = [];
     const t = setTimeout(() => {
       document.querySelectorAll<HTMLElement>(".sr").forEach((el) => {
-        gsap.fromTo(el,
+        const anim = gsap.fromTo(el,
           { opacity: 0, y: 32 },
           {
             opacity: 1, y: 0,
@@ -119,11 +120,12 @@ export default function Home() {
             },
           }
         );
+        if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
       });
     }, 160);
     return () => {
       clearTimeout(t);
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      localTriggers.forEach((trigger) => trigger.kill());
     };
   }, []);
 

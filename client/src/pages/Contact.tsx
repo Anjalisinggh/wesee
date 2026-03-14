@@ -38,26 +38,28 @@ export default function Contact() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    const localTriggers: ScrollTrigger[] = [];
     const timer = setTimeout(() => {
       // Form reveal animation with enhanced effects
       const reveals = document.querySelectorAll(".gsap-reveal");
       reveals.forEach((el) => {
-        gsap.fromTo(el, 
-          { opacity: 0, y: 40, scale: 0.96, filter: "blur(8px)" }, 
-          { 
-            opacity: 1, 
-            y: 0, 
+        const anim = gsap.fromTo(el,
+          { opacity: 0, y: 40, scale: 0.96, filter: "blur(8px)" },
+          {
+            opacity: 1,
+            y: 0,
             scale: 1,
             filter: "blur(0px)",
             duration: 1,
             ease: "power3.out",
-            scrollTrigger: { 
-              trigger: el, 
-              start: "top 85%", 
-              toggleActions: "play none none none" 
+            scrollTrigger: {
+              trigger: el,
+              start: "top 85%",
+              toggleActions: "play none none none"
             }
           }
         );
+        if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
       });
 
       // Contact cards animation with rotation and blur
@@ -66,19 +68,19 @@ export default function Contact() {
         cards.forEach((card, i) => {
           const cardImg = card.querySelector("img");
           const cardContent = card.querySelector(".flex-1");
-          
+
           // Card container animation
-          gsap.fromTo(card, 
-            { 
-              opacity: 0, 
-              y: 60, 
-              scale: 0.9, 
+          const anim = gsap.fromTo(card,
+            {
+              opacity: 0,
+              y: 60,
+              scale: 0.9,
               rotationX: -15,
               filter: "blur(10px)"
             },
-            { 
-              opacity: 1, 
-              y: 0, 
+            {
+              opacity: 1,
+              y: 0,
               scale: 1,
               rotationX: 0,
               filter: "blur(0px)",
@@ -92,6 +94,7 @@ export default function Contact() {
               }
             }
           );
+          if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
 
           // Image animation
           if (cardImg) {
@@ -127,10 +130,10 @@ export default function Contact() {
       if (officeSectionRef.current) {
         const officeItems = officeSectionRef.current.querySelectorAll(".office-item");
         officeItems.forEach((item, i) => {
-          gsap.fromTo(item,
-            { 
-              opacity: 0, 
-              x: -50, 
+          const anim = gsap.fromTo(item,
+            {
+              opacity: 0,
+              x: -50,
               rotationY: -10,
               filter: "blur(8px)"
             },
@@ -149,6 +152,7 @@ export default function Contact() {
               }
             }
           );
+          if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
         });
       }
 
@@ -156,11 +160,11 @@ export default function Contact() {
       if (formRef.current) {
         const inputs = formRef.current.querySelectorAll("input, textarea, select");
         inputs.forEach((input, i) => {
-          gsap.fromTo(input,
-            { 
-              opacity: 0, 
-              y: 20, 
-              scale: 0.98 
+          const anim = gsap.fromTo(input,
+            {
+              opacity: 0,
+              y: 20,
+              scale: 0.98
             },
             {
               opacity: 1,
@@ -176,16 +180,17 @@ export default function Contact() {
               }
             }
           );
+          if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
         });
       }
 
       // Button animation
       const submitButton = document.querySelector(".btn-fill-sweep");
       if (submitButton) {
-        gsap.fromTo(submitButton,
-          { 
-            opacity: 0, 
-            scale: 0.9, 
+        const anim = gsap.fromTo(submitButton,
+          {
+            opacity: 0,
+            scale: 0.9,
             y: 20,
             filter: "blur(5px)"
           },
@@ -203,9 +208,10 @@ export default function Contact() {
             }
           }
         );
+        if (anim.scrollTrigger) localTriggers.push(anim.scrollTrigger);
       }
     }, 50);
-    return () => { clearTimeout(timer); ScrollTrigger.getAll().forEach(t => t.kill()); };
+    return () => { clearTimeout(timer); localTriggers.forEach(t => t.kill()); };
   }, []);
 
   // Office accordion expand/collapse animation
