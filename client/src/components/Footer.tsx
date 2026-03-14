@@ -80,14 +80,14 @@ export default function Footer() {
                 </a>
               </ParticleWrapper>
               <ParticleWrapper>
-                <a href="mailto:hello@wesee.in" style={{
+                <a href="mailto:support@weseegpt.com" style={{
                   fontSize: 14, color: "rgba(255,255,255,0.35)",
                   transition: "color 0.3s ease", textDecoration: "none",
                 }}
                   onMouseEnter={e => (e.currentTarget.style.color = "rgba(255,255,255,0.9)")}
                   onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.35)")}
                 >
-                  hello@wesee.in
+                  support@weseegpt.com
                 </a>
               </ParticleWrapper>
             </div>

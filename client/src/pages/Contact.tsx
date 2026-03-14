@@ -12,10 +12,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const contactTypes = [
-  { label: "General enquiries", email: "hello@wesee.in", person: "WeSee Team", title: "General", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
+  { label: "General enquiries", email: "support@weseegpt.com", person: "WeSee Team", title: "General", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
   { label: "Business enquiries", email: "business@wesee.in", person: "Rahul Purohit", title: "Founder & CEO", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
   { label: "Press enquiries", email: "press@wesee.in", person: "Arjun Mehta", title: "Head of Growth", photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
-  { label: "Career enquiries", email: "jobs@wesee.in", person: "HR Team", title: "People & Culture", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80" },
+  { label: "Career enquiries", email: "hr@weseegpt.com", person: "HR Team", title: "People & Culture", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80" },
 ];
 
 const offices = [
@@ -28,6 +28,9 @@ export default function Contact() {
   const [openOffice, setOpenOffice] = useState<number | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "", company: "", service: "", message: "" });
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [formState, setFormState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [formError, setFormError] = useState("");
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const contactCardsRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const officeSectionRef = useRef<HTMLDivElement>(null);
@@ -227,10 +230,25 @@ export default function Contact() {
     });
   }, [openOffice]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert("Thank you! We'll be in touch soon.");
-    setFormData({ name: "", email: "", company: "", service: "", message: "" });
+    setFormState("sending");
+    setFormError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      setSubmittedEmail(formData.email);
+      setFormState("success");
+      setFormData({ name: "", email: "", company: "", service: "", message: "" });
+    } catch (err: unknown) {
+      setFormState("error");
+      setFormError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    }
   };
 
   const inputStyle = (field: string) => ({
@@ -518,33 +536,37 @@ export default function Contact() {
                 />
               </div>
             </ParticleWrapper>
-            <ParticleWrapper>
-              <MagneticButton
-                as="button"
-                type="submit"
-                className="btn-fill-sweep"
-                style={{ marginTop: "clamp(28px, 4vw, 40px)", padding: "clamp(14px, 2vw, 18px) clamp(28px, 4vw, 36px)", background: "#1A1A1A", color: "#FFFFFF", fontSize: "clamp(12px, 1.4vw, 14px)", fontWeight: 500, border: "none", borderRadius: "8px", transition: "all 0.3s ease", cursor: "pointer", boxShadow: "0 4px 12px rgba(26, 26, 26, 0.15)" }}
-                strength={0.2}
-                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1.05,
-                    boxShadow: "0 8px 24px rgba(26, 26, 26, 0.25)",
-                    duration: 0.3,
-                    ease: "power2.out"
-                  });
-                }}
-                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  gsap.to(e.currentTarget, {
-                    scale: 1,
-                    boxShadow: "0 4px 12px rgba(26, 26, 26, 0.15)",
-                    duration: 0.3,
-                    ease: "power2.out"
-                  });
-                }}
-              >
-                Send message +
-              </MagneticButton>
-            </ParticleWrapper>
+            {formState === "success" && (
+              <div style={{ marginTop: "clamp(28px, 4vw, 40px)", padding: "16px 20px", background: "#F0FAF4", border: "1px solid #BBE5CC", borderRadius: "8px", color: "#1A7A40", fontSize: 14, fontWeight: 500 }}>
+                ✓ Message sent! We'll be in touch at {submittedEmail} soon.
+              </div>
+            )}
+            {formState === "error" && (
+              <div style={{ marginTop: "clamp(28px, 4vw, 40px)", padding: "16px 20px", background: "#FFF5F5", border: "1px solid #FFCCCC", borderRadius: "8px", color: "#C0392B", fontSize: 14, fontWeight: 500 }}>
+                ✕ {formError}
+              </div>
+            )}
+            {formState !== "success" && (
+              <ParticleWrapper>
+                <MagneticButton
+                  as="button"
+                  type="submit"
+                  className="btn-fill-sweep"
+                  disabled={formState === "sending"}
+                  style={{ marginTop: "clamp(28px, 4vw, 40px)", padding: "clamp(14px, 2vw, 18px) clamp(28px, 4vw, 36px)", background: formState === "sending" ? "#555555" : "#1A1A1A", color: "#FFFFFF", fontSize: "clamp(12px, 1.4vw, 14px)", fontWeight: 500, border: "none", borderRadius: "8px", transition: "all 0.3s ease", cursor: formState === "sending" ? "not-allowed" : "pointer", boxShadow: "0 4px 12px rgba(26, 26, 26, 0.15)", opacity: formState === "sending" ? 0.7 : 1 }}
+                  strength={0.2}
+                  onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    if (formState === "sending") return;
+                    gsap.to(e.currentTarget, { scale: 1.05, boxShadow: "0 8px 24px rgba(26, 26, 26, 0.25)", duration: 0.3, ease: "power2.out" });
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    gsap.to(e.currentTarget, { scale: 1, boxShadow: "0 4px 12px rgba(26, 26, 26, 0.15)", duration: 0.3, ease: "power2.out" });
+                  }}
+                >
+                  {formState === "sending" ? "Sending..." : "Send message +"}
+                </MagneticButton>
+              </ParticleWrapper>
+            )}
           </form>
         </div>
       </section>

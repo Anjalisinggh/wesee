@@ -254,7 +254,7 @@ export default function BookCall() {
                 <div>
                   Prefer email instead?{" "}
                   <a
-                    href="mailto:hello@wesee.in"
+                    href="mailto:support@weseegpt.com"
                     style={{
                       color: "var(--ink)",
                       textDecoration: "none",
@@ -262,7 +262,7 @@ export default function BookCall() {
                       paddingBottom: 1,
                     }}
                   >
-                    hello@wesee.in
+                    support@weseegpt.com
                   </a>
                 </div>
               </div>

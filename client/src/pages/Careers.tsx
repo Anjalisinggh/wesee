@@ -76,7 +76,7 @@ export default function Careers() {
           <p className="body-text gsap-reveal" style={{ marginTop: 24 }}>
             Please send your application with a motivation letter, CV and portfolio to:
           </p>
-          <a href="mailto:jobs@wesee.in" className="cta-link gsap-reveal" style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A", textDecoration: "none", display: "inline-block", marginTop: 8 }}>jobs@wesee.in</a>
+          <a href="mailto:hr@weseegpt.com" className="cta-link gsap-reveal" style={{ fontSize: 18, fontWeight: 600, color: "#1A1A1A", textDecoration: "none", display: "inline-block", marginTop: 8 }}>hr@weseegpt.com</a>
         </div>
       </div>
 
@@ -138,7 +138,7 @@ export default function Careers() {
                       <div className="job-block" style={{ marginTop: 24 }}>
                         <MagneticButton
                           as="a"
-                          href="mailto:jobs@wesee.in"
+                          href="mailto:hr@weseegpt.com"
                           className="btn-fill-sweep"
                           style={{ display: "inline-block", padding: "12px 24px", background: "#1A1A1A", color: "#FFFFFF", fontSize: 13, fontWeight: 500, textDecoration: "none" }}
                           strength={0.2}

@@ -828,7 +828,7 @@ export default function Home() {
             </ParticleWrapper>
             <ParticleWrapper>
               <a
-                href="mailto:hello@wesee.in"
+                href="mailto:support@weseegpt.com"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "13px 24px",
@@ -848,7 +848,7 @@ export default function Home() {
                   (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.60)";
                 }}
               >
-                hello@wesee.in
+                support@weseegpt.com
               </a>
             </ParticleWrapper>
           </div>

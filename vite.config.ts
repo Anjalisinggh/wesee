@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+import { sendContactEmail, type ContactPayload } from "./server/email.js";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -150,7 +151,40 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
+/**
+ * Vite plugin to handle /api/contact in dev mode
+ */
+function vitePluginContactApi(): Plugin {
+  return {
+    name: "contact-api",
+    configureServer(server: ViteDevServer) {
+      server.middlewares.use("/api/contact", (req, res, next) => {
+        if (req.method !== "POST") return next();
+
+        let body = "";
+        req.on("data", (chunk) => { body += chunk.toString(); });
+        req.on("end", async () => {
+          try {
+            const payload = JSON.parse(body) as ContactPayload;
+            if (!payload.name || !payload.email || !payload.message) {
+              res.writeHead(400, { "Content-Type": "application/json" });
+              return res.end(JSON.stringify({ error: "Name, email and message are required." }));
+            }
+            await sendContactEmail(payload);
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ success: true }));
+          } catch (err) {
+            console.error("Contact email error:", err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Failed to send message. Please try again." }));
+          }
+        });
+      });
+    },
+  };
+}
+
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), vitePluginContactApi()];
 
 export default defineConfig({
   plugins,
