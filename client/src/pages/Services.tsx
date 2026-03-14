@@ -278,7 +278,7 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
 
   return (
     <div className="w-full bg-[#eee] text-black rounded-3xl overflow-hidden mt-6">
-      <div className="font-geist flex h-[25vh] items-center justify-center gap-2 relative">
+      <div className="font-geist flex min-h-[30vh] sm:h-[25vh] items-center justify-center gap-2 relative py-8 sm:py-0">
         <div className="absolute left-0 top-[50%] -translate-y-1/2 w-full max-w-6xl px-4 container mx-auto">
           <div className="text-left">
             <div style={{ fontSize: "clamp(36px, 5vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05, marginBottom: "clamp(16px, 2vw, 24px)" }}>
