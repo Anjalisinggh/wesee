@@ -3,9 +3,13 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "node:path";
-import { defineConfig, type Plugin, type ViteDevServer } from "vite";
+import { defineConfig, loadEnv, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 import { sendContactEmail, type ContactPayload } from "./server/email.js";
+
+// Load .env into process.env so server-side code (Resend) can access it
+const env = loadEnv("development", process.cwd(), "");
+Object.assign(process.env, env);
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin

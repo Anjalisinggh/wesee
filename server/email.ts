@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 export interface ContactPayload {
   name: string;
@@ -8,30 +8,16 @@ export interface ContactPayload {
   message: string;
 }
 
-function createTransporter() {
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || "smtp.gmail.com",
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false, // TLS via STARTTLS
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
-
 export async function sendContactEmail(payload: ContactPayload) {
+  const resend = new Resend(process.env.RESEND_API_KEY);
   const { name, email, company, service, message } = payload;
 
   const toAddress = process.env.CONTACT_TO || "support@weseegpt.com";
-  const fromAddress = process.env.SMTP_USER || "noreply@weseegpt.com";
 
-  const transporter = createTransporter();
-
-  await transporter.sendMail({
-    from: `"WeSee Contact Form" <${fromAddress}>`,
+  await resend.emails.send({
+    from: "WeSee Contact Form <onboarding@resend.dev>",
     to: toAddress,
-    replyTo: `"${name}" <${email}>`,
+    replyTo: `${name} <${email}>`,
     subject: `New message from ${name}${company ? ` (${company})` : ""}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background: #f9f9f9;">
