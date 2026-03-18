@@ -158,9 +158,9 @@ export default function InteractiveParticles({ className = "", style = {}, isHov
           // Stagger delay based on distance from center — center arrives first
           const distFromCenter = Math.hypot(p.homeX - logoCenterX, p.homeY - logoCenterY);
           const maxDist = Math.hypot(w / 2, h / 2);
-          p.delay = (distFromCenter / maxDist) * 2.5; // 0 to 2.5 seconds stagger
+          p.delay = (distFromCenter / maxDist) * 1.25; // 0 to 1.25 seconds stagger
           // Individual random cycle timing so particles don't sync up
-          p.travelTime = 1.5 + Math.random() * 1.0;   // 1.5-2.5s to stream in
+          p.travelTime = 0.75 + Math.random() * 0.5;   // 0.75-1.25s to stream in
           p.holdTime = 8 + Math.random() * 10;          // 8-18s hold at target (logo stays formed)
           p.fadeTime = 0.6 + Math.random() * 0.6;       // 0.6-1.2s fade out
           p.cycleDuration = p.holdTime + p.fadeTime + p.travelTime; // hold → fade → travel order
