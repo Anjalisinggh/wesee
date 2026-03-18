@@ -13,7 +13,7 @@ export default function ParticleWrapper({ children, className = "", style = {} }
       className={className}
       style={{ 
         position: "relative", 
-        overflow: "hidden",
+        overflow: "visible",
         ...style 
       }}
     >

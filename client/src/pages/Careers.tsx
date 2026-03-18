@@ -72,7 +72,7 @@ export default function Careers() {
       <div className="section-padding">
         <div className="container">
           <SectionLabel number="01" title="CAREERS" />
-          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06} onScroll={false}>
+          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }} stagger={0.06} onScroll={false}>
             Careers.
           </TextReveal>
           <p className="body-text gsap-reveal" style={{ marginTop: 24 }}>

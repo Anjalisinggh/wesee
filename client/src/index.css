@@ -146,7 +146,7 @@
     color: var(--ink);
     letter-spacing: -0.03em;
     font-weight: 450;
-    line-height: 1.08;
+    line-height: 1.15;
   }
 
   a {
@@ -230,7 +230,7 @@
     font-size: var(--text-display);
     font-weight: 450;
     letter-spacing: -0.04em;
-    line-height: 1.02;
+    line-height: 1.1;
     color: var(--ink);
   }
 
@@ -238,7 +238,7 @@
     font-size: var(--text-h1);
     font-weight: 450;
     letter-spacing: -0.03em;
-    line-height: 1.06;
+    line-height: 1.12;
     color: var(--ink);
   }
 
@@ -246,7 +246,7 @@
     font-size: var(--text-h2);
     font-weight: 500;
     letter-spacing: -0.03em;
-    line-height: 1.08;
+    line-height: 1.15;
     color: var(--ink);
   }
 

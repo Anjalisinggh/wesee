@@ -96,7 +96,7 @@ export default function About() {
               className="fade-up" 
               style={{
                 fontSize: "clamp(52px, 8vw, 100px)",
-                fontWeight: 450, letterSpacing: "-0.04em", lineHeight: 1.03,
+                fontWeight: 450, letterSpacing: "-0.04em", lineHeight: 1.12,
                 color: "var(--ink)", maxWidth: "14ch", textAlign: "center",
                 animationDelay: "0.15s", margin: 0,
               }}
@@ -108,6 +108,7 @@ export default function About() {
                 WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                 backgroundClip: "text", backgroundSize: "200% 100%",
                 animation: "textShimmer 5s ease infinite",
+                paddingRight: "0.1em",
               }}>
                 WeSee.
               </span>

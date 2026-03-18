@@ -125,7 +125,7 @@ export default function BlogDetail() {
                     </div>
                     <TextReveal
                         as="h1"
-                        style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.08, marginTop: 12, maxWidth: 800 }}
+                        style={{ fontSize: "clamp(36px, 5vw, 64px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15, marginTop: 12, maxWidth: 800 }}
                         stagger={0.04}
                         onScroll={false}
                     >

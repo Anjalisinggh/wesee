@@ -201,7 +201,7 @@ export default function Home() {
               fontSize: "clamp(52px, 7.5vw, 102px)",
               fontWeight: 450,
               letterSpacing: "-0.04em",
-              lineHeight: 1.08,
+              lineHeight: 1.15,
               color: "var(--ink)",
               animationDelay: "0.18s",
               textAlign: "center",
@@ -542,7 +542,7 @@ export default function Home() {
       {/* ══════════════════════════ ABOUT / DARK ══════════════════════════ */}
       <section className="section-pad" style={{
         background: "var(--ink)",
-        position: "relative", overflow: "hidden",
+        position: "relative", overflow: "clip",
       }}>
         {/* Ambient blobs */}
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none", overflow: "hidden" }}>
@@ -572,7 +572,7 @@ export default function Home() {
             </span>
             <h2 className="sr" style={{
               fontSize: "clamp(32px, 4.5vw, 60px)", fontWeight: 400,
-              letterSpacing: "-0.035em", lineHeight: 1.08, color: "#FFFFFF", margin: 0,
+              letterSpacing: "-0.035em", lineHeight: 1.15, color: "#FFFFFF", margin: 0,
             }}>
               Every business has a{" "}
               <em style={{
@@ -758,7 +758,7 @@ export default function Home() {
       {/* ══════════════════════════ DARK CTA ══════════════════════════ */}
       <section className="section-pad" style={{
         background: "var(--ink)", textAlign: "center",
-        position: "relative", overflow: "hidden",
+        position: "relative", overflow: "clip",
       }}>
         <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
           <div style={{
@@ -784,7 +784,7 @@ export default function Home() {
           <h2 className="sr" style={{
             fontSize: "clamp(36px, 5.5vw, 68px)",
             fontWeight: 400, letterSpacing: "-0.04em",
-            lineHeight: 1.06, color: "#FFFFFF",
+            lineHeight: 1.15, color: "#FFFFFF",
             margin: "0 auto", maxWidth: "18ch",
           }}>
             Ready to automate your{" "}
@@ -793,6 +793,7 @@ export default function Home() {
               background: "linear-gradient(110deg, #9C7A1E 0%, #C9A84C 45%, #E8C870 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               backgroundClip: "text",
+              paddingRight: "0.15em",
             }}>business?</em>
           </h2>
 

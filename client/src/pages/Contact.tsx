@@ -235,9 +235,10 @@ export default function Contact() {
 
   const inputStyle = (field: string) => ({
     width: "100%",
-    padding: focusedField === field ? "12px 0 12px 0" : "14px 0",
+    padding: focusedField === field ? "12px 0 14px 0" : "14px 0",
     background: "none",
     fontSize: "clamp(14px, 1.5vw, 16px)",
+    lineHeight: "1.5",
     color: "#1A1A1A",
     outline: "none",
     border: "none",
@@ -251,7 +252,7 @@ export default function Contact() {
       <div className="section-padding">
         <div className="container">
           <SectionLabel number="01" title="CONTACT" />
-          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06} onScroll={false}>
+          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }} stagger={0.06} onScroll={false}>
             Get in touch.
           </TextReveal>
         </div>

@@ -67,7 +67,7 @@ export default function ServiceDetail() {
           </div>
           <TextReveal
             as="h1"
-            style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05, marginTop: 12 }}
+            style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15, marginTop: 12 }}
             stagger={0.06}
             onScroll={false}
           >

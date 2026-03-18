@@ -43,10 +43,14 @@ export default function TextReveal({
     const units = splitBy === "words" ? text.split(/\s+/) : text.split("");
 
     // Build HTML with spans
+    // Use padding on the overflow-hidden wrapper so ascenders, descenders (g, p, y, q, j),
+    // and capital letter tops are not clipped by the overflow:hidden needed for the reveal animation.
+    // padding-top prevents top clipping, padding-bottom prevents descender clipping.
+    // Negative margins compensate so layout spacing is unaffected.
     el.innerHTML = units
       .map(
         (unit) =>
-          `<span style="display:inline-block;overflow:hidden;vertical-align:top"><span class="text-reveal-unit" style="display:inline-block;transform:translateY(110%);opacity:0;will-change:transform">${unit}</span></span>`
+          `<span style="display:inline-block;overflow:hidden;vertical-align:bottom;padding-top:0.2em;padding-bottom:0.2em;margin-top:-0.2em;margin-bottom:-0.2em"><span class="text-reveal-unit" style="display:inline-block;transform:translateY(110%);opacity:0;will-change:transform">${unit}</span></span>`
       )
       .join(splitBy === "words" ? "&nbsp;" : "");
 
@@ -88,7 +92,7 @@ export default function TextReveal({
     <Tag
       ref={containerRef as any}
       className={className}
-      style={{ ...style, overflow: "hidden" }}
+      style={{ ...style, overflow: "visible" }}
     >
       {children}
     </Tag>
