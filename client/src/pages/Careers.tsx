@@ -91,7 +91,7 @@ export default function Careers() {
         />
       </div>
 
-      <section className="section-padding">
+      <section style={{ paddingTop: 48, paddingBottom: 16 }}>
         <div className="container">
           <TextReveal as="h2" className="section-heading" stagger={0.05}>
             Become part of the WeSee team.
@@ -100,7 +100,7 @@ export default function Careers() {
       </section>
 
       {/* Job accordion with staggered reveal and animated expand */}
-      <section style={{ paddingBottom: 80 }}>
+      <section style={{ paddingBottom: 48 }}>
         <div className="container">
           <StaggerReveal stagger={0.1} y={15}>
             {jobs.map((job, i) => (

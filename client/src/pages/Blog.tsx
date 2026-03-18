@@ -79,7 +79,7 @@ export default function Blog() {
 
   return (
     <div style={{ paddingTop: 64 }}>
-      <div className="section-padding">
+      <div style={{ paddingTop: 80, paddingBottom: 40 }}>
         <div className="container">
           <SectionLabel number="01" title="BLOG" />
           <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.05 }} stagger={0.06} onScroll={false}>
@@ -90,7 +90,7 @@ export default function Blog() {
       </div>
 
       {featured && (
-        <section className="section-padding">
+        <section style={{ paddingTop: 0, paddingBottom: 80 }}>
           <div className="container blog-featured">
             <Link href={`/blog/${featured.slug}`} className="block">
               <div className="blog-featured-reveal img-hover-zoom overflow-hidden rounded-2xl" style={{ height: "clamp(250px, 45vh, 400px)", borderRadius: 16 }}>
@@ -116,7 +116,7 @@ export default function Blog() {
         </section>
       )}
 
-      <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
+      <section style={{ paddingTop: 48, paddingBottom: 80, borderTop: "1px solid #EEEEEE" }}>
         <div className="container">
           <StaggerReveal stagger={0.15} y={30}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3" style={{ gap: 32 }}>

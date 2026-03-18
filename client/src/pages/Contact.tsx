@@ -19,7 +19,7 @@ const contactTypes = [
 ];
 
 const offices = [
-  { city: "Japan", country: "Japan", role: "Headquarters", address: "WeSee HQ, Tokyo, Japan", phone: "+81 98290 XXXXX" },
+  { city: "Tokyo", country: "Japan", role: "Headquarters", address: "WeSee HQ, Tokyo, Japan", phone: "+81 98290 XXXXX" },
   { city: "Mumbai", country: "India", role: "Operations", address: "WeWork BKC, Bandra Kurla Complex, Mumbai 400051", phone: "+91 98200 XXXXX" },
   { city: "Dubai", country: "UAE", role: "MENA Office", address: "Dubai Internet City, Building 1, Dubai, UAE", phone: "+971 4 XXX XXXX" },
 ];
@@ -44,17 +44,15 @@ export default function Contact() {
       const reveals = document.querySelectorAll(".gsap-reveal");
       reveals.forEach((el) => {
         const anim = gsap.fromTo(el,
-          { opacity: 0, y: 40, scale: 0.96, filter: "blur(8px)" },
+          { opacity: 0, y: 30 },
           {
             opacity: 1,
             y: 0,
-            scale: 1,
-            filter: "blur(0px)",
-            duration: 1,
+            duration: 0.8,
             ease: "power3.out",
             scrollTrigger: {
               trigger: el,
-              start: "top 85%",
+              start: "top 90%",
               toggleActions: "play none none none"
             }
           }
@@ -73,23 +71,17 @@ export default function Contact() {
           const anim = gsap.fromTo(card,
             {
               opacity: 0,
-              y: 60,
-              scale: 0.9,
-              rotationX: -15,
-              filter: "blur(10px)"
+              y: 30,
             },
             {
               opacity: 1,
               y: 0,
-              scale: 1,
-              rotationX: 0,
-              filter: "blur(0px)",
-              duration: 0.8,
-              delay: i * 0.12,
-              ease: "power4.out",
+              duration: 0.7,
+              delay: i * 0.1,
+              ease: "power3.out",
               scrollTrigger: {
                 trigger: card,
-                start: "top 85%",
+                start: "top 90%",
                 toggleActions: "play none none none"
               }
             }
@@ -133,21 +125,17 @@ export default function Contact() {
           const anim = gsap.fromTo(item,
             {
               opacity: 0,
-              x: -50,
-              rotationY: -10,
-              filter: "blur(8px)"
+              y: 20,
             },
             {
               opacity: 1,
-              x: 0,
-              rotationY: 0,
-              filter: "blur(0px)",
-              duration: 0.9,
-              delay: i * 0.18,
+              y: 0,
+              duration: 0.7,
+              delay: i * 0.12,
               ease: "power3.out",
               scrollTrigger: {
                 trigger: item,
-                start: "top 85%",
+                start: "top 90%",
                 toggleActions: "play none none none"
               }
             }
@@ -161,21 +149,16 @@ export default function Contact() {
         const inputs = formRef.current.querySelectorAll("input, textarea, select");
         inputs.forEach((input, i) => {
           const anim = gsap.fromTo(input,
-            {
-              opacity: 0,
-              y: 20,
-              scale: 0.98
-            },
+            { opacity: 0, y: 15 },
             {
               opacity: 1,
               y: 0,
-              scale: 1,
-              duration: 0.6,
-              delay: i * 0.08,
+              duration: 0.5,
+              delay: i * 0.06,
               ease: "power2.out",
               scrollTrigger: {
                 trigger: input,
-                start: "top 90%",
+                start: "top 92%",
                 toggleActions: "play none none none"
               }
             }
@@ -188,22 +171,15 @@ export default function Contact() {
       const submitButton = document.querySelector(".btn-fill-sweep");
       if (submitButton) {
         const anim = gsap.fromTo(submitButton,
-          {
-            opacity: 0,
-            scale: 0.9,
-            y: 20,
-            filter: "blur(5px)"
-          },
+          { opacity: 0, y: 15 },
           {
             opacity: 1,
-            scale: 1,
             y: 0,
-            filter: "blur(0px)",
-            duration: 0.8,
-            ease: "back.out(1.7)",
+            duration: 0.6,
+            ease: "power2.out",
             scrollTrigger: {
               trigger: submitButton,
-              start: "top 90%",
+              start: "top 92%",
               toggleActions: "play none none none"
             }
           }
