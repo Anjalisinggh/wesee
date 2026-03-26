@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import ParticleHero from "@/components/ParticleHero";
-import StaggerReveal from "@/components/StaggerReveal";
 import HoverParticles from "@/components/HoverParticles";
 import ParticleWrapper from "@/components/ParticleWrapper";
-import ImageReveal from "@/components/ImageReveal";
+import InteractiveParticles from "@/components/InteractiveParticles";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { categories, services as allServices } from "@/data/services";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -24,22 +24,40 @@ const HERO_WORDS = [
 
 /* ─── Data ────────────────────────────────────────────────────── */
 
-const services = [
-  { num: "01", name: "AI Agents & Conversational AI", desc: "AI-powered agents that talk, think, and act on behalf of businesses.", href: "/services?category=1" },
-  { num: "02", name: "Workflow & Business Process Automation", desc: "Connect your existing tools and eliminate manual work at scale.", href: "/services?category=2" },
-  { num: "03", name: "Performance Marketing & Paid Advertising", desc: "ROI-driven advertising across Meta, Google, YouTube, and LinkedIn.", href: "/services?category=3" },
-  { num: "04", name: "SEO, Content & Organic Growth", desc: "Long-term organic visibility through technical SEO and authority building.", href: "/services?category=4" },
-  { num: "05", name: "Messaging, Email & Communication", desc: "Automated multi-channel communication via WhatsApp, email, and SMS.", href: "/services?category=5" },
-  { num: "06", name: "Web Design, Branding & Creative", desc: "High-converting websites and brand identities designed for performance.", href: "/services?category=6" },
-  { num: "07", name: "E-Commerce & Marketplace Growth", desc: "Full-stack e-commerce from store setup to marketplace management.", href: "/services?category=7" },
-  { num: "08", name: "Sales, CRM & Revenue Operations", desc: "Systems that capture, nurture, convert, and retain customers.", href: "/services?category=8" },
-  { num: "09", name: "Business Operations & Infrastructure", desc: "Cloud infrastructure, analytics, HR automation, and operational excellence.", href: "/services?category=9" },
-];
+type ServiceCategoryRow = {
+  num: string;
+  categoryId: number;
+  name: string;
+  desc: string;
+  href: string;
+};
 
-const clients = [
-  "U-Factor", "Tavola", "Factorylo", "HealthTech Co", "PropNext", "EduLearn",
-  "FinServe", "CloudStack", "RetailMax", "LegalEase", "LogiTrack", "AutoDrive",
-  "StartupX", "MedConnect", "GreenEnergy", "FintechNow",
+const serviceCategories: ServiceCategoryRow[] = categories.map((c) => ({
+  num: String(c.id).padStart(2, "0"),
+  categoryId: c.id,
+  name: c.name,
+  desc: c.summary,
+  href: `/services?category=${c.id}`,
+}));
+
+type ClientLogo = { name: string; logoSrc: string; h?: number; w?: number };
+const clients: ClientLogo[] = [
+  { name: "U-Factor", logoSrc: "/client/ufactor.png", h: 24, w: 150 },
+  { name: "Tavola", logoSrc: "/client/tavola.png", h: 24, w: 150 },
+  { name: "Factorylo", logoSrc: "/client/factorylo.png", h: 24, w: 150 },
+  { name: "HealthTech Co", logoSrc: "/client/healthtech.png", h: 22, w: 150 },
+  { name: "PropNex", logoSrc: "/client/propnex.png", h: 22, w: 150 },
+  { name: "EduLearn", logoSrc: "/client/edulearn.png", h: 22, w: 150 },
+  { name: "FinServe", logoSrc: "/client/finserve.png", h: 22, w: 150 },
+  { name: "CloudStack", logoSrc: "/client/cloudstack.png", h: 22, w: 150 },
+  { name: "RetailMax", logoSrc: "/client/retailmax.png", h: 52, w: 52 },
+  { name: "LegalEase", logoSrc: "/client/legalease.png", h: 20, w: 150 },
+  { name: "LogiTrack", logoSrc: "/client/logitrack.png", h: 52, w: 150 },
+  { name: "AutoDrive", logoSrc: "/client/autodrive.png", h: 22, w: 150 },
+  { name: "StartupX", logoSrc: "/client/startupx.png", h: 22, w: 150 },
+  { name: "MedConnect", logoSrc: "/client/medconnecy.png", h: 22, w: 150 },
+  { name: "GreenEnergy", logoSrc: "/client/greenenergy.png", h: 42, w: 150 },
+  { name: "FintechNow", logoSrc: "/client/fintech.png", h: 52, w: 52 },
 ];
 
 const stats = [
@@ -57,12 +75,12 @@ const features = [
 ];
 
 const workImages = [
-  { src: "https://plus.unsplash.com/premium_photo-1676637656166-cb7b3a43b81a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YWklMjB0ZWNobm9sb2d5fGVufDB8fDB8fHww", h: 220, label: "AI Infrastructure" },
-  { src: "https://plus.unsplash.com/premium_photo-1721936170663-dde917b6e7d7?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fG1vZGVybiUyMHdvcmtzcGFjZXxlbnwwfHwwfHx8MA%3D%3D", h: 160, label: "Workspace" },
-  { src: "https://images.unsplash.com/photo-1655393001768-d946c97d6fd1?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8ZnV0dXJpc3RpYyUyMHRlY2hub2xvZ3l8ZW58MHx8MHx8fDA%3D", h: 160, label: "Operations" },
-  { src: "https://plus.unsplash.com/premium_photo-1677094310947-c8ffdc3d3355?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGJ1c2luZXNzJTIwYXV0b21hdGlvbnxlbnwwfHwwfHx8MA%3D%3D", h: 220, label: "Tech Systems" },
-  { src: "https://plus.unsplash.com/premium_photo-1682309712356-bf909c90c02d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8cGVyZm9ybWFuY2UlMjBtYXJrZXRpbmd8ZW58MHx8MHx8fDA%3D", h: 190, label: "Team at Work" },
-  { src: "https://media.istockphoto.com/id/1335891887/photo/server-room.webp?a=1&b=1&s=612x612&w=0&k=20&c=wYyLnSxs17lh8sEsyvAO2xBl7AKr6LO33oZMHTmmDT4=", h: 190, label: "Cloud Scale" },
+  { src: "/aitalent.jpg", h: 220, label: "AI Infrastructure" },
+  { src: "/aisoftware.jpg", h: 160, label: "Workspace" },
+  { src: "/wesee.png", h: 160, label: "Operations" },
+  { src: "/voice.jpg", h: 220, label: "Tech Systems" },
+  { src: "/dashboard.jpg", h: 190, label: "Team at Work" },
+  { src: "/roi.jpg", h: 190, label: "Cloud Scale" },
 ];
 
 /* ─── Component ───────────────────────────────────────────────── */
@@ -73,7 +91,140 @@ export default function Home() {
   const [wordIndex, setWordIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isHeroLogoHovered, setIsHeroLogoHovered] = useState(false);
+  const [hoveredServiceIdx, setHoveredServiceIdx] = useState<number | null>(null);
+  const [svcPopTop, setSvcPopTop] = useState<number>(0);
+  const svcListRef = useRef<HTMLDivElement>(null);
+  const svcPopRef = useRef<HTMLDivElement>(null);
+  const [revealedClients, setRevealedClients] = useState<boolean[]>(
+    () => Array.from({ length: clients.length }, () => false)
+  );
+  const clientsSectionRef = useRef<HTMLElement | null>(null);
+  const [clientsSectionInView, setClientsSectionInView] = useState(false);
+  const clientsRevealStartedRef = useRef(false);
+  const clientGridConfig = useMemo(() => {
+    const cols = 12;
+    const rows = 4; // 40 cells total → 40% filled with 16 logos
+    return { cols, rows, total: cols * rows };
+  }, []);
 
+  const clientLogoCellByIndex = useMemo(() => {
+    // Map grid cell -> logo index (or null). Fixed random distribution with a
+    // "no touching" constraint so logos don't sit beside each other.
+    const { cols, rows, total } = clientGridConfig;
+
+    const getNeighbors = (cellIdx: number) => {
+      const r = Math.floor(cellIdx / cols);
+      const c = cellIdx % cols;
+      const neighbors: number[] = [];
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          if (dr === 0 && dc === 0) continue;
+          const rr = r + dr;
+          const cc = c + dc;
+          if (rr < 0 || rr >= rows || cc < 0 || cc >= cols) continue;
+          neighbors.push(rr * cols + cc);
+        }
+      }
+      return neighbors;
+    };
+
+    const shuffle = <T,>(arr: T[]) => {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    };
+
+    const allCells = Array.from({ length: total }, (_, i) => i);
+    const logoIndices = Array.from({ length: clients.length }, (_, i) => i);
+
+    // Try multiple times to satisfy constraints; fall back if it somehow fails.
+    const MAX_ATTEMPTS = 250;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const cellToLogo: Array<number | null> = Array.from({ length: total }, () => null);
+      const used = new Set<number>();
+
+      const cells = shuffle(allCells.slice());
+      const logos = shuffle(logoIndices.slice());
+
+      let ok = true;
+      for (const logoIdx of logos) {
+        let placed = false;
+        for (const cellIdx of cells) {
+          if (cellToLogo[cellIdx] !== null) continue;
+          if (used.has(cellIdx)) continue;
+          if (getNeighbors(cellIdx).some((n) => used.has(n))) continue;
+          cellToLogo[cellIdx] = logoIdx;
+          used.add(cellIdx);
+          placed = true;
+          break;
+        }
+        if (!placed) {
+          ok = false;
+          break;
+        }
+      }
+
+      if (ok) return cellToLogo;
+    }
+
+    // Fallback: still random, just without the strict adjacency rule.
+    const fallbackCells = shuffle(allCells.slice());
+    const fallbackMap: Array<number | null> = Array.from({ length: total }, () => null);
+    for (let i = 0; i < clients.length; i++) fallbackMap[fallbackCells[i]] = i;
+    return fallbackMap;
+  }, [clientGridConfig, clientGridConfig.total]);
+
+  const serviceNamesByCategoryId = useMemo(() => {
+    const map = new Map<number, string[]>();
+    for (const s of allServices) {
+      const list = map.get(s.categoryId) ?? [];
+      list.push(s.name);
+      map.set(s.categoryId, list);
+    }
+    return map;
+  }, []);
+
+  const setSvcHover = (idx: number | null, rowEl?: HTMLElement | null) => {
+    if (idx === null || !rowEl) {
+      setHoveredServiceIdx(null);
+      return;
+    }
+    const containerEl = svcListRef.current;
+    if (!containerEl) {
+      setHoveredServiceIdx(idx);
+      return;
+    }
+    const rowRect = rowEl.getBoundingClientRect();
+    const containerRect = containerEl.getBoundingClientRect();
+    setSvcPopTop(rowRect.top - containerRect.top - 4);
+    setHoveredServiceIdx(idx);
+  };
+
+  useLayoutEffect(() => {
+    if (hoveredServiceIdx === null) return;
+    const containerEl = svcListRef.current;
+    const popEl = svcPopRef.current;
+    if (!containerEl || !popEl) return;
+
+    const containerRect = containerEl.getBoundingClientRect();
+    const containerHeight = containerRect.height;
+    const popRect = popEl.getBoundingClientRect();
+    const popHeight = popRect.height;
+
+    // Clamp so popover stays fully visible inside container.
+    // Keep a small padding from container edges for clean look.
+    const pad = 10;
+    const minTop = pad;
+    const maxTop = Math.max(pad, containerHeight - popHeight - pad);
+    const nextTop = Math.min(maxTop, Math.max(minTop, svcPopTop));
+
+    if (Math.abs(nextTop - svcPopTop) > 0.5) {
+      setSvcPopTop(nextTop);
+    }
+  }, [hoveredServiceIdx, svcPopTop]);
   /* Typewriter effect for hero headline word */
   useEffect(() => {
     const fullWord = HERO_WORDS[wordIndex];
@@ -102,6 +253,27 @@ export default function Home() {
     return () => window.clearTimeout(timeout);
   }, [typedText, isDeleting, wordIndex]);
 
+  const clientRevealOrder = useMemo(() => {
+    // Reveal order based on shuffled *grid cell positions* that contain logos.
+    // This yields sequences like: cell 1 → cell 8 → cell 17 (organic, non-linear).
+    const cellIndicesWithLogos: number[] = [];
+    for (let cellIdx = 0; cellIdx < clientLogoCellByIndex.length; cellIdx++) {
+      if (clientLogoCellByIndex[cellIdx] !== null) cellIndicesWithLogos.push(cellIdx);
+    }
+
+    // Shuffle cell indices (Fisher–Yates)
+    for (let i = cellIndicesWithLogos.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cellIndicesWithLogos[i], cellIndicesWithLogos[j]] = [
+        cellIndicesWithLogos[j],
+        cellIndicesWithLogos[i],
+      ];
+    }
+
+    // Convert cell indices to logo indices (non-null by construction)
+    return cellIndicesWithLogos.map((cellIdx) => clientLogoCellByIndex[cellIdx] as number);
+  }, [clientLogoCellByIndex]);
+
   /* GSAP scroll reveals */
   useEffect(() => {
     const localTriggers: ScrollTrigger[] = [];
@@ -129,6 +301,57 @@ export default function Home() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    let nextIdx = 0;
+    let t: number | null = null;
+
+    if (!clientsSectionInView || clientsRevealStartedRef.current) return;
+    clientsRevealStartedRef.current = true;
+
+    const tick = () => {
+      if (cancelled) return;
+      if (nextIdx >= clientRevealOrder.length) return;
+
+      const clientIdx = clientRevealOrder[nextIdx];
+      nextIdx += 1;
+
+      setRevealedClients((prev) => {
+        if (prev[clientIdx]) return prev;
+        const copy = prev.slice();
+        copy[clientIdx] = true;
+        return copy;
+      });
+
+      const delay = 400 + Math.floor(Math.random() * 301); // 400–700ms
+      t = window.setTimeout(tick, delay);
+    };
+
+    // Start slightly after mount so layout is stable
+    t = window.setTimeout(tick, 450);
+
+    return () => {
+      cancelled = true;
+      if (t) window.clearTimeout(t);
+    };
+  }, [clientRevealOrder, clientsSectionInView]);
+
+  useEffect(() => {
+    const el = clientsSectionRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (entry?.isIntersecting) setClientsSectionInView(true);
+      },
+      { root: null, threshold: 0.25 }
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
     <>
       {/* ══════════════════════════ HERO ══════════════════════════ */}
@@ -145,6 +368,11 @@ export default function Home() {
       }}>
         {/* Particle canvas — fills section exactly via inset:0, no overflow needed */}
         <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+        {/* WeSee logo particle formation — same behavior as About hero */}
+        <InteractiveParticles
+          style={{ position: "absolute", inset: 0, zIndex: 0 }}
+          isHovered={isHeroLogoHovered}
+        />
 
         {/* Decorative blobs — contained in their own overflow:hidden wrapper so they
             don't bleed out of the section, but the wrapper does NOT clip the text */}
@@ -161,7 +389,13 @@ export default function Home() {
         </div>
 
         {/* — Main content — */}
-        <div className="container" style={{
+        <div
+          className="container"
+          onMouseEnter={() => setIsHeroLogoHovered(true)}
+          onMouseLeave={() => setIsHeroLogoHovered(false)}
+          onTouchStart={() => setIsHeroLogoHovered(true)}
+          onTouchEnd={() => setTimeout(() => setIsHeroLogoHovered(false), 4000)}
+          style={{
           position: "relative", zIndex: 1,
           display: "flex", flexDirection: "column", alignItems: "center",
           textAlign: "center",
@@ -209,7 +443,10 @@ export default function Home() {
           >
             {/* "WeSee your [word] systems." — on mobile: word on second line, slot always reserved */}
             <span className="hero-text-line">
-              WeSee your{" "}
+             
+                WeSee
+             {" "}
+              your{" "}
               <br className="hero-br-mobile" aria-hidden="true" />
               {/* Word slot: min-width reserves space so layout never jumps when word is empty */}
               <span className="hero-word-slot">
@@ -219,7 +456,7 @@ export default function Home() {
                   {typedText || "\u00A0"}
                 </span>
                 <span className="hero-caret" aria-hidden="true" />
-              </span>{" "}systems.
+              </span>{" "}
             </span>
             <style>{`
               @keyframes wordFlipIn {
@@ -518,21 +755,31 @@ export default function Home() {
 
               {/* Image mosaic */}
               <div>
-                <StaggerReveal stagger={0.07} y={20}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {workImages.map((img, i) => (
-                      <ImageReveal
-                        key={i}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {workImages.map((img, i) => (
+                    <div
+                      key={i}
+                      className="rounded-2xl bg-[#E8E8E5]"
+                      style={{
+                        height: 210,
+                        borderRadius: 16,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <img
                         src={img.src}
                         alt={img.label}
-                        direction="left"
-                        loopOnScroll
-                        style={{ height: img.h, borderRadius: 16 }}
-                        className="rounded-2xl bg-[#E8E8E5]"
+                        loading="lazy"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
                       />
-                    ))}
-                  </div>
-                </StaggerReveal>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -660,56 +907,102 @@ export default function Home() {
             </ParticleWrapper>
           </div>
 
-          {services.map((svc, i) => (
-            <ParticleWrapper key={i}>
-              <Link href={svc.href} className="sr" style={{
-                display: "flex", alignItems: "flex-start",
-                gap: 20, padding: "20px 0",
-                borderTop: "1px solid rgba(17,19,23,0.08)",
-                borderBottom: i === services.length - 1 ? "1px solid rgba(17,19,23,0.08)" : "none",
-                cursor: "pointer",
-                position: "relative",
-                transition: "padding-left 0.4s cubic-bezier(0.16,1,0.3,1)",
-                textDecoration: "none",
-              }}
-                onMouseEnter={e => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.paddingLeft = "12px";
-                  const arrow = el.querySelector(".svc-arrow") as HTMLElement;
-                  if (arrow) { arrow.style.transform = "translateX(4px)"; arrow.style.color = "var(--ink)"; }
-                }}
-                onMouseLeave={e => {
-                  const el = e.currentTarget as HTMLElement;
-                  el.style.paddingLeft = "0px";
-                  const arrow = el.querySelector(".svc-arrow") as HTMLElement;
-                  if (arrow) { arrow.style.transform = "translateX(0)"; arrow.style.color = "rgba(17,19,23,0.20)"; }
-                }}
-              >
-                <span style={{ fontSize: 10, fontWeight: 650, color: "var(--accent)", letterSpacing: "0.12em", paddingTop: 3.5, flexShrink: 0, width: 22 }}>
-                  {svc.num}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15.5, fontWeight: 520, color: "var(--ink)", letterSpacing: "-0.02em" }}>
-                    {svc.name}
+          <div
+            ref={svcListRef}
+            className="svc-list"
+            style={{ position: "relative", overflow: "visible" }}
+          >
+            {serviceCategories.map((svc, i) => (
+              <ParticleWrapper key={i}>
+                <Link
+                  href={svc.href}
+                  className="sr svc-row"
+                  style={{
+                    display: "flex", alignItems: "flex-start",
+                    gap: 20, padding: "20px 0",
+                    borderTop: "1px solid rgba(17,19,23,0.08)",
+                    borderBottom: i === serviceCategories.length - 1 ? "1px solid rgba(17,19,23,0.08)" : "none",
+                    cursor: "pointer",
+                    position: "relative",
+                    transition: "padding-left 0.4s cubic-bezier(0.16,1,0.3,1)",
+                    textDecoration: "none",
+                  }}
+                  onMouseEnter={(e) => {
+                    setSvcHover(i, e.currentTarget);
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.paddingLeft = "12px";
+                    const arrow = el.querySelector(".svc-arrow") as HTMLElement;
+                    if (arrow) { arrow.style.transform = "translateX(4px)"; arrow.style.color = "var(--ink)"; }
+                  }}
+                  onMouseLeave={(e) => {
+                    setSvcHover(null);
+                    const el = e.currentTarget as HTMLElement;
+                    el.style.paddingLeft = "0px";
+                    const arrow = el.querySelector(".svc-arrow") as HTMLElement;
+                    if (arrow) { arrow.style.transform = "translateX(0)"; arrow.style.color = "rgba(17,19,23,0.20)"; }
+                  }}
+                  onFocus={(e) => setSvcHover(i, e.currentTarget)}
+                  onBlur={() => setSvcHover(null)}
+                >
+                  <span style={{ fontSize: 10, fontWeight: 650, color: "var(--accent)", letterSpacing: "0.12em", paddingTop: 3.5, flexShrink: 0, width: 22 }}>
+                    {svc.num}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 15.5, fontWeight: 520, color: "var(--ink)", letterSpacing: "-0.02em" }}>
+                      {svc.name}
+                    </div>
+                    <div style={{ fontSize: 13, color: "rgba(17,19,23,0.40)", marginTop: 3, lineHeight: 1.55 }}>
+                      {svc.desc}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 13, color: "rgba(17,19,23,0.40)", marginTop: 3, lineHeight: 1.55 }}>
-                    {svc.desc}
+                  <span className="svc-arrow" style={{
+                    fontSize: 15, color: "rgba(17,19,23,0.20)",
+                    flexShrink: 0, paddingTop: 2,
+                    transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), color 0.25s ease",
+                    display: "block",
+                  }}>→</span>
+                </Link>
+              </ParticleWrapper>
+            ))}
+
+            {hoveredServiceIdx !== null && (
+              (() => {
+                const svc = serviceCategories[hoveredServiceIdx];
+                const names = serviceNamesByCategoryId.get(svc.categoryId) ?? [];
+                const shown = names.slice(0, 7);
+                const remaining = Math.max(0, names.length - shown.length);
+                return (
+                  <div
+                    ref={svcPopRef}
+                    className="svc-pop is-open"
+                    role="tooltip"
+                    style={{ top: svcPopTop, right: 0 }}
+                  >
+                    <div className="svc-pop-title">Included services</div>
+                    <ul className="svc-pop-list">
+                      {shown.map((n) => (
+                        <li key={n}>{n}</li>
+                      ))}
+                      {remaining > 0 && (
+                        <li className="svc-pop-more">+{remaining} more</li>
+                      )}
+                    </ul>
                   </div>
-                </div>
-                <span className="svc-arrow" style={{
-                  fontSize: 15, color: "rgba(17,19,23,0.20)",
-                  flexShrink: 0, paddingTop: 2,
-                  transition: "transform 0.35s cubic-bezier(0.16,1,0.3,1), color 0.25s ease",
-                  display: "block",
-                }}>→</span>
-              </Link>
-            </ParticleWrapper>
-          ))}
+                );
+              })()
+            )}
+          </div>
         </div>
       </section>
 
-      {/* ══════════════════════════ CLIENTS MARQUEE ══════════════════════════ */}
-      <section className="section-pad" style={{ background: "var(--paper-dark)", overflow: "hidden" }}>
+      {/* ══════════════════════════ CLIENTS FLOATING GRID ══════════════════════════ */}
+      <section
+        ref={(node) => {
+          clientsSectionRef.current = node;
+        }}
+        className="section-pad"
+        style={{ background: "var(--paper-dark)", overflow: "hidden" }}
+      >
         <div className="container" style={{ marginBottom: 52 }}>
           <div className="sr" style={{ textAlign: "center" }}>
             <div className="section-label" style={{ justifyContent: "center" }}>Our Clients</div>
@@ -722,37 +1015,48 @@ export default function Home() {
           </div>
         </div>
 
-        {[clients, [...clients].reverse()].map((list, row) => (
-          <div key={row} style={{ overflow: "hidden", marginBottom: row === 0 ? 10 : 0 }}>
+        <div className="container">
+          <div className="clients-tiled-grid-frame" aria-label="Client logos grid">
             <div
-              style={{ display: "flex", gap: 8, width: "max-content" }}
-              className={row === 0 ? "animate-marquee-left" : "animate-marquee-right"}
+              className="clients-tiled-grid"
+              style={{ gridTemplateColumns: `repeat(${clientGridConfig.cols}, minmax(0, 1fr))` }}
+              aria-label="Client logos"
             >
-              {[...list, ...list, ...list].map((name, i) => (
-                <div key={i} style={{
-                  display: "inline-flex", alignItems: "center", gap: 8,
-                  padding: "9px 20px",
-                  background: row === 0 ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.42)",
-                  backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(17,19,23,0.09)",
-                  borderRadius: 999,
-                  fontSize: 13, fontWeight: 450, color: "rgba(17,19,23,0.70)",
-                  whiteSpace: "nowrap",
-                  transition: "background 0.3s ease, transform 0.3s ease",
-                }}>
-                  <span style={{
-                    width: i % 5 === 0 ? 7 : 5,
-                    height: i % 5 === 0 ? 7 : 5,
-                    borderRadius: "50%",
-                    background: i % 5 === 0 ? "var(--accent)" : "rgba(17,19,23,0.18)",
-                    display: "inline-block", flexShrink: 0,
-                  }} />
-                  {name}
-                </div>
-              ))}
+              {clientLogoCellByIndex.map((clientIdx, cellIdx) => {
+                if (clientIdx === null) {
+                  return <div key={`empty-${cellIdx}`} className="clients-tile-cell is-empty" />;
+                }
+
+                const client = clients[clientIdx];
+                const isRevealed = revealedClients[clientIdx];
+
+                return (
+                  <div key={client.name} className="clients-tile-cell">
+                    <div className={`client-logo-box ${isRevealed ? "is-revealed" : ""}`}>
+                      <img
+                        src={client.logoSrc}
+                        alt={`${client.name} logo`}
+                        loading="lazy"
+                        className="client-logo-img"
+                        onError={(e) => {
+                          const img = e.currentTarget as HTMLImageElement;
+                          img.style.display = "none";
+                          const parent = img.parentElement;
+                          if (parent && !parent.querySelector(".client-fallback")) {
+                            const span = document.createElement("span");
+                            span.className = "client-fallback";
+                            span.textContent = client.name;
+                            parent.appendChild(span);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ))}
+        </div>
       </section>
 
       {/* ══════════════════════════ DARK CTA ══════════════════════════ */}
@@ -787,22 +1091,23 @@ export default function Home() {
             lineHeight: 1.15, color: "#FFFFFF",
             margin: "0 auto", maxWidth: "18ch",
           }}>
-            Ready to automate your{" "}
+            Build a business {" "}
             <em style={{
               fontStyle: "italic", fontWeight: 300, letterSpacing: "-0.05em",
               background: "linear-gradient(110deg, #9C7A1E 0%, #C9A84C 45%, #E8C870 100%)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              paddingRight: "0.15em",
-            }}>business?</em>
+              display: "inline-block",
+              paddingRight: "0.32em",
+              paddingLeft: "0.04em",
+            }}>that runs itself.</em>
           </h2>
 
           <p className="sr" style={{
             fontSize: 16, color: "rgba(255,255,255,0.35)",
             marginTop: 22, maxWidth: 500, marginInline: "auto", lineHeight: 1.80,
           }}>
-            Combining deep AI expertise with business acumen, we transform your bottlenecks into high-performing automated workflows. Book a free discovery call — no commitment required.
-          </p>
+AI-powered workflows designed to remove bottlenecks and unlock scale for your business.          </p>
 
           <div className="sr" style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 44, flexWrap: "wrap" }}>
             <ParticleWrapper>

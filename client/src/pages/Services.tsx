@@ -8,6 +8,7 @@ import RotorGallery from "@/components/RotorGallery";
 import TextReveal from "@/components/TextReveal";
 import TiltCard from "@/components/TiltCard";
 import ParticleWrapper from "@/components/ParticleWrapper";
+import CustomCursor from "@/components/CustomCursor";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -433,7 +434,8 @@ export default function Services() {
   }, [filtered]);
 
   return (
-    <>
+    <div style={{ cursor: "none" }}>
+      <CustomCursor />
       {/* ═══ FILTER PANEL — slides from LEFT with staggered items ═══ */}
       <div
         className="w-full sm:w-80 lg:w-96 pt-20"
@@ -573,7 +575,7 @@ export default function Services() {
             <RotorGallery 
               items={ringItems} 
               gapPx={500}
-              speedSec={31}
+              speedSec={45}
               camY={5}
               categoryLabels={ringCategoryLabels}
             />
@@ -622,6 +624,6 @@ export default function Services() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

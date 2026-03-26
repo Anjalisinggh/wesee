@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import InteractiveParticles from "@/components/InteractiveParticles";
 import StaggerReveal from "@/components/StaggerReveal";
 import gsap from "gsap";
@@ -24,8 +24,113 @@ const values = [
   { num: "04", title: "Ship & Iterate", desc: "We launch fast, measure everything, and continuously refine for maximum performance." },
 ];
 
+function parseStatValue(val: string) {
+  const raw = val.trim();
+  const plus = raw.endsWith("+");
+  const cleaned = plus ? raw.slice(0, -1) : raw;
+  const upper = cleaned.toUpperCase();
+  const k = upper.endsWith("K");
+  const base = k ? upper.slice(0, -1) : upper;
+  const num = Number(base.replace(/,/g, ""));
+  const target = Number.isFinite(num) ? num : 0;
+  return { target, plus, k };
+}
+
+function formatStatValue(n: number, meta: { plus: boolean; k: boolean }) {
+  const rounded = Math.round(n);
+  const core = meta.k ? `${rounded}K` : `${rounded}`;
+  return meta.plus ? `${core}+` : core;
+}
+
+function AboutStatCard({
+  index,
+  val,
+  label,
+  bgImg,
+}: {
+  index: number;
+  val: string;
+  label: string;
+  bgImg: string;
+}) {
+  const meta = useMemo(() => parseStatValue(val), [val]);
+  const [display, setDisplay] = useState(val);
+  const startedRef = useRef(false);
+  const elRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const el = elRef.current;
+    if (!el) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry.isIntersecting) return;
+        if (startedRef.current) return;
+        startedRef.current = true;
+
+        const durationMs = 1450;
+        const start = performance.now();
+        const from = 0;
+        const to = meta.target;
+        const spinPhase = 0.42;
+
+        const tick = (now: number) => {
+          const t = Math.min(1, (now - start) / durationMs);
+          // Slot-like rolling start, then ease to final value.
+          if (t < spinPhase) {
+            const spinProgress = t / spinPhase;
+            const randomBoost = Math.random() * Math.max(6, to * 0.22);
+            const rolling = (spinProgress * to * 0.68) + randomBoost;
+            setDisplay(formatStatValue(rolling, meta));
+          } else {
+            const settleT = (t - spinPhase) / (1 - spinPhase);
+            const eased = 1 - Math.pow(1 - settleT, 3); // easeOutCubic
+            const next = from + (to - from) * eased;
+            setDisplay(formatStatValue(next, meta));
+          }
+
+          if (t >= 1) {
+            setDisplay(formatStatValue(to, meta));
+            return;
+          }
+          if (t < 1) requestAnimationFrame(tick);
+        };
+
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.35 }
+    );
+
+    io.observe(el);
+    return () => io.disconnect();
+  }, [meta]);
+
+  return (
+    <div
+      ref={elRef}
+      className="about-stat-card gsap-reveal"
+      style={{ "--i": index } as React.CSSProperties}
+    >
+      <img className="about-stat-bg-img" src={bgImg} alt="" aria-hidden="true" />
+      <div className="about-stat-value">{display}</div>
+      <div className="about-stat-label">{label}</div>
+    </div>
+  );
+}
+
 export default function About() {
   const [isTextHovered, setIsTextHovered] = useState(false);
+
+  const stats = useMemo(
+    () => [
+      { val: "35+", label: "Projects Delivered", bgImg: "/aisoftware.jpg" },
+      { val: "80+", label: "Automations Deployed", bgImg: "/aitalent.jpg" },
+      { val: "15K+", label: "Hours Saved Monthly", bgImg: "/digital.jpg" },
+      { val: "3", label: "Office Locations", bgImg: "/roi.jpg" },
+    ],
+    []
+  );
 
   useEffect(() => {
     const localTriggers: ScrollTrigger[] = [];
@@ -101,7 +206,7 @@ export default function About() {
                 animationDelay: "0.15s", margin: 0,
               }}
             >
-              We are{" "}
+              
               <span style={{
                 fontStyle: "italic", fontWeight: 300, letterSpacing: "-0.05em",
                 background: "linear-gradient(135deg, #B8922E 0%, var(--accent) 48%, #E8C870 100%)",
@@ -110,8 +215,9 @@ export default function About() {
                 animation: "textShimmer 5s ease infinite",
                 paddingRight: "0.1em",
               }}>
-                WeSee.
+                WeSee
               </span>
+              {" "} You
             </h1>
 
             <p 
@@ -208,46 +314,22 @@ export default function About() {
       </section>
 
       {/* ══════════════ STATS — dark ══════════════ */}
-      <section className="section-pad" style={{
+      <section className="section-pad about-impact-section" style={{
         background: "var(--ink)",
         position: "relative", overflow: "hidden",
       }}>
-        <div style={{
-          position: "absolute", width: 600, height: 600, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(201,168,76,0.10) 0%, transparent 65%)",
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)", pointerEvents: "none",
-          animation: "blob2 14s ease-in-out infinite",
-        }} />
         <div className="container" style={{ position: "relative", zIndex: 1 }}>
-          <div style={{
-            display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16,
+          <div className="about-impact-head gsap-reveal pb-10">
+            <h2 className="about-impact-title">The Impact We've Delivered</h2>
+            <p className="about-impact-subtitle">Real results from the systems we build</p>
+          </div>
+          <div className="about-impact-grid" style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: 16,
           }}>
-            {[
-              { val: "35+", label: "Projects Delivered" },
-              { val: "80+", label: "Automations Deployed" },
-              { val: "15K+", label: "Hours Saved Monthly" },
-              { val: "3", label: "Office Locations" },
-            ].map((s, i) => (
-              <div key={i} className="gsap-reveal" style={{
-                padding: "32px 28px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "20px !important",
-                textAlign: "center",
-                backdropFilter: "blur(8px)",
-              }}>
-                <div style={{
-                  fontSize: "clamp(40px, 5vw, 60px)", fontWeight: 600,
-                  color: "var(--accent)", letterSpacing: "-0.05em", lineHeight: 1,
-                  fontVariantNumeric: "tabular-nums",
-                }}>
-                  {s.val}
-                </div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.30)", marginTop: 10, letterSpacing: "0.04em" }}>
-                  {s.label}
-                </div>
-              </div>
+            {stats.map((s, i) => (
+              <AboutStatCard key={s.label} index={i} val={s.val} label={s.label} bgImg={s.bgImg} />
             ))}
           </div>
         </div>
