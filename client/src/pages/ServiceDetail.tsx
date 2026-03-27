@@ -79,7 +79,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Hero image with clip-path reveal and parallax */}
-        <div style={{ marginTop: 48 }}>
+        <div className="mt-12 mx-3 md:mx-0 rounded-2xl md:rounded-none ">
           <ImageReveal
             src={heroImage}
             alt={service.name}
@@ -115,7 +115,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Body content */}
-        <div className="container" style={{ marginTop: 64 }}>
+        <div className="container" style={{ marginTop: 24 }}>
           <div style={{ maxWidth: "65%" }} className="max-md:!max-w-full">
             <div className="gsap-reveal">
               <h3 style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginBottom: 16 }}>What it is</h3>
@@ -130,7 +130,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Mid-section atmospheric image */}
-        <div style={{ marginTop: 64 }}>
+        <div className="mt-16 mx-3 md:mx-0 rounded-2xl md:rounded-none ">
           <ImageReveal
             src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=2000&q=80"
             alt=""
@@ -207,7 +207,7 @@ export default function ServiceDetail() {
         </div>
 
         {/* Related services with TiltCard */}
-        <div className="container" style={{ marginTop: "clamp(40px, 8vw, 80px)", marginBottom: "clamp(40px, 8vw, 80px)" }}>
+        <div className="container mt-6 mb-6 md:mt-[clamp(40px,8vw,80px)] md:mb-[clamp(40px,8vw,80px)]">
           <TextReveal as="h3" style={{ fontSize: 24, fontWeight: 600, color: "#1A1A1A", marginBottom: 32 }} stagger={0.05}>
             Related services
           </TextReveal>

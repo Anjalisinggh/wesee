@@ -78,10 +78,38 @@ export default function Blog() {
   const grid = articles.filter(a => !a.featured);
 
   return (
-    <div style={{ paddingTop: 64 }}>
-      <div style={{ paddingTop: 80, paddingBottom: 40 }}>
+    <div style={{ paddingTop: 44 }}>
+      <div style={{ paddingTop: 30, paddingBottom: 40 }}>
         <div className="container">
-          <SectionLabel number="01" title="BLOG" />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 18,
+            }}
+          >
+            <span
+              className="hidden md:inline-block"
+              style={{
+                width: 24,
+                height: 1,
+                background: "#C9A84C",
+                flexShrink: 0,
+              }}
+            />
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "#999999",
+              }}
+            >
+              (01) BLOG
+            </span>
+          </div>
           <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }} stagger={0.06} onScroll={false}>
             Insights & ideas.
           </TextReveal>
@@ -90,7 +118,7 @@ export default function Blog() {
       </div>
 
       {featured && (
-        <section style={{ paddingTop: 0, paddingBottom: 80 }}>
+        <section style={{ paddingTop: 0, paddingBottom: 30 }}>
           <div className="container blog-featured">
             <Link href={`/blog/${featured.slug}`} className="block">
               <div className="blog-featured-reveal img-hover-zoom overflow-hidden rounded-2xl" style={{ height: "clamp(250px, 45vh, 400px)", borderRadius: 16 }}>
@@ -116,7 +144,7 @@ export default function Blog() {
         </section>
       )}
 
-      <section style={{ paddingTop: 48, paddingBottom: 80, borderTop: "1px solid #EEEEEE" }}>
+      <section style={{ paddingTop: 10, paddingBottom: 40, borderTop: "1px solid #EEEEEE" }}>
         <div className="container">
           <StaggerReveal stagger={0.15} y={30}>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3" style={{ gap: 32 }}>

@@ -92,6 +92,7 @@ export default function Home() {
   const [typedText, setTypedText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [isHeroLogoHovered, setIsHeroLogoHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [hoveredServiceIdx, setHoveredServiceIdx] = useState<number | null>(null);
   const [svcPopTop, setSvcPopTop] = useState<number>(0);
   const svcListRef = useRef<HTMLDivElement>(null);
@@ -103,10 +104,10 @@ export default function Home() {
   const [clientsSectionInView, setClientsSectionInView] = useState(false);
   const clientsRevealStartedRef = useRef(false);
   const clientGridConfig = useMemo(() => {
-    const cols = 12;
-    const rows = 4; // 40 cells total → 40% filled with 16 logos
+    const cols = isTouchDevice ? 8 : 12;
+    const rows = isTouchDevice ? 3 : 4;
     return { cols, rows, total: cols * rows };
-  }, []);
+  }, [isTouchDevice]);
 
   const clientLogoCellByIndex = useMemo(() => {
     // Map grid cell -> logo index (or null). Fixed random distribution with a
@@ -276,6 +277,19 @@ export default function Home() {
 
   /* GSAP scroll reveals */
   useEffect(() => {
+    const touchCapable =
+      typeof window !== "undefined" &&
+      (window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
+        "ontouchstart" in window);
+    setIsTouchDevice(touchCapable);
+    if (touchCapable) {
+      // Keep logo formation active on phones/tablets so behavior matches desktop
+      // visual state without requiring hover.
+      setIsHeroLogoHovered(true);
+    }
+  }, []);
+
+  useEffect(() => {
     const localTriggers: ScrollTrigger[] = [];
     const t = setTimeout(() => {
       document.querySelectorAll<HTMLElement>(".sr").forEach((el) => {
@@ -353,9 +367,9 @@ export default function Home() {
   }, []);
 
   return (
-    <>
+    <div className="home-page">
       {/* ══════════════════════════ HERO ══════════════════════════ */}
-      <section style={{
+      <section className="home-hero" style={{
         minHeight: "100svh",
         display: "flex",
         flexDirection: "column",
@@ -367,7 +381,9 @@ export default function Home() {
         background: "var(--paper)",
       }}>
         {/* Particle canvas — fills section exactly via inset:0, no overflow needed */}
-        <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+        {!isTouchDevice && (
+          <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
+        )}
         {/* WeSee logo particle formation — same behavior as About hero */}
         <InteractiveParticles
           style={{ position: "absolute", inset: 0, zIndex: 0 }}
@@ -391,41 +407,48 @@ export default function Home() {
         {/* — Main content — */}
         <div
           className="container"
-          onMouseEnter={() => setIsHeroLogoHovered(true)}
-          onMouseLeave={() => setIsHeroLogoHovered(false)}
-          onTouchStart={() => setIsHeroLogoHovered(true)}
-          onTouchEnd={() => setTimeout(() => setIsHeroLogoHovered(false), 4000)}
+          onMouseEnter={() => {
+            if (!isTouchDevice) setIsHeroLogoHovered(true);
+          }}
+          onMouseLeave={() => {
+            if (!isTouchDevice) setIsHeroLogoHovered(false);
+          }}
+          onTouchStart={() => {
+            if (!isTouchDevice) setIsHeroLogoHovered(true);
+          }}
           style={{
           position: "relative", zIndex: 1,
           display: "flex", flexDirection: "column", alignItems: "center",
           textAlign: "center",
         }}>
           {/* Pill badge */}
-          <div
-            className="fade-up"
-            style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              padding: "6px 16px 6px 10px",
-              background: "rgba(255,255,255,0.80)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              border: "1px solid rgba(17,19,23,0.09)",
-              borderRadius: 999,
-              fontSize: 12.5, fontWeight: 500,
-              color: "rgba(17,19,23,0.55)",
-              letterSpacing: "0.01em",
-              marginBottom: 30,
-              animationDelay: "0.1s",
-            }}
-          >
-            <span style={{
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              width: 22, height: 22, borderRadius: 999,
-              background: "rgba(201,168,76,0.15)",
-              fontSize: 10, color: "var(--accent)",
-            }}>✦</span>
-            AI Agents That Work For You 24/7
-          </div>
+          {!isTouchDevice && (
+            <div
+              className="fade-up"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "6px 16px 6px 10px",
+                background: "rgba(255,255,255,0.80)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                border: "1px solid rgba(17,19,23,0.09)",
+                borderRadius: 999,
+                fontSize: 12.5, fontWeight: 500,
+                color: "rgba(17,19,23,0.55)",
+                letterSpacing: "0.01em",
+                marginBottom: 30,
+                animationDelay: "0.1s",
+              }}
+            >
+              <span style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 22, height: 22, borderRadius: 999,
+                background: "rgba(201,168,76,0.15)",
+                fontSize: 10, color: "var(--accent)",
+              }}>✦</span>
+              AI Agents That Work For You 24/7
+            </div>
+          )}
 
           {/* Hero headline — responsive single line */}
           <h1
@@ -529,7 +552,7 @@ export default function Home() {
 
           {/* CTA row */}
           <div
-            className="fade-up"
+            className="fade-up home-hero-cta"
             style={{
               display: "flex", gap: 10, marginTop: 36,
               flexWrap: "wrap", justifyContent: "center",
@@ -542,6 +565,8 @@ export default function Home() {
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "13px 26px",
+                  width: 220,
+                  justifyContent: "center",
                   background: "var(--ink)",
                   color: "#fff",
                   fontSize: 13.5, fontWeight: 500,
@@ -566,11 +591,13 @@ export default function Home() {
             <ParticleWrapper>
               <Link href="/services" style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "12px 22px",
+                padding: "13px 26px",
+                width: 220,
+                justifyContent: "center",
                 background: "rgba(255,255,255,0.80)",
                 backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
                 color: "var(--ink)",
-                fontSize: 13.5, fontWeight: 450,
+                fontSize: 13.5, fontWeight: 500,
                 borderRadius: 999, border: "1px solid rgba(17,19,23,0.11)",
                 textDecoration: "none",
                 transition: "background 0.3s ease, border-color 0.3s ease, transform 0.3s ease",
@@ -592,7 +619,7 @@ export default function Home() {
 
           {/* Mini stat row */}
           <div
-            className="fade-up"
+            className="fade-up home-hero-mini-stats"
             style={{
               display: "flex", gap: 8, marginTop: 56,
               flexWrap: "wrap", justifyContent: "center",
@@ -602,9 +629,9 @@ export default function Home() {
             {[
               { val: "35+", label: "Projects" },
               { val: "100+", label: "Automations" },
-              { val: "15K+", label: "Hours Saved / Month" },
+              { val: "15K+", label: "Hours Saved " },
             ].map((s) => (
-              <div key={s.label} style={{
+              <div key={s.label} className="home-hero-mini-stat" style={{
                 display: "flex", flexDirection: "column", alignItems: "center",
                 padding: "clamp(10px, 2vw, 14px) clamp(14px, 3vw, 24px)",
                 background: "rgba(255,255,255,0.75)",
@@ -628,8 +655,8 @@ export default function Home() {
         </div>
 
         {/* Scroll hint */}
-        <div style={{
-          position: "absolute", bottom: 24, left: "50%", transform: "translateX(-50%)",
+        <div className="home-hero-scroll-hint" style={{
+          position: "absolute", left: "50%", transform: "translateX(-50%)",
           display: "flex", flexDirection: "column", alignItems: "center", gap: 5,
           zIndex: 1, opacity: 0.4,
         }}>
@@ -643,7 +670,7 @@ export default function Home() {
         <div className="container">
           {/* Header */}
           <div className="sr" style={{ textAlign: "center", marginBottom: 52 }}>
-            <div className="section-label" style={{ justifyContent: "center" }}>What we do</div>
+            <div className="section-label home-what-we-do-label" style={{ justifyContent: "center" }}>What we do</div>
             <h2 style={{
               fontSize: "clamp(30px, 3.8vw, 50px)", fontWeight: 450,
               letterSpacing: "-0.03em", color: "var(--ink)",
@@ -716,8 +743,8 @@ export default function Home() {
           <div className="flex flex-col gap-0">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-20 items-start">
               {/* Text col */}
-              <div>
-                <div className="section-label sr">Our Work</div>
+              <div className="home-our-work-col">
+                <div className="section-label sr home-our-work-label">Our Work</div>
                 <h2 className="sr" style={{
                   fontSize: "clamp(28px, 3.5vw, 48px)", fontWeight: 450,
                   letterSpacing: "-0.03em", marginTop: 12, lineHeight: 1.1,
@@ -755,7 +782,7 @@ export default function Home() {
 
               {/* Image mosaic */}
               <div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5">
                   {workImages.map((img, i) => (
                     <div
                       key={i}
@@ -807,9 +834,9 @@ export default function Home() {
           }} />
         </div>
 
-        <div className="container" style={{ position: "relative", zIndex: 1 }}>
+        <div className="container home-about-wrap" style={{ position: "relative", zIndex: 1 }}>
           {/* Big center quote */}
-          <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center", marginBottom: 80 }}>
+          <div className="home-about-intro" style={{ maxWidth: 900, margin: "0 auto", textAlign: "center", marginBottom: 80 }}>
             <span className="sr" style={{
               fontSize: 11, fontWeight: 500, letterSpacing: "0.2em",
               textTransform: "uppercase", color: "rgba(255,255,255,0.28)",
@@ -845,7 +872,7 @@ export default function Home() {
           </div>
 
           {/* 4-step process grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+          <div className="home-about-steps" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {[
               { num: "01", title: "Discover & Audit", body: "Map workflows, identify bottlenecks, find the highest leverage automation opportunities." },
               { num: "02", title: "Design & Build", body: "Our AI engineers craft precise, scalable systems custom-built, not out-of-the-box." },
@@ -880,11 +907,11 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════ SERVICES ══════════════════════════ */}
-      <section className="section-pad" style={{ background: "var(--paper)" }}>
+      <section className="section-pad home-services" style={{ background: "var(--paper)" }}>
         <div className="container">
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 48 }}>
-            <div>
-              <div className="section-label sr">Our Services</div>
+          <div className="home-services-head" style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 48 }}>
+            <div className="home-services-head-main">
+              <div className="section-label sr home-our-services-label">Our Services</div>
               <h2 className="sr" style={{
                 fontSize: "clamp(28px, 3.5vw, 48px)", fontWeight: 450,
                 letterSpacing: "-0.03em", marginTop: 10, lineHeight: 1.1,
@@ -1000,12 +1027,12 @@ export default function Home() {
         ref={(node) => {
           clientsSectionRef.current = node;
         }}
-        className="section-pad"
+        className="section-pad home-clients"
         style={{ background: "var(--paper-dark)", overflow: "hidden" }}
       >
         <div className="container" style={{ marginBottom: 52 }}>
           <div className="sr" style={{ textAlign: "center" }}>
-            <div className="section-label" style={{ justifyContent: "center" }}>Our Clients</div>
+            <div className="section-label home-our-clients-label" style={{ justifyContent: "center" }}>Our Clients</div>
             <h2 style={{
               fontSize: "clamp(28px, 3.5vw, 46px)", fontWeight: 450,
               letterSpacing: "-0.03em", marginTop: 12, lineHeight: 1.1,
@@ -1060,7 +1087,7 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════ DARK CTA ══════════════════════════ */}
-      <section className="section-pad" style={{
+      <section className="section-pad home-dark-cta" style={{
         background: "var(--ink)", textAlign: "center",
         position: "relative", overflow: "clip",
       }}>
@@ -1162,6 +1189,6 @@ AI-powered workflows designed to remove bottlenecks and unlock scale for your bu
           </div>
         </div>
       </section>
-    </>
+    </div>
   );
 }

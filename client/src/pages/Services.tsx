@@ -288,10 +288,13 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
             <p className="body-text" style={{ maxWidth: "min(640px, 100%)", fontSize: "clamp(14px, 1.8vw, 16px)", color: "#3A3A3A", lineHeight: 1.6 }}>
               9 categories, 43 services — everything your business needs to automate, grow, and scale intelligently.
             </p>
+            <div className="md:hidden" style={{ marginTop: 14 }}>
+              <SectionLabel number="01" title="SERVICES" />
+            </div>
           </div>
         </div>
         <div className="absolute left-1/2 bottom-[10%] grid -translate-x-1/2 content-start justify-items-center gap-6 text-center text-black">
-          <span className="relative max-w-[12ch] text-xs uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:from-white after:to-black after:content-['']">
+          <span className="services-scroll-hint-text relative max-w-[18ch] text-xs uppercase leading-tight opacity-40 after:absolute after:left-1/2 after:top-full after:h-16 after:w-px after:bg-gradient-to-b after:from-white after:to-black after:content-['']">
             scroll down to see
           </span>
         </div>
@@ -327,13 +330,14 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
 export default function Services() {
   const search = useSearch();
   const params = new URLSearchParams(search);
+  const isMobileViewport = typeof window !== "undefined" && window.innerWidth < 768;
+  const initialCategoryParam = params.get("category");
 
-  const isMobileDevice = typeof window !== "undefined" && window.innerWidth < 768;
-  const [viewMode, setViewMode] = useState<"ring" | "grid">(
-    params.get("view") === "grid" || isMobileDevice ? "grid" : "ring"
-  );
+  const [viewMode, setViewMode] = useState<"ring" | "grid">("ring");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(params.get("category") ? Number(params.get("category")) : null);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(
+    !isMobileViewport && initialCategoryParam ? Number(initialCategoryParam) : null
+  );
   const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
@@ -349,6 +353,14 @@ export default function Services() {
     document.body.style.overflow = filterOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [filterOpen]);
+
+  useEffect(() => {
+    const shouldOpenFilter = params.get("openFilter") === "1";
+    if (!shouldOpenFilter) return;
+    if (typeof window === "undefined" || window.innerWidth >= 768) return;
+    setViewMode("ring");
+    setFilterOpen(true);
+  }, [search]);
 
   // GSAP reveal for grid view
   useEffect(() => {
@@ -394,6 +406,13 @@ export default function Services() {
     setSelectedStatus(null);
   };
 
+  const handleFilterOptionSelect = (onSelect: (value: any) => void, value: any) => {
+    onSelect(value);
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setFilterOpen(false);
+    }
+  };
+
   // Prepare ring items - duplicate to reach 90 items
   const ringItems = useMemo(() => {
     const baseItems = filtered.map((s, i) => ({
@@ -434,7 +453,7 @@ export default function Services() {
   }, [filtered]);
 
   return (
-    <div style={{ cursor: "none" }}>
+    <div style={{ cursor: viewMode === "grid" && typeof window !== "undefined" && window.innerWidth >= 768 ? "auto" : "none" }}>
       <CustomCursor />
       {/* ═══ FILTER PANEL — slides from LEFT with staggered items ═══ */}
       <div
@@ -502,7 +521,7 @@ export default function Services() {
                 {group.items.map((item, i) => (
                   <ParticleWrapper key={i}>
                     <button
-                      onClick={() => group.onSelect(item.value)}
+                      onClick={() => handleFilterOptionSelect(group.onSelect, item.value)}
                       className="block w-full text-left service-row-hover"
                       style={{
                         padding: "clamp(6px, 1.5vw, 8px) 0",
@@ -541,7 +560,7 @@ export default function Services() {
       {/* ═══ RING VIEW ═══ */}
       {viewMode === "ring" && (
         <div style={{ position: "relative",paddingBottom: "10px",paddingTop: "18px"}}>
-          <div className="fixed top-12 sm:top-16 md:top-20 left-3 sm:left-4 md:left-6 lg:left-8 z-[60]">
+          <div className="fixed top-20 sm:top-20 md:top-24 left-3 sm:left-4 md:left-6 lg:left-8 z-[60]">
             <ParticleWrapper>
               <button
                 onClick={() => setFilterOpen(true)}
@@ -556,7 +575,7 @@ export default function Services() {
               </button>
             </ParticleWrapper>
           </div>
-          <div className="fixed top-12 sm:top-16 md:top-20 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
+          <div className="fixed top-20 sm:top-20 md:top-24 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
             <ParticleWrapper>
               <button
                 onClick={() => setViewMode("grid")}
@@ -586,7 +605,7 @@ export default function Services() {
       {/* ═══ GRID VIEW — Enhanced with TiltCard and stagger ═══ */}
       {viewMode === "grid" && (
         <div className="pt-10 sm:pt-12 md:pt-16 lg:pt-20">
-          <div className="fixed top-12 sm:top-16 md:top-20 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
+          <div className="fixed top-20 sm:top-20 md:top-24 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
             <ParticleWrapper>
               <button
                 onClick={() => setViewMode("ring")}
@@ -604,9 +623,7 @@ export default function Services() {
 
           <div className="section-padding">
             <div className="container">
-              <div className="gsap-reveal">
-                <SectionLabel number="01" title="SERVICES" />
-              </div>
+             
 
               <ParticleWrapper>
                 <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: "clamp(16px, 3vw, 24px)", fontSize: "clamp(12px, 2.2vw, 14px)" }}>

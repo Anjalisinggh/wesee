@@ -200,7 +200,7 @@ export default function About() {
             <h1 
               className="fade-up" 
               style={{
-                fontSize: "clamp(52px, 8vw, 100px)",
+                fontSize: "clamp(40px, 8vw, 100px)",
                 fontWeight: 450, letterSpacing: "-0.04em", lineHeight: 1.12,
                 color: "var(--ink)", maxWidth: "14ch", textAlign: "center",
                 animationDelay: "0.15s", margin: 0,
@@ -228,7 +228,7 @@ export default function About() {
                 animationDelay: "0.25s",
               }}
             >
-              India's leading AI automation agency — a cross-functional team of AI engineers, operators, and growth strategists building the intelligent systems modern business runs on.
+              India's leading AI automation agency  a cross-functional team of AI engineers, operators, and growth strategists building the intelligent systems modern business runs on.
             </p>
           </div>
         </div>
@@ -241,9 +241,9 @@ export default function About() {
             display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))",
             gap: "clamp(28px, 5vw, 60px)", alignItems: "start",
           }}>
-            <div>
-              <span className="section-label gsap-reveal">(01) Our Mission</span>
-              <h2 className="section-heading gsap-reveal" style={{ marginTop: 12 }}>
+            <div className="about-mobile-center-block">
+              <span className="section-label gsap-reveal about-mobile-center-label">(01) Our Mission</span>
+              <h2 className="section-heading gsap-reveal about-mobile-center-title" style={{ marginTop: 12 }}>
                 Automation that changes how business works.
               </h2>
             </div>
@@ -276,10 +276,12 @@ export default function About() {
       {/* ══════════════ TIMELINE ══════════════ */}
       <section className="section-pad" style={{ background: "var(--paper)" }}>
         <div className="container">
-          <span className="section-label gsap-reveal">(02) Our Journey</span>
-          <h2 className="section-heading gsap-reveal" style={{ marginTop: 12, marginBottom: 60 }}>
-            Building for the long run.
-          </h2>
+          <div className="about-mobile-center-block">
+            <span className="section-label gsap-reveal about-mobile-center-label">(02) Our Journey</span>
+            <h2 className="section-heading gsap-reveal about-mobile-center-title" style={{ marginTop: 12, marginBottom: 60 }}>
+              Building for the long run.
+            </h2>
+          </div>
 
           <div style={{ display: "flex", flexDirection: "column" }}>
             {milestones.map((m, i) => (
@@ -338,10 +340,12 @@ export default function About() {
       {/* ══════════════ VALUES ══════════════ */}
       <section className="section-pad" style={{ background: "var(--paper-dark)" }}>
         <div className="container">
-          <span className="section-label gsap-reveal" style={{ marginBottom: 8 }}>(03) Our Values</span>
-          <h2 className="section-heading gsap-reveal" style={{ marginBottom: 52, marginTop: 12 }}>
-            How we operate.
-          </h2>
+          <div className="about-mobile-center-block">
+            <span className="section-label gsap-reveal about-mobile-center-label" style={{ marginBottom: 8 }}>(03) Our Values</span>
+            <h2 className="section-heading gsap-reveal about-mobile-center-title" style={{ marginBottom: 52, marginTop: 12 }}>
+              How we operate.
+            </h2>
+          </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
             {values.map((v, i) => (

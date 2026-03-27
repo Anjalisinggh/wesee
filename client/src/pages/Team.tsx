@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
-import SectionLabel from "@/components/SectionLabel";
 import TextReveal from "@/components/TextReveal";
 import TiltCard from "@/components/TiltCard";
 import StaggerReveal from "@/components/StaggerReveal";
@@ -13,38 +12,30 @@ gsap.registerPlugin(ScrollTrigger);
 
 const directors = [
   {
-    name: "Rahul Purohit",
+    name: "Harsh khanna",
     title: "Founder & CEO",
-    bio: "Rahul founded WeSee in 2023 with the belief that AI automation should be accessible, measurable, and transformative. With a background in product engineering and growth marketing, he leads WeSee's strategic direction and client relationships.",
-    email: "rahul@wesee.in",
-    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
-    linkedin: "https://linkedin.com/in/rahulpurohit",
+    bio: "Harsh founded WeSee in 2023 with the belief that AI automation should be accessible, measurable, and transformative. With a background in product engineering and growth marketing, he leads WeSee's strategic direction and client relationships.",
+    email: "harsh@wesee.in",
+    photo: "/client/harsh.webp",
+    linkedin: "https://www.linkedin.com/in/harsh-singh-431022190/",
   },
   {
-    name: "Priya Sharma",
+    name: "Takeshi",
     title: "Head of AI Engineering",
-    bio: "Priya leads WeSee's AI engineering team, overseeing the development of conversational AI agents, workflow automation systems, and custom integrations. With deep expertise in LangChain, OpenAI, and enterprise AI architecture, she ensures every solution is production-ready.",
-    email: "priya@wesee.in",
-    photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&q=80",
+    bio: "Alex  leads WeSee's AI engineering team, overseeing the development of conversational AI agents, workflow automation systems, and custom integrations. With deep expertise in LangChain, OpenAI, and enterprise AI architecture, she ensures every solution is production-ready.",
+      email: "alex@wesee.in",
+      photo: "/client/alex.png",
     linkedin: "https://linkedin.com/company/wesee",
   },
-  {
-    name: "Arjun Mehta",
-    title: "Head of Growth & Marketing",
-    bio: "Arjun drives WeSee's growth strategy and client acquisition. With a background in performance marketing and revenue operations, he builds the systems that help WeSee — and its clients — scale efficiently across channels.",
-    email: "arjun@wesee.in",
-    photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
-    linkedin: "https://linkedin.com/company/wesee",
-  },
+ 
 ];
 
 const teamMembers = [
-  { name: "Ananya Desai", title: "AI Solutions Architect", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=300&q=80" },
-  { name: "Vikram Singh", title: "Full Stack Developer", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80" },
-  { name: "Neha Kapoor", title: "Growth Marketing Lead", photo: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&q=80" },
-  { name: "Rohan Joshi", title: "Automation Engineer", photo: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=300&q=80" },
-  { name: "Meera Patel", title: "UX Designer", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80" },
-  { name: "Karan Malhotra", title: "Data Analyst", photo: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80" },
+  { name: "Deepak Yadav", title: "Full Stack Developer", photo: "/client/deepak.jpeg" },
+  { name: "Manas Kaushik", title: "Growth Marketing Lead", photo: "/client/harsh.webp" },
+  { name: "Akshat kumar", title: "Automation Engineer", photo: "/client/alex.webp" },
+  { name: "Anshika jain", title: "UX Designer", photo: "/client/alex.webp" },
+  { name: "Anshika jain", title: "Data Analyst", photo: "/client/harsh.webp" },
 ];
 
 type ColumnProps = {
@@ -210,7 +201,28 @@ export default function Team() {
     <div style={{ paddingTop: 64 }}>
       <div className="section-padding">
         <div className="container">
-          <SectionLabel number="01" title="TEAM" />
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+            <span
+              className="hidden sm:inline-block"
+              style={{
+                width: 24,
+                height: 1,
+                background: "#C9A84C",
+                flexShrink: 0,
+              }}
+            />
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: "#999999",
+              }}
+            >
+              (01) TEAM
+            </span>
+          </div>
           <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }} stagger={0.06} onScroll={false}>
             We are a community of builders.
           </TextReveal>
@@ -266,11 +278,11 @@ export default function Team() {
             Leadership.
           </TextReveal>
           <StaggerReveal stagger={0.15} y={30} style={{ marginTop: 48 }}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
               {directors.map((d) => (
                 <TiltCard key={d.name} maxTilt={5} scale={1.01}>
                   <div className="group">
-                    <div className="group relative overflow-hidden cursor-pointer rounded-2xl w-full" style={{ maxWidth: 280, aspectRatio: "280/400", borderRadius: 16 }}>
+                    <div className="group relative overflow-hidden cursor-pointer rounded-2xl w-full max-w-[320px] md:max-w-[420px] mx-auto" style={{ aspectRatio: "280/400", borderRadius: 16 }}>
                       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-400 ease-out" aria-hidden>
                         <img src={d.photo} alt="" className="w-full h-full object-cover block scale-105" style={{ filter: "blur(14px)" }} />
                       </div>
