@@ -5,7 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
-import HomeMobile from "./pages/HomeMobile";
+
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import LoadingScreen from "./components/LoadingScreen";
@@ -49,7 +49,7 @@ function Router() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Switch>
-        <Route path="/" component={isMobile ? HomeMobile : Home} />
+        <Route path="/" component={Home} />
         <Route path="/services" component={Services} />
         <Route path="/services/:slug" component={ServiceDetail} />
         <Route path="/about" component={About} />
