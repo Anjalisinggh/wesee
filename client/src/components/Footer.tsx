@@ -1,5 +1,6 @@
 import { Link } from "wouter";
 import ParticleWrapper from "./ParticleWrapper";
+import { useFinePointer } from "@/hooks/useFinePointer";
 
 const serviceLinks = [
   { label: "AI Agents", href: "/services?category=1" },
@@ -25,6 +26,7 @@ const socials = [
 ];
 
 export default function Footer() {
+  const finePointer = useFinePointer();
   return (
     <footer style={{ background: "var(--ink)", position: "relative", overflow: "hidden" }}>
       {/* Subtle blob */}
@@ -221,7 +223,7 @@ export default function Footer() {
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
               style={{
                 fontSize: 12, color: "rgba(255,255,255,0.18)", background: "none",
-                border: "none", transition: "color 0.3s ease", cursor: "none",
+                border: "none", transition: "color 0.3s ease", cursor: finePointer ? "none" : "pointer",
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "var(--accent)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(255,255,255,0.18)"; }}

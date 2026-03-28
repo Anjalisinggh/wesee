@@ -3,13 +3,14 @@
  *
  * MOBILE INTERACTION (two-step):
  *   Step 1 — Tap a ring card  → shows the center image preview (ring pauses, reveal visible)
- *   Step 2 — Tap the center preview image → navigates to the item's URL
+ *   Step 2 — Tap the center preview image or category label → navigates to the item's URL
  *
  * Tapping anywhere outside the preview dismisses it and resumes the ring.
  * Dragging always spins the ring.
  */
 import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
+import { useFinePointer } from "@/hooks/useFinePointer";
 
 interface RingItem {
   title: string;
@@ -64,6 +65,7 @@ function RotorItem({
   cardOpacity,
   isHovered,
   isMobile,
+  finePointer,
   onMouseEnter,
   onMouseLeave,
   onClick,
@@ -82,6 +84,7 @@ function RotorItem({
   cardOpacity: number;
   isHovered: boolean;
   isMobile: boolean;
+  finePointer: boolean;
   onMouseEnter: () => void;
   onMouseLeave: () => void;
   onClick: () => void;
@@ -110,7 +113,7 @@ function RotorItem({
         transformStyle: "preserve-3d",
         willChange: "transform",
         pointerEvents: "auto",
-        cursor: "none",
+        cursor: finePointer ? "none" : "grab",
       }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
@@ -217,6 +220,7 @@ export default function RotorGallery({
   categoryLabels = [],
   onItemClick,
 }: RotorGalleryProps) {
+  const finePointer = useFinePointer();
   const safeCount = Math.min(MAX_SAFE_COUNT, count);
   const sceneRef = useRef<HTMLDivElement>(null);
   const revealSceneRef = useRef<HTMLDivElement>(null);
@@ -473,6 +477,25 @@ export default function RotorGallery({
       );
     };
 
+    // Same vertical placement as category label: calc(35vh|45vh + revealImageHeight/2 + 20px)
+    const isTouchOnCategoryLabel = (clientX: number, clientY: number): boolean => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const centerX = vw * 0.5;
+      const pillTop = vh * revealImageTopVh + revealImageHeight / 2 + 20;
+      const pillHeight = isMobile ? 44 : 52;
+      const halfW = isMobile ? 200 : 240;
+      return (
+        clientX >= centerX - halfW &&
+        clientX <= centerX + halfW &&
+        clientY >= pillTop &&
+        clientY <= pillTop + pillHeight
+      );
+    };
+
+    const isTouchOnPreviewOrCategoryLabel = (clientX: number, clientY: number): boolean =>
+      isTouchOnPreview(clientX, clientY) || isTouchOnCategoryLabel(clientX, clientY);
+
     const onMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       handleStart(e.clientX, e.clientY);
@@ -514,8 +537,8 @@ export default function RotorGallery({
 
       // ── PREVIEW IS LOCKED: decide navigate vs dismiss
       if (previewLockedRef.current) {
-        if (isTouchOnPreview(touch.clientX, touch.clientY)) {
-          // Tap ON the preview image → navigate
+        if (isTouchOnPreviewOrCategoryLabel(touch.clientX, touch.clientY)) {
+          // Tap ON the preview image or category label → navigate
           const idx = activeCardIndexRef.current;
           previewLockedRef.current = false;
           setPreviewLocked(false);
@@ -694,7 +717,7 @@ export default function RotorGallery({
         overflow: "visible",
         background: "var(--paper)",
         position: "relative",
-        cursor: "none",
+        cursor: finePointer ? "none" : "grab",
         userSelect: "none",
         touchAction: "none",
       }}
@@ -711,7 +734,7 @@ export default function RotorGallery({
           transition: "opacity 0.2s ease",
           WebkitMaskImage: `radial-gradient(circle ${revealRadius}px at 50vw ${revealMaskY}, white 0%, white 90%, transparent 100%)`,
           maskImage: `radial-gradient(circle ${revealRadius}px at 50vw ${revealMaskY}, white 0%, white 90%, transparent 100%)`,
-          cursor: "none",
+          cursor: finePointer ? "none" : "grab",
           mixBlendMode: "normal",
           display: "flex",
           alignItems: "center",
@@ -767,7 +790,7 @@ export default function RotorGallery({
               )}
             </div>
 
-            {/* Category label */}
+            {/* Category label — same navigate as preview: mobile via hit-test when locked; desktop via click */}
             <div
               style={{
                 position: "fixed",
@@ -777,9 +800,20 @@ export default function RotorGallery({
                 left: "50vw",
                 transform: "translateX(-50%)",
                 zIndex: 401,
-                pointerEvents: "none",
+                pointerEvents: isMobile ? "none" : "auto",
+                cursor: finePointer && isMobile ? undefined : "pointer",
                 textAlign: "center",
               }}
+              onMouseDown={isMobile ? undefined : (e) => e.stopPropagation()}
+              onClick={
+                isMobile
+                  ? undefined
+                  : (e) => {
+                      e.stopPropagation();
+                      const idx = activeCardIndex;
+                      if (idx >= 0 && idx < list.length) handleItemClick(list[idx]);
+                    }
+              }
             >
               <span
                 style={{
@@ -881,6 +915,7 @@ export default function RotorGallery({
             cardOpacity={1}
             isHovered={activeCardIndex === i}
             isMobile={isMobile}
+            finePointer={finePointer}
             onMouseEnter={() => {
               isHoveringRef.current = true;
               velocityRef.current = 0;

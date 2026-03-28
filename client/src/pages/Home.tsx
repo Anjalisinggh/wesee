@@ -7,6 +7,7 @@ import InteractiveParticles from "@/components/InteractiveParticles";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { categories, services as allServices } from "@/data/services";
+import { useFinePointer } from "@/hooks/useFinePointer";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -86,6 +87,7 @@ const workImages = [
 /* ─── Component ───────────────────────────────────────────────── */
 
 export default function Home() {
+  const finePointer = useFinePointer();
   const statsRef = useRef<HTMLDivElement>(null);
   const [counted, setCounted] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
@@ -591,7 +593,7 @@ export default function Home() {
                   borderRadius: 999, border: "none",
                   textDecoration: "none",
                   transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  cursor: "none",
+                  cursor: finePointer ? "none" : "pointer",
                 }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
@@ -619,7 +621,7 @@ export default function Home() {
                 borderRadius: 999, border: "1px solid rgba(17,19,23,0.11)",
                 textDecoration: "none",
                 transition: "background 0.3s ease, border-color 0.3s ease, transform 0.3s ease",
-                cursor: "none",
+                cursor: finePointer ? "none" : "pointer",
               }}
                 onMouseEnter={e => {
                   (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.95)";
@@ -1167,7 +1169,7 @@ AI-powered workflows designed to remove bottlenecks and unlock scale for your bu
                   background: "#FFFFFF", color: "var(--ink)",
                   fontSize: 14, fontWeight: 500,
                   borderRadius: 999, border: "none",
-                  textDecoration: "none", cursor: "none",
+                  textDecoration: "none", cursor: finePointer ? "none" : "pointer",
                   transition: "transform 0.3s ease, box-shadow 0.3s ease",
                 }}
                 onMouseEnter={e => {
@@ -1192,7 +1194,7 @@ AI-powered workflows designed to remove bottlenecks and unlock scale for your bu
                   border: "1px solid rgba(255,255,255,0.14)",
                   color: "rgba(255,255,255,0.60)",
                   fontSize: 14, fontWeight: 450,
-                  borderRadius: 999, textDecoration: "none", cursor: "none",
+                  borderRadius: 999, textDecoration: "none", cursor: finePointer ? "none" : "pointer",
                   transition: "background 0.3s ease, color 0.3s ease",
                 }}
                 onMouseEnter={e => {

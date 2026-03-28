@@ -9,6 +9,7 @@ import TextReveal from "@/components/TextReveal";
 import TiltCard from "@/components/TiltCard";
 import ParticleWrapper from "@/components/ParticleWrapper";
 import CustomCursor from "@/components/CustomCursor";
+import { useFinePointer } from "@/hooks/useFinePointer";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -328,6 +329,7 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
 };
 
 export default function Services() {
+  const finePointer = useFinePointer();
   const search = useSearch();
   const params = new URLSearchParams(search);
   const isMobileViewport = typeof window !== "undefined" && window.innerWidth < 768;
@@ -452,9 +454,16 @@ export default function Services() {
     return catPositions;
   }, [filtered]);
 
+  const pageCursor =
+    !finePointer
+      ? "auto"
+      : viewMode === "grid" && typeof window !== "undefined" && window.innerWidth >= 768
+        ? "auto"
+        : "none";
+
   return (
-    <div style={{ cursor: viewMode === "grid" && typeof window !== "undefined" && window.innerWidth >= 768 ? "auto" : "none" }}>
-      <CustomCursor />
+    <div style={{ cursor: pageCursor }}>
+      {finePointer ? <CustomCursor /> : null}
       {/* ═══ FILTER PANEL — slides from LEFT with staggered items ═══ */}
       <div
         className="w-full sm:w-80 lg:w-96 pt-20"
@@ -484,7 +493,7 @@ export default function Services() {
           <ParticleWrapper>
             <button
               onClick={() => setFilterOpen(false)}
-              style={{ fontSize: "clamp(20px, 4vw, 24px)", color: "#1A1A1A", padding: "clamp(6px, 1.5vw, 8px)", transition: "transform 0.3s ease", cursor: "none" }}
+              style={{ fontSize: "clamp(20px, 4vw, 24px)", color: "#1A1A1A", padding: "clamp(6px, 1.5vw, 8px)", transition: "transform 0.3s ease", cursor: finePointer ? "none" : "pointer" }}
               onMouseEnter={e => e.currentTarget.style.transform = "rotate(90deg)"}
               onMouseLeave={e => e.currentTarget.style.transform = "rotate(0)"}
             >
@@ -504,7 +513,7 @@ export default function Services() {
               <button
                 onClick={() => setExpandedFilter(expandedFilter === group.key ? null : group.key)}
                 className="w-full flex items-center justify-between"
-                style={{ padding: "clamp(12px, 2vw, 16px) 0", fontSize: "clamp(10px, 1.8vw, 11px)", fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", cursor: "none" }}
+                style={{ padding: "clamp(12px, 2vw, 16px) 0", fontSize: "clamp(10px, 1.8vw, 11px)", fontWeight: 400, letterSpacing: "0.12em", textTransform: "uppercase", color: "#888888", cursor: finePointer ? "none" : "pointer" }}
               >
                 {group.label}
                 <span style={{ fontSize: "clamp(14px, 2.5vw, 16px)", transition: "transform 0.3s ease", transform: expandedFilter === group.key ? "rotate(45deg)" : "rotate(0)" }}>+</span>
@@ -529,7 +538,7 @@ export default function Services() {
                         fontWeight: group.selected === item.value ? 600 : 400,
                         color: group.selected === item.value ? "#1A1A1A" : "#3A3A3A",
                         transition: "all 0.3s ease",
-                        cursor: "none",
+                        cursor: finePointer ? "none" : "pointer",
                       }}
                     >
                       {item.label}
@@ -568,7 +577,7 @@ export default function Services() {
                 style={{ 
                   fontSize: "clamp(10px, 2vw, 13px)",
                   padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
-                  cursor: "none"
+                  cursor: finePointer ? "none" : "pointer",
                 }}
               >
                 Filter Services +
@@ -583,7 +592,7 @@ export default function Services() {
                 style={{ 
                   fontSize: "clamp(10px, 2vw, 13px)",
                   padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
-                  cursor: "none"
+                  cursor: finePointer ? "none" : "pointer",
                 }}
               >
                 Grid view ⊞
@@ -613,7 +622,7 @@ export default function Services() {
                 style={{ 
                   fontSize: "clamp(10px, 2vw, 13px)",
                   padding: "clamp(4px, 1vw, 6px) clamp(10px, 2.5vw, 16px)",
-                  cursor: "none"
+                  cursor: finePointer ? "none" : "pointer",
                 }}
               >
                 Ring view ○
