@@ -129,7 +129,7 @@ const engagementSizes = ["Starter", "Growth", "Enterprise"];
 const statuses = ["Live", "In Progress", "Case Study"];
 
 type ColumnProps = {
-  images: Array<{ src: string; title?: string; subtitle?: string }>;
+  images: Array<{ src: string; title?: string; subtitle?: string; href?: string }>;
   y: MotionValue<number>;
   isMobile?: boolean;
 };
@@ -144,22 +144,46 @@ const Column = ({ images, y, isMobile = false }: ColumnProps) => {
       }}
     >
       {images.map((item, i) => {
-        const minHeight = isMobile ? "600px" : "500px";
-        return (
-          <div key={i} className={`relative w-full overflow-hidden group ${isMobile ? '' : 'flex-1'}`} style={{ minHeight: isMobile ? undefined : undefined, flex: isMobile ? "0 0 auto" : "1 1 auto", display: isMobile ? "block" : "flex", alignItems: isMobile ? "normal" : "center", justifyContent: isMobile ? "normal" : "center", marginBottom: isMobile ? "0" : undefined }}>
+        const tileStyle = {
+          flex: isMobile ? "0 0 auto" : "1 1 auto",
+          display: isMobile ? "block" : "flex",
+          alignItems: isMobile ? "normal" : "center",
+          justifyContent: isMobile ? "normal" : "center",
+          marginBottom: isMobile ? "0" : undefined,
+        } as const;
+        const linkShell =
+          "relative w-full min-h-0 overflow-hidden group outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 " +
+          (isMobile ? "block" : "flex h-full flex-1 flex-col");
+        const inner = (
+          <>
             <img
               src={item.src}
-              alt="image"
+              alt={item.title ? `${item.title} — service` : "Service"}
               className={`pointer-events-none w-full ${isMobile ? "object-contain" : "object-cover"}`}
               style={{ height: isMobile ? "auto" : "100%", minHeight: isMobile ? undefined : undefined, maxHeight: isMobile ? "none" : "none", display: "block", width: "100%" }}
             />
             {item.title && (
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 pointer-events-none">
                 <div className="text-white">
                   <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>{item.title}</div>
                   {item.subtitle && <div style={{ fontSize: 12, fontWeight: 400, opacity: 0.9 }}>{item.subtitle}</div>}
                 </div>
               </div>
+            )}
+          </>
+        );
+        return (
+          <div key={i} style={tileStyle} className={isMobile ? "w-full" : "min-w-0 flex-1"}>
+            {item.href ? (
+              <Link
+                href={item.href}
+                className={linkShell}
+                aria-label={item.title ? `Open ${item.title}` : "Open service"}
+              >
+                {inner}
+              </Link>
+            ) : (
+              <div className={linkShell}>{inner}</div>
             )}
           </div>
         );
@@ -168,7 +192,7 @@ const Column = ({ images, y, isMobile = false }: ColumnProps) => {
   );
 };
 
-const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string; name: string; category: string }> }) => {
+const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string; name: string; category: string; slug: string }> }) => {
   const gallery = useRef<HTMLDivElement>(null);
   const [dimension, setDimension] = useState({ width: 0, height: 0 });
   const [isMobile, setIsMobile] = useState(false);
@@ -200,17 +224,22 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
   const totalServices = services.length;
   
   // Create columns by distributing services evenly
-  const col1: Array<{ src: string; title: string; subtitle: string }> = [];
-  const col2: Array<{ src: string; title: string; subtitle: string }> = [];
-  const col3: Array<{ src: string; title: string; subtitle: string }> = [];
-  const col4: Array<{ src: string; title: string; subtitle: string }> = [];
+  const col1: Array<{ src: string; title: string; subtitle: string; href: string }> = [];
+  const col2: Array<{ src: string; title: string; subtitle: string; href: string }> = [];
+  const col3: Array<{ src: string; title: string; subtitle: string; href: string }> = [];
+  const col4: Array<{ src: string; title: string; subtitle: string; href: string }> = [];
   
   // Mobile columns (2 columns with all images)
-  const mobileCol1: Array<{ src: string; title: string; subtitle: string }> = [];
-  const mobileCol2: Array<{ src: string; title: string; subtitle: string }> = [];
+  const mobileCol1: Array<{ src: string; title: string; subtitle: string; href: string }> = [];
+  const mobileCol2: Array<{ src: string; title: string; subtitle: string; href: string }> = [];
   
   services.forEach((service, index) => {
-    const item = { src: service.image, title: service.name, subtitle: service.category };
+    const item = {
+      src: service.image,
+      title: service.name,
+      subtitle: service.category,
+      href: `/services/${service.slug}`,
+    };
     
     // Desktop: Distribute evenly across 4 columns
     const columnIndex = index % 4;
@@ -641,11 +670,14 @@ export default function Services() {
               </ParticleWrapper>
 
               {/* Parallax gallery with service images */}
-              <ServicesParallaxGallery services={filtered.map((service, i) => ({
-                image: getServiceImage(service, i, filtered),
-                name: service.name,
-                category: service.category
-              }))} />
+              <ServicesParallaxGallery
+                services={filtered.map((service, i) => ({
+                  image: getServiceImage(service, i, filtered),
+                  name: service.name,
+                  category: service.category,
+                  slug: service.slug,
+                }))}
+              />
             </div>
           </div>
         </div>
