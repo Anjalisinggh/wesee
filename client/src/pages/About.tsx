@@ -121,6 +121,15 @@ function AboutStatCard({
 
 export default function About() {
   const [isTextHovered, setIsTextHovered] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const touchCapable =
+      typeof window !== "undefined" &&
+      (window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
+        "ontouchstart" in window);
+    setIsTouchDevice(touchCapable);
+  }, []);
 
   const stats = useMemo(
     () => [
@@ -151,31 +160,55 @@ export default function About() {
 
   return (
     <>
-      {/* ══════════════ HERO ══════════════ */}
-      <section style={{
-        minHeight: "clamp(60vh, 75vh, 90vh)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        position: "relative",
-        overflow: "hidden",
-        paddingTop: "clamp(60px, 10vw, 88px)", paddingBottom: 40,
-      }}>
-        <InteractiveParticles 
-          style={{ position: "absolute", inset: 0, zIndex: 0 }} 
-          isHovered={isTextHovered}
-        />
+      {/* ══════════════ HERO — particle layer matches Home.tsx (mobile translateY, touch logo on) ══════════════ */}
+      <section
+        className="about-hero"
+        style={{
+          minHeight: "100svh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "relative",
+          paddingTop: 72,
+          paddingBottom: 60,
+          background: "var(--paper)",
+        }}
+      >
+        <div
+          className="about-hero-particle-logo-layer"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        >
+          <InteractiveParticles
+            style={{ position: "absolute", inset: 0, zIndex: 0 }}
+            isHovered={isTextHovered || isTouchDevice}
+          />
+        </div>
+        <style>{`
+          @media (max-width: 767px) {
+            .about-hero .about-hero-particle-logo-layer {
+              transform: translateY(clamp(-140px, -14vh, -56px));
+            }
+          }
+        `}</style>
 
-        <div style={{
-          position: "absolute",
-          width: 700, height: 700, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)",
-          top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
-          pointerEvents: "none",
-          animation: "blob1 18s ease-in-out infinite",
-        }} />
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
+          <div style={{
+            position: "absolute",
+            width: 700, height: 700, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)",
+            top: "50%", left: "50%",
+            transform: "translate(-50%,-50%)",
+            pointerEvents: "none",
+            animation: "blob1 18s ease-in-out infinite",
+          }} />
+        </div>
 
         <div className="container" style={{
           position: "relative", zIndex: 1, textAlign: "center",
@@ -191,10 +224,9 @@ export default function About() {
           </div>
 
           <div
-            onMouseEnter={() => setIsTextHovered(true)}
-            onMouseLeave={() => setIsTextHovered(false)}
-            onTouchStart={() => setIsTextHovered(true)}
-            onTouchEnd={() => setTimeout(() => setIsTextHovered(false), 4000)}
+            onMouseEnter={() => { if (!isTouchDevice) setIsTextHovered(true); }}
+            onMouseLeave={() => { if (!isTouchDevice) setIsTextHovered(false); }}
+            onTouchStart={() => { if (!isTouchDevice) setIsTextHovered(true); }}
             style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}
           >
             <h1 

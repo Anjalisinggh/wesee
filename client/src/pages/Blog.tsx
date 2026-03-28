@@ -78,7 +78,7 @@ export default function Blog() {
   const grid = articles.filter(a => !a.featured);
 
   return (
-    <div style={{ paddingTop: 44 }}>
+    <div className="blog-route" style={{ paddingTop: 44 }}>
       <div style={{ paddingTop: 30, paddingBottom: 40 }}>
         <div className="container">
           <div
@@ -192,6 +192,7 @@ export default function Blog() {
                           </span>
                         </div>
                         <h3
+                          className="blog-card-title group-hover:translate-x-2"
                           style={{
                             fontSize: 20,
                             fontWeight: 600,
@@ -200,7 +201,6 @@ export default function Blog() {
                             marginTop: 8,
                             transition: "transform 0.3s ease",
                           }}
-                          className="group-hover:translate-x-2"
                         >
                           {article.title}
                         </h3>

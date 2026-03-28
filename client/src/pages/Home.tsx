@@ -384,11 +384,29 @@ export default function Home() {
         {!isTouchDevice && (
           <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
         )}
-        {/* WeSee logo particle formation — same behavior as About hero */}
-        <InteractiveParticles
-          style={{ position: "absolute", inset: 0, zIndex: 0 }}
-          isHovered={isHeroLogoHovered}
-        />
+        {/* WeSee logo particle formation — same behavior as About hero; mobile: shift layer up so logo reads above headline */}
+        <div
+          className="home-hero-particle-logo-layer"
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+          }}
+        >
+          <InteractiveParticles
+            style={{ position: "absolute", inset: 0, zIndex: 0 }}
+            isHovered={isHeroLogoHovered}
+          />
+        </div>
+        <style>{`
+          @media (max-width: 767px) {
+            .home-page .home-hero-particle-logo-layer {
+              transform: translateY(clamp(-140px, -14vh, -56px));
+            }
+          }
+        `}</style>
 
         {/* Decorative blobs — contained in their own overflow:hidden wrapper so they
             don't bleed out of the section, but the wrapper does NOT clip the text */}
@@ -912,10 +930,13 @@ export default function Home() {
           <div className="home-services-head" style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", justifyContent: "space-between", gap: 16, marginBottom: 48 }}>
             <div className="home-services-head-main">
               <div className="section-label sr home-our-services-label">Our Services</div>
-              <h2 className="sr" style={{
-                fontSize: "clamp(28px, 3.5vw, 48px)", fontWeight: 450,
-                letterSpacing: "-0.03em", marginTop: 10, lineHeight: 1.1,
-              }}>
+              <h2
+                className="sr"
+                style={{
+                  fontSize: "clamp(28px, 3.5vw, 48px)", fontWeight: 450,
+                  letterSpacing: "-0.03em", marginTop: 10, lineHeight: 1.1,
+                }}
+              >
                 Built for Growth. Powered by AI. Driven by Automation.
               </h2>
             </div>

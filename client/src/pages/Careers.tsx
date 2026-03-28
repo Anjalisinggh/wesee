@@ -68,7 +68,7 @@ export default function Careers() {
   }, []);
 
   return (
-    <div style={{ paddingTop: 20 }}>
+    <div className="careers-page" style={{ paddingTop: 20 }}>
       <div className="section-padding">
         <div className="container">
           <div
@@ -100,7 +100,13 @@ export default function Careers() {
               (01) CAREERS
             </span>
           </div>
-          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }} stagger={0.06} onScroll={false}>
+          <TextReveal
+            as="h1"
+            className="careers-hero-title"
+            style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }}
+            stagger={0.06}
+            onScroll={false}
+          >
             Careers.
           </TextReveal>
           <p className="body-text gsap-reveal" style={{ marginTop: 24 }}>
@@ -129,7 +135,7 @@ export default function Careers() {
 
       <section style={{ paddingTop: 40, paddingBottom: 16 }}>
         <div className="container">
-          <TextReveal as="h2" className="section-heading" stagger={0.05}>
+          <TextReveal as="h2" className="section-heading careers-team-heading" stagger={0.05}>
             Become part of the WeSee team.
           </TextReveal>
         </div>
@@ -147,9 +153,19 @@ export default function Careers() {
                   style={{ padding: "24px 0", cursor: "pointer", background: "none", border: "none", textAlign: "left" }}
                 >
                   <div>
-                    <span style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease", display: "inline-block" }} className="group-hover:translate-x-2">{job.title}</span>
+                    <span
+                      className="careers-job-title group-hover:translate-x-2"
+                      style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A", transition: "transform 0.3s ease", display: "inline-block" }}
+                    >
+                      {job.title}
+                    </span>
                   </div>
-                  <span style={{ fontSize: 24, fontWeight: 300, color: "#888888", transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)", transform: openJob === i ? "rotate(45deg)" : "none" }}>+</span>
+                  <span
+                    className="careers-job-toggle-icon"
+                    style={{ fontSize: 24, fontWeight: 300, color: "#888888", transition: "transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)", transform: openJob === i ? "rotate(45deg)" : "none" }}
+                  >
+                    +
+                  </span>
                 </button>
                 <div
                   style={{

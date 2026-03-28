@@ -114,7 +114,7 @@ export default function BlogDetail() {
     }
 
     return (
-        <div style={{ paddingTop: 64 }}>
+        <div className="blog-route" style={{ paddingTop: 64 }}>
             <div className="section-padding">
                 <div className="container">
                     <Link href="/blog" className="cta-link" style={{ fontSize: 13, color: "#888888" }}>
@@ -168,7 +168,7 @@ export default function BlogDetail() {
             {/* Dark CTA */}
             <div style={{ background: "#1A1A1A", padding: "64px 0", marginTop: 64 }}>
                 <div className="container" style={{ textAlign: "center" }}>
-                    <TextReveal as="h3" style={{ fontSize: 32, fontWeight: 600, color: "#FFFFFF" }} stagger={0.05}>
+                    <TextReveal as="h3" className="blog-detail-cta-title" style={{ fontSize: 32, fontWeight: 600, color: "#FFFFFF" }} stagger={0.05}>
                         Want results like this for your business?
                     </TextReveal>
                     <p className="gsap-reveal" style={{ fontSize: 16, fontWeight: 400, color: "#AAAAAA", marginTop: 16, maxWidth: 560, marginLeft: "auto", marginRight: "auto", lineHeight: 1.75 }}>

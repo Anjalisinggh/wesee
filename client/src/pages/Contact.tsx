@@ -247,7 +247,7 @@ export default function Contact() {
   });
 
   return (
-    <div style={{ paddingTop: "clamp(48px, 6vw, 64px)" }}>
+    <div className="contact-page" style={{ paddingTop: "clamp(48px, 6vw, 64px)" }}>
       <div className="section-padding">
         <div className="container">
           <div
@@ -279,7 +279,13 @@ export default function Contact() {
               (01) CONTACT
             </span>
           </div>
-          <TextReveal as="h1" style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }} stagger={0.06} onScroll={false}>
+          <TextReveal
+            as="h1"
+            className="contact-hero-title"
+            style={{ fontSize: "clamp(48px, 6vw, 72px)", fontWeight: 700, color: "#1A1A1A", lineHeight: 1.15 }}
+            stagger={0.06}
+            onScroll={false}
+          >
             Get in touch.
           </TextReveal>
         </div>
