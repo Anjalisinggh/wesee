@@ -66,9 +66,6 @@ function RotorItem({
   isHovered,
   isMobile,
   finePointer,
-  onMouseEnter,
-  onMouseLeave,
-  onClick,
 }: {
   item: RingItem;
   index: number;
@@ -85,9 +82,6 @@ function RotorItem({
   isHovered: boolean;
   isMobile: boolean;
   finePointer: boolean;
-  onMouseEnter: () => void;
-  onMouseLeave: () => void;
-  onClick: () => void;
 }) {
   const itemAngle = (index / total) * 360;
   const thicknessPx = 1;
@@ -112,12 +106,11 @@ function RotorItem({
         transform: ringTransform,
         transformStyle: "preserve-3d",
         willChange: "transform",
-        pointerEvents: "auto",
+        // pointer-events: none — desktop hover is handled via container mousemove (angle math),
+        // not per-card DOM events, so this works reliably at any screen size.
+        pointerEvents: "none",
         cursor: finePointer ? "none" : "grab",
       }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
     >
       <div
         style={{
@@ -226,12 +219,15 @@ export default function RotorGallery({
   const revealSceneRef = useRef<HTMLDivElement>(null);
   const revealLayerRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
-  const [currentRotation, setCurrentRotation] = useState(0);
+
+  // labelRotation is updated every single RAF frame (no throttle) so labels move smoothly
+  const [labelRotation, setLabelRotation] = useState(0);
+
   const activeCardIndexRef = useRef<number>(-1);
   const [activeCardIndex, setActiveCardIndex] = useState<number>(-1);
   const [isRevealVisible, setIsRevealVisible] = useState<boolean>(false);
 
-  // ── Preview lock: true = preview is open, waiting for tap-on-image to navigate
+  // Preview lock: true = preview open, waiting for tap-on-image to navigate
   const previewLockedRef = useRef(false);
   const [previewLocked, setPreviewLocked] = useState(false);
 
@@ -249,7 +245,6 @@ export default function RotorGallery({
   const dragStartPosRef = useRef<{ x: number; y: number } | null>(null);
   const hasDraggedRef = useRef(false);
   const isHoveringRef = useRef(false);
-  const lastRotationUpdateRef = useRef(0);
   const touchStartedOnRingRef = useRef(false);
 
   const isMobile = dimensions.w < 640;
@@ -274,6 +269,7 @@ export default function RotorGallery({
     return () => window.removeEventListener("resize", update);
   }, []);
 
+  // ── Main animation loop
   useEffect(() => {
     let last = performance.now();
     const speed = 360 / (speedSec * 1000);
@@ -304,10 +300,8 @@ export default function RotorGallery({
       const rotVal = `${angleRef.current}deg`;
       if (sceneRef.current) sceneRef.current.style.setProperty("--global-rotation", rotVal);
 
-      if (t - lastRotationUpdateRef.current > 100) {
-        setCurrentRotation(angleRef.current);
-        lastRotationUpdateRef.current = t;
-      }
+      // Update every frame — no throttle — so category labels move smoothly
+      setLabelRotation(angleRef.current);
 
       raf = requestAnimationFrame(tick);
     };
@@ -331,12 +325,71 @@ export default function RotorGallery({
   const RING_SCALE = 0.85;
   const mobileGapPx = (isMobile ? gapPx * 0.45 : gapPx) * RING_SCALE;
 
-  // Compute preview image bounds for hit-testing (mobile)
   const mobileCardWidth = isMobile ? cardWidth * 0.6 : cardWidth;
   const mobileCardHeight = isMobile ? cardHeight * 0.6 : cardHeight;
   const revealImageWidth = isMobile ? mobileCardWidth * 3.8 : mobileCardWidth * 2.5;
   const revealImageHeight = isMobile ? mobileCardHeight * 2.6 : mobileCardHeight * 1.6;
   const revealImageTopVh = isMobile ? 0.35 : 0.45;
+
+  // ── Desktop: find closest card by angular proximity to cursor.
+  // Uses pure angle math (same approach as mobile) so it works at any screen/monitor size
+  // without relying on per-card DOM hit areas which break with 3D perspective transforms.
+  const updateClosestCardDesktop = useCallback(
+    (clientX: number, clientY: number): boolean => {
+      const container = containerRef.current;
+      if (!container) return false;
+
+      const rect = container.getBoundingClientRect();
+
+      // Approximate 2D screen-space centre of the ring.
+      // The scene is at left:50%, top:50% of the container, offset by (offsetX, offsetY).
+      const sceneCenterX = rect.left + rect.width * 0.5 + offsetX;
+      const sceneCenterY = rect.top + rect.height * 0.5 + offsetY;
+
+      const dx = clientX - sceneCenterX;
+      const dy = clientY - sceneCenterY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Dead-zone (centre) and outer boundary
+      const minR = mobileGapPx * 0.15;
+      const maxR = mobileGapPx * 3.2; // generous outer zone for large monitors
+
+      if (dist < minR || dist > maxR) {
+        if (activeCardIndexRef.current >= 0) {
+          activeCardIndexRef.current = -1;
+          setActiveCardIndex(-1);
+          setIsRevealVisible(false);
+          isHoveringRef.current = false;
+        }
+        return false;
+      }
+
+      let cursorAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+      cursorAngle = (cursorAngle + 360) % 360;
+
+      const anglePerCard = 360 / safeCount;
+      let minAngDist = Infinity;
+      let bestIndex = 0;
+
+      for (let i = 0; i < safeCount; i++) {
+        let cardAngle = (angleRef.current - i * anglePerCard) % 360;
+        if (cardAngle < 0) cardAngle += 360;
+        let d = Math.abs(cursorAngle - cardAngle);
+        if (d > 180) d = 360 - d;
+        if (d < minAngDist) {
+          minAngDist = d;
+          bestIndex = i;
+        }
+      }
+
+      if (bestIndex !== activeCardIndexRef.current) {
+        activeCardIndexRef.current = bestIndex;
+        setActiveCardIndex(bestIndex);
+      }
+      return true;
+    },
+    [mobileGapPx, safeCount, offsetX, offsetY]
+  );
 
   useEffect(() => {
     const container = containerRef.current;
@@ -393,7 +446,6 @@ export default function RotorGallery({
       setIsDragging(false);
       velocityRef.current = 0;
       targetAngleRef.current = null;
-      setCurrentRotation(angleRef.current);
 
       if (hasDraggedRef.current) {
         setTimeout(() => {
@@ -405,7 +457,8 @@ export default function RotorGallery({
       }
     };
 
-    const updateClosestImage = (clientX: number, clientY: number): boolean => {
+    // Mobile only — unchanged from original
+    const updateClosestImageMobile = (clientX: number, clientY: number): boolean => {
       if (!isMobile) return false;
 
       const now = performance.now();
@@ -463,7 +516,6 @@ export default function RotorGallery({
       return true;
     };
 
-    // ── Returns true if the touch point is inside the center preview image
     const isTouchOnPreview = (clientX: number, clientY: number): boolean => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
@@ -477,7 +529,6 @@ export default function RotorGallery({
       );
     };
 
-    // Same vertical placement as category label: calc(35vh|45vh + revealImageHeight/2 + 20px)
     const isTouchOnCategoryLabel = (clientX: number, clientY: number): boolean => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
@@ -496,6 +547,7 @@ export default function RotorGallery({
     const isTouchOnPreviewOrCategoryLabel = (clientX: number, clientY: number): boolean =>
       isTouchOnPreview(clientX, clientY) || isTouchOnCategoryLabel(clientX, clientY);
 
+    // ── Desktop mouse handlers
     const onMouseDown = (e: MouseEvent) => {
       e.preventDefault();
       handleStart(e.clientX, e.clientY);
@@ -505,8 +557,17 @@ export default function RotorGallery({
       if (isDraggingRef.current) {
         e.preventDefault();
         handleMove(e.clientX, e.clientY);
-      } else {
-        updateClosestImage(e.clientX, e.clientY);
+        return;
+      }
+      if (!isMobile) {
+        const onRing = updateClosestCardDesktop(e.clientX, e.clientY);
+        if (onRing) {
+          isHoveringRef.current = true;
+          setIsRevealVisible(true);
+        } else {
+          isHoveringRef.current = false;
+          setIsRevealVisible(false);
+        }
       }
     };
 
@@ -532,13 +593,12 @@ export default function RotorGallery({
       }
     };
 
+    // ── Mobile touch handlers — unchanged from original
     const onTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
 
-      // ── PREVIEW IS LOCKED: decide navigate vs dismiss
       if (previewLockedRef.current) {
         if (isTouchOnPreviewOrCategoryLabel(touch.clientX, touch.clientY)) {
-          // Tap ON the preview image or category label → navigate
           const idx = activeCardIndexRef.current;
           previewLockedRef.current = false;
           setPreviewLocked(false);
@@ -550,9 +610,7 @@ export default function RotorGallery({
             handleItemClick(list[idx]);
           }
         } else {
-          // Tap outside preview: if on ring → pick another card, stay locked (no dismiss, no drag).
-          // If not on ring → dismiss only (no handleStart — avoids jump into drag on 2nd ring tap).
-          const nearRing = updateClosestImage(touch.clientX, touch.clientY);
+          const nearRing = updateClosestImageMobile(touch.clientX, touch.clientY);
           touchStartedOnRingRef.current = nearRing;
           if (nearRing) {
             isHoveringRef.current = true;
@@ -571,8 +629,7 @@ export default function RotorGallery({
         return;
       }
 
-      // ── NORMAL: check if near ring
-      const nearRing = updateClosestImage(touch.clientX, touch.clientY);
+      const nearRing = updateClosestImageMobile(touch.clientX, touch.clientY);
       touchStartedOnRingRef.current = nearRing;
 
       if (nearRing) {
@@ -600,7 +657,6 @@ export default function RotorGallery({
         const dx = touch.clientX - dragStartPosRef.current.x;
         const dy = touch.clientY - dragStartPosRef.current.y;
         if (Math.sqrt(dx * dx + dy * dy) > 8) {
-          // Dragging — dismiss preview and spin
           if (previewLockedRef.current) {
             previewLockedRef.current = false;
             setPreviewLocked(false);
@@ -616,7 +672,7 @@ export default function RotorGallery({
       }
 
       if (touchStartedOnRingRef.current) {
-        const nearRing = updateClosestImage(touch.clientX, touch.clientY);
+        const nearRing = updateClosestImageMobile(touch.clientX, touch.clientY);
         if (nearRing) {
           isHoveringRef.current = true;
           setIsRevealVisible(true);
@@ -630,7 +686,6 @@ export default function RotorGallery({
     const onTouchEnd = (e: TouchEvent) => {
       const wasDragging = hasDraggedRef.current;
 
-      // Preview already locked — onTouchStart handled navigate / ring / dismiss
       if (previewLockedRef.current) {
         touchStartedOnRingRef.current = false;
         handleEnd();
@@ -640,10 +695,9 @@ export default function RotorGallery({
       if (!wasDragging && touchStartedOnRingRef.current) {
         const activeIndex = activeCardIndexRef.current;
         if (activeIndex >= 0 && activeIndex < list.length) {
-          // ── STEP 1: Lock preview open, wait for tap on image
           previewLockedRef.current = true;
           setPreviewLocked(true);
-          isHoveringRef.current = true; // keep ring paused
+          isHoveringRef.current = true;
           setIsRevealVisible(true);
           touchStartedOnRingRef.current = false;
           handleEnd();
@@ -651,7 +705,6 @@ export default function RotorGallery({
         }
       }
 
-      // Drag end or off-ring tap — clean up fully
       isHoveringRef.current = false;
       touchStartedOnRingRef.current = false;
       activeCardIndexRef.current = -1;
@@ -685,7 +738,7 @@ export default function RotorGallery({
       container.removeEventListener("touchmove", onTouchMove);
       container.removeEventListener("touchend", onTouchEnd);
     };
-  }, [safeCount, camY, list, handleItemClick, isMobile, mobileGapPx, offsetX, offsetY, revealImageWidth, revealImageHeight, revealImageTopVh]);
+  }, [safeCount, camY, list, handleItemClick, isMobile, mobileGapPx, offsetX, offsetY, revealImageWidth, revealImageHeight, revealImageTopVh, updateClosestCardDesktop]);
 
   const mobileOffsetX = isMobile ? (dimensions.w || window.innerWidth) * 0.4 : offsetX;
   const mobileLeft = isMobile ? "100%" : "50%";
@@ -722,7 +775,7 @@ export default function RotorGallery({
         touchAction: "none",
       }}
     >
-      {/* REVEAL LAYER — pointer-events always none; taps handled by container touch events */}
+      {/* REVEAL LAYER */}
       <div
         ref={revealLayerRef}
         style={{
@@ -756,7 +809,6 @@ export default function RotorGallery({
                 overflow: "hidden",
                 pointerEvents: "none",
                 boxShadow: "0 20px 60px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)",
-                // Subtle ring when locked to hint it's tappable
                 outline: previewLocked ? "2.5px solid rgba(255,255,255,0.6)" : "none",
                 transition: "outline 0.2s ease",
               }}
@@ -773,7 +825,6 @@ export default function RotorGallery({
                   display: "block",
                 }}
               />
-              {/* "Tap to visit" hint — only when preview is locked */}
               {previewLocked && (
                 <div
                   style={{
@@ -785,12 +836,10 @@ export default function RotorGallery({
                     pointerEvents: "none",
                   }}
                 >
-                  
                 </div>
               )}
             </div>
 
-            {/* Category label — same navigate as preview: mobile via hit-test when locked; desktop via click */}
             <div
               style={{
                 position: "fixed",
@@ -916,34 +965,15 @@ export default function RotorGallery({
             isHovered={activeCardIndex === i}
             isMobile={isMobile}
             finePointer={finePointer}
-            onMouseEnter={() => {
-              isHoveringRef.current = true;
-              velocityRef.current = 0;
-              targetAngleRef.current = null;
-              activeCardIndexRef.current = i;
-              setActiveCardIndex(i);
-              setIsRevealVisible(true);
-            }}
-            onMouseLeave={() => {
-              if (previewLockedRef.current) return;
-              isHoveringRef.current = false;
-              activeCardIndexRef.current = -1;
-              setActiveCardIndex(-1);
-              setIsRevealVisible(false);
-            }}
-            onClick={() => {
-              if (isMobile) return;
-              handleItemClick(item);
-            }}
           />
         ))}
       </div>
 
-      {/* Category labels (desktop only) */}
+      {/* Category labels (desktop only) — driven by labelRotation, updated every RAF frame */}
       {categoryLabels.length > 0 && !isMobile && ringRadius > 0 && (
         <>
           {categoryLabels.map((label, i) => {
-            const rotationRad = (currentRotation * Math.PI) / 180;
+            const rotationRad = (labelRotation * Math.PI) / 180;
             const totalAngle = label.angle + rotationRad;
             const camXRads = (camX * Math.PI) / 180;
             const baseEllipseRatio = Math.cos(camXRads);
@@ -960,11 +990,11 @@ export default function RotorGallery({
                   position: "absolute",
                   top: "50%",
                   left: "50%",
+                  // No CSS transition — position is driven by JS every frame for perfectly smooth motion
                   transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                   zIndex: 500,
                   pointerEvents: "none",
                   whiteSpace: "nowrap",
-                  transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
                 <span
