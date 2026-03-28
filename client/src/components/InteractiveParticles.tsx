@@ -8,6 +8,8 @@ interface InteractiveParticlesProps {
   logoWidthFraction?: number;
   /** When set with logoWidthFraction, uses this max height share for aspect-contained logo. */
   logoMaxHeightFraction?: number;
+  /** Shift logo down by this fraction of canvas height (e.g. align with headline below badge). */
+  logoCenterYOffsetFraction?: number;
 }
 
 interface Particle {
@@ -51,6 +53,7 @@ export default function InteractiveParticles({
   isHovered: externalIsHovered = false,
   logoWidthFraction,
   logoMaxHeightFraction,
+  logoCenterYOffsetFraction,
 }: InteractiveParticlesProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -118,6 +121,12 @@ export default function InteractiveParticles({
         }
         ox = (w - lw) / 2;
         oy = (h - lh) / 2;
+      }
+
+      if (logoCenterYOffsetFraction != null && logoCenterYOffsetFraction !== 0) {
+        oy += h * logoCenterYOffsetFraction;
+        const edge = 8;
+        oy = Math.max(edge, Math.min(oy, h - lh - edge));
       }
 
       // Build logo target positions in pixel space
@@ -346,7 +355,7 @@ export default function InteractiveParticles({
       window.removeEventListener("resize", resize);
       if (animRef.current) cancelAnimationFrame(animRef.current);
     };
-  }, [externalIsHovered, logoWidthFraction, logoMaxHeightFraction]);
+  }, [externalIsHovered, logoWidthFraction, logoMaxHeightFraction, logoCenterYOffsetFraction]);
 
   return (
     <div
