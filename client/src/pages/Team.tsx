@@ -31,11 +31,11 @@ const directors = [
 ];
 
 const teamMembers = [
-  { name: "Deepak Yadav", title: "Full Stack Developer", photo: "/client/deepak.jpeg" },
-  { name: "Manas Kaushik", title: "Growth Marketing Lead", photo: "/client/harsh.webp" },
-  { name: "Akshat kumar", title: "Automation Engineer", photo: "/client/alex.webp" },
-  { name: "Anshika jain", title: "UX Designer", photo: "/client/alex.webp" },
-  { name: "Anshika jain", title: "Data Analyst", photo: "/client/harsh.webp" },
+  { name: "sanjeev vishwakarma", title: "Full Stack Developer", photo: "/client/sanjeev.jpg" },
+  { name: "harsh khanna", title: "Growth Marketing Lead", photo: "/client/harsh.webp" },
+  { name: "deepak yadav", title: "Automation Engineer", photo: "/client/deepak.jpeg" },
+  { name: "alex", title: "UX Designer", photo: "/client/alex.png" },
+  { name: "virendra singh", title: "Data Analyst", photo: "/client/virendra.jpg" },
 ];
 
 type ColumnProps = {
@@ -126,23 +126,26 @@ const TeamParallaxGallery = () => {
     }
   }
   
-  // Duplicate mobile images for smooth parallax scrolling
-  // Add more images to ensure smooth scrolling
+  // Duplicate mobile images for smooth parallax scrolling.
+  // Pad using the full team photo list — column 1 often has only one real slot
+  // (every 5th index), so padding with col[i % col.length] repeated the same image.
   const minMobileImagesPerColumn = 15;
-  const duplicateMobileIfNeeded = (col: string[]) => {
-    if (col.length < minMobileImagesPerColumn) {
-      const needed = minMobileImagesPerColumn - col.length;
-      const duplicated = [...col];
-      for (let i = 0; i < needed; i++) {
-        duplicated.push(col[i % col.length]);
-      }
-      return duplicated;
+  const duplicateMobileIfNeeded = (col: string[], pool: string[], phase: number) => {
+    if (col.length >= minMobileImagesPerColumn || pool.length === 0) return col;
+    const needed = minMobileImagesPerColumn - col.length;
+    const duplicated = [...col];
+    for (let i = 0; i < needed; i++) {
+      duplicated.push(pool[(phase + i) % pool.length]);
     }
-    return col;
+    return duplicated;
   };
-  
-  const finalMobileCol1 = duplicateMobileIfNeeded(mobileCol1);
-  const finalMobileCol2 = duplicateMobileIfNeeded(mobileCol2);
+
+  const finalMobileCol1 = duplicateMobileIfNeeded(mobileCol1, sources, 0);
+  const finalMobileCol2 = duplicateMobileIfNeeded(
+    mobileCol2,
+    sources,
+    Math.max(1, Math.floor(sources.length / 2))
+  );
 
   return (
     <div className="w-full bg-[#eee] text-black rounded-3xl overflow-hidden mt-10">

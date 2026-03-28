@@ -18,7 +18,6 @@ export default function ParticleHero({
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particles = useRef<Particle[]>([])
-  const mouse = useRef({ x: 0, y: 0 })
   const rafRef = useRef<number | null>(null)
   const sizeRef = useRef({ w: 0, h: 0 })
 
@@ -65,10 +64,7 @@ export default function ParticleHero({
     // 🔥 MORE PARTICLES
     const COUNT = 420
 
-    // Magnetic behavior tuning
-    const radius = 120
     const restoreStrength = 0.02
-    const attractionStrength = 0.1
 
     // Motion tuning
     const damping = 0.9
@@ -83,13 +79,6 @@ export default function ParticleHero({
       vy: (Math.random() - 0.5) * 0.35,
     }))
       .map((p) => ({ ...p, x: p.originX, y: p.originY }))
-
-    const handleMouseMove = (e: MouseEvent) => {
-      mouse.current.x = e.clientX
-      mouse.current.y = e.clientY
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
 
     const animate = () => {
       const w = sizeRef.current.w || window.innerWidth
@@ -107,27 +96,17 @@ export default function ParticleHero({
         p.vx += rdx * restoreStrength
         p.vy += rdy * restoreStrength
 
-        // 2) Mouse attraction inside radius (magnetic field)
-        const mdx = mouse.current.x - p.x
-        const mdy = mouse.current.y - p.y
-        const dist = Math.sqrt(mdx * mdx + mdy * mdy)
-        if (dist < radius) {
-          const force = (radius - dist) / radius
-          p.vx += mdx * force * attractionStrength
-          p.vy += mdy * force * attractionStrength
-        }
-
-        // 3) Organic drift (small randomness) + damping
+        // 2) Organic drift (small randomness) + damping
         p.vx += (Math.random() - 0.5) * jitter
         p.vy += (Math.random() - 0.5) * jitter
         p.vx *= damping
         p.vy *= damping
 
-        // 4) Integrate position
+        // 3) Integrate position
         p.x += p.vx
         p.y += p.vy
 
-        // Keep particles on-screen (no wrap; magnetic should return to origin)
+        // Keep particles on-screen (no wrap; spring returns to origin)
         if (p.x < -20) p.x = -20
         if (p.x > w + 20) p.x = w + 20
         if (p.y < -20) p.y = -20
@@ -148,7 +127,6 @@ export default function ParticleHero({
     return () => {
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
       window.removeEventListener("resize", resize)
-      window.removeEventListener("mousemove", handleMouseMove)
     }
   }, [])
 
