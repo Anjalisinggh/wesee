@@ -122,9 +122,6 @@ function AboutStatCard({
 export default function About() {
   const [isTextHovered, setIsTextHovered] = useState(false);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
-  const [isMobileHero, setIsMobileHero] = useState(() =>
-    typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches
-  );
 
   useEffect(() => {
     const touchCapable =
@@ -132,14 +129,9 @@ export default function About() {
       (window.matchMedia("(hover: none) and (pointer: coarse)").matches ||
         "ontouchstart" in window);
     setIsTouchDevice(touchCapable);
-  }, []);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const sync = () => setIsMobileHero(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
+    if (touchCapable) {
+      setIsTextHovered(true);
+    }
   }, []);
 
   const stats = useMemo(
@@ -171,25 +163,22 @@ export default function About() {
 
   return (
     <>
-      {/* ══════════════ HERO — particle layer matches Home.tsx (mobile translateY, touch logo on) ══════════════ */}
+     
       <section
         className="about-hero"
         style={{
           minHeight: "100svh",
-          width: "100%",
-          maxWidth: "100%",
-          boxSizing: "border-box",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
-          isolation: "isolate",
           paddingTop: 72,
           paddingBottom: 60,
           background: "var(--paper)",
         }}
       >
+        {/* Same particle layer + mobile offset as Home.tsx home-hero-particle-logo-layer */}
         <div
           className="about-hero-particle-logo-layer"
           aria-hidden="true"
@@ -201,44 +190,34 @@ export default function About() {
           }}
         >
           <InteractiveParticles
-            style={{ position: "absolute", inset: 0, zIndex: 0, width: "100%", height: "100%" }}
-            isHovered={isTextHovered || isTouchDevice}
-            {...(isMobileHero
-              ? {
-                  logoWidthFraction: 0.88,
-                  logoMaxHeightFraction: 0.62,
-                  logoCenterYOffsetFraction: 0.024,
-                }
-              : {})}
+            style={{ position: "absolute", inset: 0, zIndex: 0 }}
+            isHovered={isTextHovered}
           />
         </div>
         <style>{`
-          /* Nudge particles down on small screens so the mark sits behind "We are WeSee." (below badge) */
           @media (max-width: 767px) {
             .about-hero .about-hero-particle-logo-layer {
-              transform: translateY(clamp(44px, 7vh, 88px));
+              transform: translateY(clamp(-140px, -14vh, -56px));
             }
           }
         `}</style>
 
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", zIndex: 0 }}>
           <div style={{
-            position: "absolute",
-            width: 700, height: 700, borderRadius: "50%",
+            position: "absolute", pointerEvents: "none",
+            width: 1000, height: 1000, borderRadius: "50%",
             background: "radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 65%)",
             top: "50%", left: "50%",
-            transform: "translate(-50%,-50%)",
-            pointerEvents: "none",
-            animation: "blob1 18s ease-in-out infinite",
+            transform: "translate(-50%, -55%)",
+            animation: "blob1 20s ease-in-out infinite",
           }} />
         </div>
 
         <div className="container" style={{
           position: "relative", zIndex: 1, textAlign: "center",
           display: "flex", flexDirection: "column", alignItems: "center",
-          width: "100%", maxWidth: "100%",
         }}>
-          <div className="badge-pill fade-up" style={{ marginBottom: 28, position: "relative", zIndex: 2 }}>
+          <div className="badge-pill fade-up" style={{ marginBottom: 28 }}>
             <span style={{
               width: 7, height: 7, borderRadius: "50%",
               background: "var(--accent)", display: "inline-block",
@@ -251,24 +230,15 @@ export default function About() {
             onMouseEnter={() => { if (!isTouchDevice) setIsTextHovered(true); }}
             onMouseLeave={() => { if (!isTouchDevice) setIsTextHovered(false); }}
             onTouchStart={() => { if (!isTouchDevice) setIsTextHovered(true); }}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              cursor: "pointer",
-              position: "relative",
-              zIndex: 2,
-            }}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}
           >
             <h1 
               className="fade-up" 
               style={{
                 fontSize: "clamp(40px, 8vw, 100px)",
                 fontWeight: 450, letterSpacing: "-0.04em", lineHeight: 1.12,
-                color: "var(--ink)", maxWidth: "min(14ch, 100%)", textAlign: "center",
+                color: "var(--ink)", maxWidth: "14ch", textAlign: "center",
                 animationDelay: "0.15s", margin: 0,
-                position: "relative",
-                zIndex: 2,
               }}
             >
               We are{" "}
@@ -289,10 +259,8 @@ export default function About() {
               className="fade-up" 
               style={{
                 fontSize: "clamp(16px, 2vw, 18px)", fontWeight: 400, color: "var(--ink-50)",
-                marginTop: 24, maxWidth: "min(540px, 100%)", lineHeight: 1.7,
+                marginTop: 24, maxWidth: 540, lineHeight: 1.7,
                 animationDelay: "0.25s",
-                position: "relative",
-                zIndex: 2,
               }}
             >
               India's leading AI automation agency  a cross-functional team of AI engineers, operators, and growth strategists building the intelligent systems modern business runs on.
