@@ -3,7 +3,7 @@ import { Link, useSearch } from "wouter";
 import { motion, MotionValue, useScroll, useTransform } from "framer-motion";
 import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
-import CircularGallery from "@/components/CircularGallery";
+
 import RotorGallery from "@/components/RotorGallery";
 import TextReveal from "@/components/TextReveal";
 import TiltCard from "@/components/TiltCard";
