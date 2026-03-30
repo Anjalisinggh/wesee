@@ -26,7 +26,7 @@ const articles = [
     category: "Workflow Automation",
     date: "Jan 2026",
     excerpt: "Most businesses underestimate how much manual work costs them. We break down the real numbers — and show why automation ROI compounds over time.",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+    image: "/cost.jpg",
   },
   {
     slug: "meta-ads-2025-ai-optimization",
@@ -34,7 +34,7 @@ const articles = [
     category: "Performance Marketing",
     date: "Dec 2025",
     excerpt: "From Advantage+ campaigns to AI-generated creatives, Meta's ad platform is evolving fast. Here's what marketers need to know.",
-    image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&q=80",
+    image: "/metaad.jpg",
   },
   {
     slug: "building-first-ai-chatbot-indian-smes",
@@ -42,7 +42,7 @@ const articles = [
     category: "AI Agents",
     date: "Nov 2025",
     excerpt: "A practical, no-jargon guide to building and deploying your first AI chatbot — tailored for Indian small and medium businesses.",
-    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80",
+    image: "/chatbot.jpg",
   },
 ];
 

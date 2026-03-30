@@ -1216,6 +1216,47 @@
   }
 }
 
+/* Blog article detail: taller hero on tablet+; larger type from laptop up (≤767px unchanged) */
+@media (min-width: 768px) {
+  .blog-route .blog-detail-hero-img {
+    height: 540px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .blog-route .blog-detail-hero-img {
+    height: 640px !important;
+  }
+
+  .blog-route .blog-detail-title {
+    font-size: clamp(40px, 4.5vw, 72px) !important;
+  }
+
+  .blog-route .blog-detail-meta {
+    font-size: 12px !important;
+  }
+
+  .blog-route .blog-detail-excerpt {
+    font-size: 22px !important;
+  }
+
+  .blog-route .blog-detail-content p {
+    font-size: 19px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .blog-route .blog-detail-hero-img {
+    height: 760px !important;
+  }
+}
+
+@media (min-width: 1920px) {
+  .blog-route .blog-detail-hero-img {
+    height: 860px !important;
+  }
+}
+
 /* Careers — hero + team heading: tighter type on mobile only */
 @media (max-width: 767px) {
   .careers-page h1.careers-hero-title {
