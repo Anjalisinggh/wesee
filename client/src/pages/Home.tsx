@@ -1186,7 +1186,7 @@ AI-powered workflows designed to remove bottlenecks and unlock scale for your bu
             </ParticleWrapper>
             <ParticleWrapper>
               <a
-                href="mailto:support@weseegpt.com"
+                href="mailto:hr@weseegpt.com"
                 style={{
                   display: "inline-flex", alignItems: "center", gap: 6,
                   padding: "13px 24px",
@@ -1206,7 +1206,7 @@ AI-powered workflows designed to remove bottlenecks and unlock scale for your bu
                   (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.60)";
                 }}
               >
-                support@weseegpt.com
+                hr@weseegpt.com
               </a>
             </ParticleWrapper>
           </div>

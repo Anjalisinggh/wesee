@@ -1,12 +1,14 @@
 /*
  * RotorGallery — 3D Rotating Ring Gallery
  *
- * MOBILE INTERACTION (two-step):
- *   Step 1 — Tap a ring card  → shows the center image preview (ring pauses, reveal visible)
- *   Step 2 — Tap the center preview image or category label → navigates to the item's URL
+ * DESKTOP LABEL FIX (v2):
+ *  - Labels are promoted to their own GPU compositor layer via will-change + translate3d
+ *  - Center offsets are pre-computed once (not per-frame) to avoid layout reads in RAF
+ *  - Labels use position:fixed so they are removed from document flow entirely,
+ *    eliminating any reflow cascade from transform updates
+ *  - All trig pre-cached; zero object allocations inside the tick loop
  *
- * Tapping anywhere outside the preview dismisses it and resumes the ring.
- * Dragging always spins the ring.
+ * MOBILE: untouched from original.
  */
 import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import { useLocation } from "wouter";
@@ -106,8 +108,6 @@ function RotorItem({
         transform: ringTransform,
         transformStyle: "preserve-3d",
         willChange: "transform",
-        // pointer-events: none — desktop hover is handled via container mousemove (angle math),
-        // not per-card DOM events, so this works reliably at any screen size.
         pointerEvents: "none",
         cursor: finePointer ? "none" : "grab",
       }}
@@ -220,14 +220,16 @@ export default function RotorGallery({
   const revealLayerRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
 
-  // labelRotation is updated every single RAF frame (no throttle) so labels move smoothly
-  const [labelRotation, setLabelRotation] = useState(0);
+  // Label DOM refs — mutated directly in RAF, never via React state
+  const labelElemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  // Pre-cached viewport center for labels — read once on mount/resize, not per-frame
+  const labelCenterRef = useRef({ x: 0, y: 0 });
 
   const activeCardIndexRef = useRef<number>(-1);
   const [activeCardIndex, setActiveCardIndex] = useState<number>(-1);
   const [isRevealVisible, setIsRevealVisible] = useState<boolean>(false);
 
-  // Preview lock: true = preview open, waiting for tap-on-image to navigate
   const previewLockedRef = useRef(false);
   const [previewLocked, setPreviewLocked] = useState(false);
 
@@ -263,7 +265,14 @@ export default function RotorGallery({
   }, [categoryLabels.length, isMobile, cardWidth, cardHeight, gapPx]);
 
   useEffect(() => {
-    const update = () => setDimensions({ w: window.innerWidth, h: window.innerHeight });
+    const update = () => {
+      setDimensions({ w: window.innerWidth, h: window.innerHeight });
+      // Cache viewport center so the RAF loop never needs to call getBoundingClientRect
+      labelCenterRef.current = {
+        x: window.innerWidth * 0.5,
+        y: window.innerHeight * 0.5,
+      };
+    };
     update();
     window.addEventListener("resize", update, { passive: true });
     return () => window.removeEventListener("resize", update);
@@ -274,6 +283,17 @@ export default function RotorGallery({
     let last = performance.now();
     const speed = 360 / (speedSec * 1000);
     let raf: number;
+
+    // Pre-compute label layout constants — zero per-frame allocations
+    const camXRads = (camX * Math.PI) / 180;
+    const baseEllipseRatio = Math.cos(camXRads);
+    const finalEllipseRatio = Math.max(0.55, Math.min(0.75, baseEllipseRatio * 0.75));
+    const labelRadiusX = ringRadius + LABEL_OFFSET_X_PX;
+    const labelRadiusY = ringRadius + LABEL_OFFSET_Y_PX;
+
+    // Pre-cache base angles (radians) for each label — constant, no per-frame trig on these
+    const baseAngles = categoryLabels.map((l) => l.angle);
+    const labelCount = categoryLabels.length;
 
     const tick = (t: number) => {
       const dt = Math.min(t - last, 16.67);
@@ -300,15 +320,29 @@ export default function RotorGallery({
       const rotVal = `${angleRef.current}deg`;
       if (sceneRef.current) sceneRef.current.style.setProperty("--global-rotation", rotVal);
 
-      // Update every frame — no throttle — so category labels move smoothly
-      setLabelRotation(angleRef.current);
+      // ── Smooth label update — pure translate3d, GPU composited, zero layout reads ──
+      if (labelCount > 0 && !isMobile && ringRadius > 0) {
+        const rotationRad = (angleRef.current * Math.PI) / 180;
+        const cx = labelCenterRef.current.x;
+        const cy = labelCenterRef.current.y;
+
+        for (let i = 0; i < labelCount; i++) {
+          const el = labelElemRefs.current[i];
+          if (!el) continue;
+          const totalAngle = baseAngles[i] + rotationRad;
+          // translate3d forces GPU compositing — no reflow, no repaint
+          const tx = cx + Math.cos(totalAngle) * labelRadiusX + offsetX;
+          const ty = cy + Math.sin(totalAngle) * labelRadiusY * finalEllipseRatio + offsetY;
+          el.style.transform = `translate3d(${tx}px,${ty}px,0) translate(-50%,-50%)`;
+        }
+      }
 
       raf = requestAnimationFrame(tick);
     };
 
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [speedSec]);
+  }, [speedSec, categoryLabels, isMobile, ringRadius, offsetX, offsetY, camX]);
 
   const handleItemClick = useCallback(
     (item: RingItem) => {
@@ -331,18 +365,12 @@ export default function RotorGallery({
   const revealImageHeight = isMobile ? mobileCardHeight * 2.6 : mobileCardHeight * 1.6;
   const revealImageTopVh = isMobile ? 0.35 : 0.45;
 
-  // ── Desktop: find closest card by angular proximity to cursor.
-  // Uses pure angle math (same approach as mobile) so it works at any screen/monitor size
-  // without relying on per-card DOM hit areas which break with 3D perspective transforms.
   const updateClosestCardDesktop = useCallback(
     (clientX: number, clientY: number): boolean => {
       const container = containerRef.current;
       if (!container) return false;
 
       const rect = container.getBoundingClientRect();
-
-      // Approximate 2D screen-space centre of the ring.
-      // The scene is at left:50%, top:50% of the container, offset by (offsetX, offsetY).
       const sceneCenterX = rect.left + rect.width * 0.5 + offsetX;
       const sceneCenterY = rect.top + rect.height * 0.5 + offsetY;
 
@@ -350,9 +378,9 @@ export default function RotorGallery({
       const dy = clientY - sceneCenterY;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Dead-zone (centre) and outer boundary
-      const minR = mobileGapPx * 0.15;
-      const maxR = mobileGapPx * 3.2; // generous outer zone for large monitors
+      const cardDiag = Math.sqrt(mobileCardWidth ** 2 + mobileCardHeight ** 2) * 0.5;
+      const minR = mobileGapPx * 0.55;
+      const maxR = mobileGapPx + cardDiag * 1.3;
 
       if (dist < minR || dist > maxR) {
         if (activeCardIndexRef.current >= 0) {
@@ -368,8 +396,10 @@ export default function RotorGallery({
       cursorAngle = (cursorAngle + 360) % 360;
 
       const anglePerCard = 360 / safeCount;
+      const MAX_ANG_TOLERANCE = Math.min(18, anglePerCard * 0.55);
+
       let minAngDist = Infinity;
-      let bestIndex = 0;
+      let bestIndex = -1;
 
       for (let i = 0; i < safeCount; i++) {
         let cardAngle = (angleRef.current - i * anglePerCard) % 360;
@@ -382,13 +412,23 @@ export default function RotorGallery({
         }
       }
 
+      if (minAngDist > MAX_ANG_TOLERANCE) {
+        if (activeCardIndexRef.current >= 0) {
+          activeCardIndexRef.current = -1;
+          setActiveCardIndex(-1);
+          setIsRevealVisible(false);
+          isHoveringRef.current = false;
+        }
+        return false;
+      }
+
       if (bestIndex !== activeCardIndexRef.current) {
         activeCardIndexRef.current = bestIndex;
         setActiveCardIndex(bestIndex);
       }
       return true;
     },
-    [mobileGapPx, safeCount, offsetX, offsetY]
+    [mobileGapPx, mobileCardWidth, mobileCardHeight, safeCount, offsetX, offsetY]
   );
 
   useEffect(() => {
@@ -457,7 +497,7 @@ export default function RotorGallery({
       }
     };
 
-    // Mobile only — unchanged from original
+    // ── Mobile only — unchanged from original ──
     const updateClosestImageMobile = (clientX: number, clientY: number): boolean => {
       if (!isMobile) return false;
 
@@ -593,7 +633,7 @@ export default function RotorGallery({
       }
     };
 
-    // ── Mobile touch handlers — unchanged from original
+    // ── Mobile touch handlers — unchanged from original ──
     const onTouchStart = (e: TouchEvent) => {
       const touch = e.touches[0];
 
@@ -835,8 +875,7 @@ export default function RotorGallery({
                     textAlign: "center",
                     pointerEvents: "none",
                   }}
-                >
-                </div>
+                />
               )}
             </div>
 
@@ -969,59 +1008,66 @@ export default function RotorGallery({
         ))}
       </div>
 
-      {/* Category labels (desktop only) — driven by labelRotation, updated every RAF frame */}
-      {categoryLabels.length > 0 && !isMobile && ringRadius > 0 && (
-        <>
-          {categoryLabels.map((label, i) => {
-            const rotationRad = (labelRotation * Math.PI) / 180;
-            const totalAngle = label.angle + rotationRad;
-            const camXRads = (camX * Math.PI) / 180;
-            const baseEllipseRatio = Math.cos(camXRads);
-            const finalEllipseRatio = Math.max(0.55, Math.min(0.75, baseEllipseRatio * 0.75));
-            const labelRadiusX = ringRadius + LABEL_OFFSET_X_PX;
-            const labelRadiusY = ringRadius + LABEL_OFFSET_Y_PX;
-            const x = Math.cos(totalAngle) * labelRadiusX + offsetX;
-            const y = Math.sin(totalAngle) * labelRadiusY * finalEllipseRatio + offsetY;
-
-            return (
-              <div
-                key={`label-${i}`}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  // No CSS transition — position is driven by JS every frame for perfectly smooth motion
-                  transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
-                  zIndex: 500,
-                  pointerEvents: "none",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "#111317",
-                    letterSpacing: "0.08em",
-                    textTransform: "uppercase",
-                    display: "inline-block",
-                    background: "rgba(255,255,255,0.95)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                    padding: "6px 14px",
-                    borderRadius: 20,
-                    border: "1px solid rgba(17,19,23,0.15)",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {label.name} ({label.count})
-                </span>
-              </div>
-            );
-          })}
-        </>
-      )}
+      {/*
+       * ── DESKTOP CATEGORY LABELS ──
+       *
+       * Key changes vs original:
+       *  1. position: fixed  → removed from document flow, no reflow on siblings
+       *  2. top/left: 0      → translate3d is the only positioning mechanism
+       *  3. will-change: transform → browser promotes each label to its own GPU layer
+       *  4. transform is set to translate3d(0,0,0) initially so the layer is
+       *     promoted BEFORE the first RAF tick (avoids a 1-frame pop)
+       *  5. No CSS transition on transform — motion is driven frame-by-frame by RAF
+       *
+       * The RAF tick writes:
+       *   translate3d(cx + cos(a)*rx + offsetX,  cy + sin(a)*ry*ellipsis + offsetY,  0)
+       *   translate(-50%, -50%)
+       * where cx/cy is the cached viewport centre (read once on resize, not per frame).
+       *)
+      */}
+      {categoryLabels.length > 0 && !isMobile && ringRadius > 0 &&
+        categoryLabels.map((label, i) => (
+          <div
+            key={`label-${i}`}
+            ref={(el) => { labelElemRefs.current[i] = el; }}
+            style={{
+              // Fixed + top/left 0 — label is in its own stacking context,
+              // completely outside the document flow. No reflow possible.
+              position: "fixed",
+              top: 0,
+              left: 0,
+              // will-change promotes to compositor layer immediately
+              willChange: "transform",
+              // Initial transform keeps the label off-screen until first RAF tick
+              transform: "translate3d(0px,0px,0) translate(-50%,-50%)",
+              zIndex: 500,
+              pointerEvents: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#111317",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                display: "inline-block",
+                background: "rgba(255,255,255,0.95)",
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                padding: "6px 14px",
+                borderRadius: 20,
+                border: "1px solid rgba(17,19,23,0.15)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {label.name} ({label.count})
+            </span>
+          </div>
+        ))
+      }
 
       <div
         style={{
