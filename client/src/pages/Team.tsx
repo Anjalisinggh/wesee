@@ -15,16 +15,16 @@ const directors = [
     name: "Harsh khanna",
     title: "Founder & CEO",
     bio: "Harsh founded WeSee in 2023 with the belief that AI automation should be accessible, measurable, and transformative. With a background in product engineering and growth marketing, he leads WeSee's strategic direction and client relationships.",
-    email: "harsh@wesee.in",
+    email: "harsh.khanna@weseegpt.com",
     photo: "/client/harsh.webp",
     linkedin: "https://www.linkedin.com/in/harsh-singh-431022190/",
   },
   {
     name: "Takeshi",
     title: "Head of AI Engineering",
-    bio: "Alex  leads WeSee's AI engineering team, overseeing the development of conversational AI agents, workflow automation systems, and custom integrations. With deep expertise in LangChain, OpenAI, and enterprise AI architecture, she ensures every solution is production-ready.",
-      email: "alex@wesee.in",
-      photo: "/client/alex.png",
+    bio: "Takeshi  leads WeSee's AI engineering team, overseeing the development of conversational AI agents, workflow automation systems, and custom integrations. With deep expertise in LangChain, OpenAI, and enterprise AI architecture, she ensures every solution is production-ready.",
+      email: "takeshi.shoyama@weseegpt.com",
+      photo: "/client/takeshi.webp",
     linkedin: "https://linkedin.com/company/wesee",
   },
  
@@ -34,8 +34,8 @@ const teamMembers = [
   { name: "sanjeev vishwakarma", title: "Full Stack Developer", photo: "/client/sanjeev.jpg" },
   { name: "harsh khanna", title: "Growth Marketing Lead", photo: "/client/harsh.webp" },
   { name: "deepak yadav", title: "Automation Engineer", photo: "/client/deepak.jpeg" },
-  { name: "alex", title: "UX Designer", photo: "/client/alex.png" },
-  { name: "virendra singh", title: "Data Analyst", photo: "/client/virendra.jpg" },
+  { name: "alex", title: "UX Designer", photo: "/client/takeshi.webp" },
+  { name: "virendra singh", title: "Data Analyst", photo: "/client/deepak.jpeg" },
 ];
 
 type ColumnProps = {

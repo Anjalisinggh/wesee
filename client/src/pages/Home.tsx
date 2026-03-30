@@ -1065,46 +1065,54 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="container">
-          <div className="clients-tiled-grid-frame" aria-label="Client logos grid">
-            <div
-              className="clients-tiled-grid"
-              style={{ gridTemplateColumns: `repeat(${clientGridConfig.cols}, minmax(0, 1fr))` }}
-              aria-label="Client logos"
-            >
-              {clientLogoCellByIndex.map((clientIdx, cellIdx) => {
-                if (clientIdx === null) {
-                  return <div key={`empty-${cellIdx}`} className="clients-tile-cell is-empty" />;
-                }
-
-                const client = clients[clientIdx];
-                const isRevealed = revealedClients[clientIdx];
-
-                return (
-                  <div key={client.name} className="clients-tile-cell">
-                    <div className={`client-logo-box ${isRevealed ? "is-revealed" : ""}`}>
-                      <img
-                        src={client.logoSrc}
-                        alt={`${client.name} logo`}
-                        loading="lazy"
-                        className="client-logo-img"
-                        onError={(e) => {
-                          const img = e.currentTarget as HTMLImageElement;
-                          img.style.display = "none";
-                          const parent = img.parentElement;
-                          if (parent && !parent.querySelector(".client-fallback")) {
-                            const span = document.createElement("span");
-                            span.className = "client-fallback";
-                            span.textContent = client.name;
-                            parent.appendChild(span);
-                          }
+        <div className="clients-marquee-outer">
+          <div className="clients-marquee-rows" aria-label="Client logos marquee">
+            {[clients, [...clients].reverse()].map((list, row) => (
+              <div
+                // overflow hidden masks leaving/entering pills
+                key={row}
+                className="clients-marquee-row"
+                style={{ overflow: "hidden" }}
+              >
+                <div
+                  style={{ display: "flex", gap: 8, width: "max-content", alignItems: "center" }}
+                  className={row === 0 ? "animate-marquee-left" : "animate-marquee-right"}
+                >
+                  {[...list, ...list].map((client, i) => {
+                    return (
+                      <span
+                        key={`${row}-${client.name}-${i}`}
+                        className="client-tag"
+                        style={{
+                          background: row === 0 ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.42)",
+                          backdropFilter: "blur(12px)",
+                          WebkitBackdropFilter: "blur(12px)",
+                          border: "1px solid rgba(17,19,23,0.09)",
+                          padding: "9px 20px",
                         }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                      >
+                        <span className="client-tag-icon-wrap" aria-hidden="true">
+                          <img
+                            className="client-tag-icon"
+                            src={client.logoSrc}
+                            alt={`${client.name} logo`}
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => {
+                              const img = e.currentTarget as HTMLImageElement;
+                              img.style.display = "none";
+                              const wrap = img.parentElement as HTMLElement | null;
+                              if (wrap) wrap.style.display = "none";
+                            }}
+                          />
+                        </span>
+                        {client.name}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
