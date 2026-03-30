@@ -5,8 +5,7 @@ import { services, categories } from "@/data/services";
 import SectionLabel from "@/components/SectionLabel";
 
 import RotorGallery from "@/components/RotorGallery";
-import TextReveal from "@/components/TextReveal";
-import TiltCard from "@/components/TiltCard";
+
 import ParticleWrapper from "@/components/ParticleWrapper";
 import CustomCursor from "@/components/CustomCursor";
 import { useFinePointer } from "@/hooks/useFinePointer";
@@ -357,6 +356,300 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
   );
 };
 
+// ─── tiny easing helper (ease-in-out cubic) ──────────────────────────────────
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+// ─── types ────────────────────────────────────────────────────────────────────
+interface ServiceCard {
+  image: string;
+  name: string;
+  category: string;
+  slug: string;
+}
+
+// ─── component ────────────────────────────────────────────────────────────────
+const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+
+  const [viewport, setViewport] = useState({ vh: 800, vw: 1024, isMobile: false });
+
+  // Avoid an extremely tall sticky section when there are many services.
+  const deckServices = useMemo(() => {
+    const maxCards = viewport.isMobile ? 7 : 9;
+    if (services.length <= maxCards) return services;
+
+    const sampled: ServiceCard[] = [];
+    const seen = new Set<string>();
+    for (let i = 0; i < maxCards; i++) {
+      const idx = Math.round((i * (services.length - 1)) / (maxCards - 1));
+      const s = services[idx];
+      if (!seen.has(s.slug)) {
+        sampled.push(s);
+        seen.add(s.slug);
+      }
+    }
+    return sampled;
+  }, [services, viewport.isMobile]);
+
+  // ── viewport tracking ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const update = () =>
+      setViewport({
+        vh: window.innerHeight,
+        vw: window.innerWidth,
+        isMobile: window.innerWidth < 768,
+      });
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  // ── layout constants ──────────────────────────────────────────────────────
+  const PX_PER_CARD = viewport.isMobile ? 300 : 250;
+  const DECK_PEEK = viewport.isMobile ? 6 : 8;       // px each background card peeks
+  const SCALE_STEP = viewport.isMobile ? 0.025 : 0.02; // scale reduction per depth level
+
+  const totalN = deckServices.length;
+  // Total scroll height: one full viewport to "enter" + each card gets PX_PER_CARD to animate
+  const scrollHeight = viewport.vh + totalN * PX_PER_CARD + 300;
+
+  // ── GSAP setup ────────────────────────────────────────────────────────────
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper || totalN === 0) return;
+
+    const cards = cardRefs.current
+      .slice(0, totalN)
+      .filter(Boolean) as HTMLDivElement[];
+    if (cards.length !== totalN) return;
+
+    const { vh, vw, isMobile } = viewport;
+
+    // ── card dimensions ──────────────────────────────────────────────────
+    const isTablet = !isMobile && vw < 1024;
+    const isLaptop = vw >= 1024 && vw < 1440;
+    const isDesktop = vw >= 1024;
+    const desktopWidthScale = isDesktop ? 0.72 : 1;
+    const desktopHeightScale = isDesktop ? 0.6 : 1;
+
+    // Responsive sizing across all screens:
+    // - mobile: compact
+    // - tablet: wider but still stacked comfortably
+    // - laptop/desktop: slightly smaller than before
+    // - large monitor: balanced max width
+    const baseCardW = isMobile
+      ? Math.min(vw * 0.92, 390)
+      : isTablet
+        ? Math.min(vw * 0.9, 860)
+        : isLaptop
+          ? Math.min(vw * 0.76, 980)
+          : Math.min(vw * 0.72, 1100);
+
+    const baseCardH = isMobile ? 280 : isTablet ? 360 : isLaptop ? 380 : 400;
+    const cardW = baseCardW * desktopWidthScale;
+    const cardH = baseCardH * desktopHeightScale;
+
+    // The deck rests at the bottom-center of the viewport.
+    // card[0] is the TOP card of the deck (rendered last visually → highest zIndex).
+    // "deckBottomY" = translateY that places the card's center near the bottom of the screen.
+    // "landedTopY"  = translateY that places the card's center near the top of the screen.
+    //
+    // All positions are relative to the sticky container's center (50% / 50%).
+    // Position cards so their edges are closer to the viewport bounds.
+    // We keep image sizing/cropping the same; only the deck offsets change.
+    const bottomMargin = isMobile ? 10 : 14;
+    // Keep landed cards clear of the fixed header so top content isn't clipped.
+    // Mobile previously used a very small margin, which caused the top card to get cut.
+    const topMargin = isMobile ? 76 : 88;
+
+    // With `top: 50%` + `yPercent: -50`, `y` is the pixel offset of the card center.
+    // cardTop = vh/2 + y - cardH/2
+    // cardBottom = vh/2 + y + cardH/2
+    // => y = vh/2 - cardH/2 - bottomMargin (resting deck)
+    // => y = -vh/2 + cardH/2 + topMargin (landed top)
+    const deckBottomY = vh * 0.5 - cardH * 0.5 - bottomMargin;
+    const landedTopY = -vh * 0.5 + cardH * 0.5 + topMargin;
+
+    // ── initialise all cards ─────────────────────────────────────────────
+    // card[0] = top of deck (first to fly off), card[totalN-1] = bottom of deck
+    cards.forEach((el, i) => {
+      gsap.set(el, {
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        width: cardW,
+        height: cardH,
+        // card[0] is on top → highest zIndex
+        zIndex: totalN - i,
+        // Each card in the deck peeks slightly below the one above it
+        y: deckBottomY + i * DECK_PEEK,
+        scale: Math.max(0.75, 1 - i * SCALE_STEP),
+        transformOrigin: "center bottom",
+        willChange: "transform",
+        borderRadius: 22,
+        overflow: "hidden",
+      });
+    });
+
+    const st = ScrollTrigger.create({
+      trigger: wrapper,
+      start: "top top",
+      end: "bottom bottom",
+      scrub: 0.8,
+      onUpdate: (self) => {
+        // rawProgress goes 0 → totalN over the full scroll range
+        const rawProgress = self.progress * totalN;
+
+        cards.forEach((el, i) => {
+          // localP: 0 when this card hasn't started yet, 1 when fully landed at top
+          const localP = gsap.utils.clamp(0, 1, rawProgress - i);
+          const easedP = easeInOutCubic(localP);
+
+          // How many cards are still stacked above/ahead of this one in the deck?
+          // (cards with index < i that haven't flown off yet)
+          const cardsAboveInDeck = Math.max(0, i - Math.floor(Math.min(rawProgress, i)));
+
+          // Resting position for this card while still in deck
+          const restingY = deckBottomY + cardsAboveInDeck * DECK_PEEK;
+          const restingScale = Math.max(0.75, 1 - cardsAboveInDeck * SCALE_STEP);
+
+          // Interpolate from resting → landed
+          const y     = restingY + (landedTopY - restingY) * easedP;
+          const scale = restingScale + (1 - restingScale) * easedP;
+
+          // Once a card starts moving it should render above everything still in the deck
+          const zIndex = localP > 0 ? 1000 + i : totalN - i;
+
+          gsap.set(el, { y, scale, zIndex });
+        });
+      },
+    });
+
+    return () => {
+      st.kill();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deckServices, viewport.vh, viewport.vw, viewport.isMobile]);
+
+  return (
+    <div ref={wrapperRef} style={{ height: scrollHeight, position: "relative", width: "100%" }}>
+      {/* Sticky container — stays in view while parent scrolls */}
+      <div
+        style={{
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          width: "100%",
+          overflow: "hidden",
+        }}
+      >
+        {/* Card stack */}
+        {deckServices.map((service, i) => (
+          <div
+            key={service.slug}
+            ref={(el) => {
+              cardRefs.current[i] = el;
+            }}
+          >
+            <Link
+              href={`/services/${service.slug}`}
+              aria-label={`Open ${service.name}`}
+              style={{ display: "block", width: "100%", height: "100%", textDecoration: "none" }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  width: "100%",
+                  height: "100%",
+                  borderRadius: 22,
+                  overflow: "hidden",
+                  background: "#F3F4F6",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
+                  border: "1px solid rgba(17,19,23,0.08)",
+                  display: "flex",
+                  flexDirection: viewport.isMobile ? "column" : "row",
+                  alignItems: "stretch",
+                  gap: viewport.isMobile ? 10 : 14,
+                  padding: viewport.isMobile ? 10 : 12,
+                }}
+              >
+                <div
+                  style={{
+                    flex: viewport.isMobile ? "0 0 54%" : "0 0 56%",
+                    minWidth: 0,
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    background: "#0f1115",
+                    position: "relative",
+                  }}
+                >
+                  <img
+                    src={service.image}
+                    alt={`${service.name} — service`}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      background:
+                        "linear-gradient(to top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.02) 55%, transparent 100%)",
+                      pointerEvents: "none",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    flex: 1,
+                    minWidth: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    padding: viewport.isMobile ? "4px 4px 6px" : "2px 8px 2px 4px",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#0B0E14",
+                      fontSize: viewport.isMobile ? "clamp(18px,4.8vw,22px)" : "clamp(22px,2.05vw,34px)",
+                      fontWeight: 700,
+                      lineHeight: 1.08,
+                      letterSpacing: "-0.02em",
+                      marginBottom: viewport.isMobile ? 10 : 16,
+                    }}
+                  >
+                    {service.name}
+                  </div>
+                  <div
+                    style={{
+                      color: "rgba(17,19,23,0.86)",
+                      fontSize: viewport.isMobile ? "clamp(12px,3.2vw,15px)" : "clamp(14px,1.2vw,22px)",
+                      fontWeight: 450,
+                      lineHeight: 1.28,
+                      letterSpacing: "-0.005em",
+                      maxWidth: "30ch",
+                    }}
+                  >
+                    {service.category}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
+        ))}
+
+      
+      </div>
+    </div>
+  );
+};
+
 export default function Services() {
   const finePointer = useFinePointer();
   const search = useSearch();
@@ -492,7 +785,7 @@ export default function Services() {
 
   return (
     <div style={{ cursor: pageCursor }}>
-      {finePointer ? <CustomCursor /> : null}
+      {finePointer && viewMode !== "grid" ? <CustomCursor /> : null}
       {/* ═══ FILTER PANEL — slides from LEFT with staggered items ═══ */}
       <div
         className="w-full sm:w-80 lg:w-96 pt-20"
@@ -624,7 +917,7 @@ export default function Services() {
                   cursor: finePointer ? "none" : "pointer",
                 }}
               >
-                Grid view ⊞
+                Bottom Deck view
               </button>
             </ParticleWrapper>
           </div>
@@ -640,7 +933,7 @@ export default function Services() {
         </div>
       )}
 
-      {/* ═══ GRID VIEW — Enhanced with TiltCard and stagger ═══ */}
+      {/* ═══ BOTTOM DECK VIEW ═══ */}
       {viewMode === "grid" && (
         <div className="pt-10 sm:pt-12 md:pt-16 lg:pt-20">
           <div className="fixed top-20 sm:top-20 md:top-24 right-3 sm:right-4 md:right-6 lg:right-8 z-[60]">
@@ -661,16 +954,14 @@ export default function Services() {
 
           <div className="section-padding">
             <div className="container">
-             
-
               <ParticleWrapper>
                 <button onClick={() => setFilterOpen(true)} className="md:hidden cta-link" style={{ marginTop: "clamp(16px, 3vw, 24px)", fontSize: "clamp(12px, 2.2vw, 14px)" }}>
                   Filter Services +
                 </button>
               </ParticleWrapper>
 
-              {/* Parallax gallery with service images */}
-              <ServicesParallaxGallery
+              {/* Scroll-driven bottom deck of service cards */}
+              <ServicesBottomDeck
                 services={filtered.map((service, i) => ({
                   image: getServiceImage(service, i, filtered),
                   name: service.name,
