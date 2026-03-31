@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
-import ParticleHero from "@/components/ParticleHero";
 import HoverParticles from "@/components/HoverParticles";
 import ParticleWrapper from "@/components/ParticleWrapper";
 import InteractiveParticles from "@/components/InteractiveParticles";
@@ -382,10 +381,6 @@ export default function Home() {
         paddingBottom: 60,
         background: "var(--paper)",
       }}>
-        {/* Particle canvas — fills section exactly via inset:0, no overflow needed */}
-        {!isTouchDevice && (
-          <ParticleHero style={{ position: "absolute", inset: 0, zIndex: 0 }} />
-        )}
         {/* WeSee logo particle formation — same behavior as About hero; mobile: shift layer up so logo reads above headline */}
         <div
           className="home-hero-particle-logo-layer"
