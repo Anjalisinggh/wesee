@@ -356,9 +356,13 @@ const ServicesParallaxGallery = ({ services }: { services: Array<{ image: string
   );
 };
 
-// ─── tiny easing helper (ease-in-out cubic) ──────────────────────────────────
-function easeInOutCubic(t: number): number {
-  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+// ─── tiny easing helpers (deck: ease-in lift from back, ease-out scale) ─
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function easeInCubic(t: number): number {
+  return t * t * t;
 }
 
 // ─── types ────────────────────────────────────────────────────────────────────
@@ -373,6 +377,7 @@ interface ServiceCard {
 const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const flyingCardRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   const [viewport, setViewport] = useState({ vh: 800, vw: 1024, isMobile: false });
 
@@ -409,8 +414,17 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
 
   // ── layout constants ──────────────────────────────────────────────────────
   const PX_PER_CARD = viewport.isMobile ? 300 : 250;
-  const DECK_PEEK = viewport.isMobile ? 6 : 8;       // px each background card peeks
-  const SCALE_STEP = viewport.isMobile ? 0.025 : 0.02; // scale reduction per depth level
+  const DECK_PEEK = viewport.isMobile ? 10 : 12;       // px each background card peeks
+  const DECK_SIDE_PEEK = viewport.isMobile ? 6 : 9;    // px horizontal offset per depth
+  const TOP_DECK_PEEK = viewport.isMobile ? 7 : 9;     // px peek between landed cards
+  const TOP_DECK_SIDE_PEEK = viewport.isMobile ? 4 : 6; // px side offset between landed cards
+  // Bottom-deck flight depth cues only (keeps top deck logic unchanged).
+  const FLIGHT_BACK_OFFSET_Y = viewport.isMobile ? 18 : 24;
+  const FLIGHT_BACK_OFFSET_X = viewport.isMobile ? 8 : 12;
+  const FLIGHT_BACK_SCALE = viewport.isMobile ? 0.95 : 0.94;
+  // Back of deck = largest; front (toward viewer) = smallest — depth via scale only
+  const DECK_SCALE_MIN = viewport.isMobile ? 0.86 : 0.88;
+  const DECK_SCALE_MAX = 1;
 
   const totalN = deckServices.length;
   // Total scroll height: one full viewport to "enter" + each card gets PX_PER_CARD to animate
@@ -424,7 +438,10 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
     const cards = cardRefs.current
       .slice(0, totalN)
       .filter(Boolean) as HTMLDivElement[];
-    if (cards.length !== totalN) return;
+    const flyingCards = flyingCardRefs.current
+      .slice(0, totalN)
+      .filter(Boolean) as HTMLDivElement[];
+    if (cards.length !== totalN || flyingCards.length !== totalN) return;
 
     const { vh, vw, isMobile } = viewport;
 
@@ -453,7 +470,8 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
     const cardH = baseCardH * desktopHeightScale;
 
     // The deck rests at the bottom-center of the viewport.
-    // card[0] is the TOP card of the deck (rendered last visually → highest zIndex).
+    // card[0] is the FRONT (smallest); card[totalN-1] is the BACK (largest).
+    // Scroll order: back leaves first (index totalN-1), front last (index 0).
     // "deckBottomY" = translateY that places the card's center near the bottom of the screen.
     // "landedTopY"  = translateY that places the card's center near the top of the screen.
     //
@@ -473,9 +491,18 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
     const deckBottomY = vh * 0.5 - cardH * 0.5 - bottomMargin;
     const landedTopY = -vh * 0.5 + cardH * 0.5 + topMargin;
 
+    const deckRestingScale = (d: number, remainingInDeck: number): number => {
+      if (remainingInDeck <= 1) return DECK_SCALE_MAX;
+      const maxD = remainingInDeck - 1;
+      return DECK_SCALE_MIN + (d / maxD) * (DECK_SCALE_MAX - DECK_SCALE_MIN);
+    };
+
     // ── initialise all cards ─────────────────────────────────────────────
-    // card[0] = top of deck (first to fly off), card[totalN-1] = bottom of deck
+    // card[0] = front of deck (smallest), card[totalN-1] = back (largest)
     cards.forEach((el, i) => {
+      const remainingInDeck = totalN;
+      const d = i;
+      const initialScale = deckRestingScale(d, remainingInDeck);
       gsap.set(el, {
         position: "absolute",
         left: "50%",
@@ -486,13 +513,39 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
         height: cardH,
         // card[0] is on top → highest zIndex
         zIndex: totalN - i,
-        // Each card in the deck peeks slightly below the one above it
+        // Each card in the deck peeks below and slightly to the side.
         y: deckBottomY + i * DECK_PEEK,
-        scale: Math.max(0.75, 1 - i * SCALE_STEP),
+        x: -i * DECK_SIDE_PEEK,
+        scale: initialScale,
         transformOrigin: "center bottom",
         willChange: "transform",
         borderRadius: 22,
         overflow: "hidden",
+      });
+    });
+
+    flyingCards.forEach((el, i) => {
+      const remainingInDeck = totalN;
+      const d = i;
+      const initialScale = deckRestingScale(d, remainingInDeck);
+      gsap.set(el, {
+        position: "absolute",
+        left: "50%",
+        top: "50%",
+        xPercent: -50,
+        yPercent: -50,
+        width: cardW,
+        height: cardH,
+        y: deckBottomY + i * DECK_PEEK,
+        x: -i * DECK_SIDE_PEEK,
+        scale: initialScale,
+        transformOrigin: "center bottom",
+        willChange: "transform",
+        borderRadius: 22,
+        overflow: "hidden",
+        zIndex: 3000,
+        opacity: 0,
+        pointerEvents: "none",
       });
     });
 
@@ -502,30 +555,62 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
       end: "bottom bottom",
       scrub: 0.8,
       onUpdate: (self) => {
-        // rawProgress goes 0 → totalN over the full scroll range
+        // rawProgress goes 0 → totalN (one unit per card, back → front)
         const rawProgress = self.progress * totalN;
+        const landedCount = gsap.utils.clamp(0, totalN, Math.floor(rawProgress));
 
         cards.forEach((el, i) => {
-          // localP: 0 when this card hasn't started yet, 1 when fully landed at top
-          const localP = gsap.utils.clamp(0, 1, rawProgress - i);
-          const easedP = easeInOutCubic(localP);
+          const flyingEl = flyingCards[i];
+          if (!flyingEl) return;
+          // localP: 0 when this card hasn't started yet, 1 when fully landed at top.
+          // Segment order: i = totalN-1 first (rawProgress 0→1), …, i = 0 last.
+          const localP = gsap.utils.clamp(0, 1, rawProgress - (totalN - 1 - i));
+          // Lift from the back: stay low in the stack first, then move up.
+          const pMotion = easeInCubic(localP);
+          const pScale = easeOutCubic(localP);
 
-          // How many cards are still stacked above/ahead of this one in the deck?
-          // (cards with index < i that haven't flown off yet)
-          const cardsAboveInDeck = Math.max(0, i - Math.floor(Math.min(rawProgress, i)));
+          // With back-first removal, indices 0..i-1 always stay above i until i’s turn.
+          const cardsAboveInDeck = i;
+
+          const remainingInDeck = totalN - Math.floor(rawProgress);
 
           // Resting position for this card while still in deck
           const restingY = deckBottomY + cardsAboveInDeck * DECK_PEEK;
-          const restingScale = Math.max(0.75, 1 - cardsAboveInDeck * SCALE_STEP);
+          const restingX = -cardsAboveInDeck * DECK_SIDE_PEEK;
+          const restingScale = deckRestingScale(i, remainingInDeck);
+          const landingOrder = totalN - 1 - i; // 0 = first landed, grows as more cards land
+          const isLanded = localP >= 1 && landingOrder < landedCount;
+          const isFlying = localP > 0 && localP < 1;
+          // Older landed cards get pushed back/down so newest appears on top/front.
+          const landedDepth = isLanded ? landedCount - 1 - landingOrder : 0;
+          const landedX = landedDepth * TOP_DECK_SIDE_PEEK;
+          const landedY = landedTopY + landedDepth * TOP_DECK_PEEK;
 
-          // Interpolate from resting → landed
-          const y     = restingY + (landedTopY - restingY) * easedP;
-          const scale = restingScale + (1 - restingScale) * easedP;
+          const deckZ = totalN - i;
+          const landedZ = 2000 + landingOrder;
 
-          // Once a card starts moving it should render above everything still in the deck
-          const zIndex = localP > 0 ? 1000 + i : totalN - i;
+          // Base layer: only deck + landed stack; active moving card is hidden here.
+          const baseX = isLanded ? landedX : restingX;
+          const baseY = isLanded ? landedY : restingY;
+          const baseScale = isLanded ? 1 : restingScale;
+          const baseZ = isLanded ? landedZ : deckZ;
+          gsap.set(el, { x: baseX, y: baseY, scale: baseScale, zIndex: baseZ, opacity: isFlying ? 0 : 1 });
 
-          gsap.set(el, { y, scale, zIndex });
+          // Overlay layer: add subtle "from back" depth before coming forward.
+          const backDepth = 1 - pMotion;
+          const flightStartX = restingX - FLIGHT_BACK_OFFSET_X * backDepth;
+          const flightStartY = restingY + FLIGHT_BACK_OFFSET_Y * backDepth;
+          const flightStartScale = restingScale * (FLIGHT_BACK_SCALE + (1 - FLIGHT_BACK_SCALE) * pScale);
+          const flyingX = flightStartX + (landedX - flightStartX) * (pMotion * 0.2);
+          const flyingY = flightStartY + (landedY - flightStartY) * pMotion;
+          const flyingScale = flightStartScale + (1 - flightStartScale) * pScale;
+          gsap.set(flyingEl, {
+            x: flyingX,
+            y: flyingY,
+            scale: flyingScale,
+            zIndex: 3000,
+            opacity: isFlying ? 1 : 0,
+          });
         });
       },
     });
@@ -535,6 +620,88 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deckServices, viewport.vh, viewport.vw, viewport.isMobile]);
+
+  const renderServiceCard = (service: ServiceCard) => (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        borderRadius: 22,
+        overflow: "hidden",
+        background: "#F3F4F6",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
+        border: "1px solid rgba(17,19,23,0.08)",
+        display: "flex",
+        flexDirection: viewport.isMobile ? "column" : "row",
+        alignItems: "stretch",
+        gap: viewport.isMobile ? 10 : 14,
+        padding: viewport.isMobile ? 10 : 12,
+      }}
+    >
+      <div
+        style={{
+          flex: viewport.isMobile ? "0 0 54%" : "0 0 56%",
+          minWidth: 0,
+          borderRadius: 16,
+          overflow: "hidden",
+          background: "#0f1115",
+          position: "relative",
+        }}
+      >
+        <img
+          src={service.image}
+          alt={`${service.name} — service`}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.02) 55%, transparent 100%)",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: viewport.isMobile ? "4px 4px 6px" : "2px 8px 2px 4px",
+        }}
+      >
+        <div
+          style={{
+            color: "#0B0E14",
+            fontSize: viewport.isMobile ? "clamp(18px,4.8vw,22px)" : "clamp(22px,2.05vw,34px)",
+            fontWeight: 700,
+            lineHeight: 1.08,
+            letterSpacing: "-0.02em",
+            marginBottom: viewport.isMobile ? 10 : 16,
+          }}
+        >
+          {service.name}
+        </div>
+        <div
+          style={{
+            color: "rgba(17,19,23,0.86)",
+            fontSize: viewport.isMobile ? "clamp(12px,3.2vw,15px)" : "clamp(14px,1.2vw,22px)",
+            fontWeight: 450,
+            lineHeight: 1.28,
+            letterSpacing: "-0.005em",
+            maxWidth: "30ch",
+          }}
+        >
+          {service.category}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div ref={wrapperRef} style={{ height: scrollHeight, position: "relative", width: "100%" }}>
@@ -561,86 +728,22 @@ const ServicesBottomDeck = ({ services }: { services: ServiceCard[] }) => {
               aria-label={`Open ${service.name}`}
               style={{ display: "block", width: "100%", height: "100%", textDecoration: "none" }}
             >
-              <div
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: 22,
-                  overflow: "hidden",
-                  background: "#F3F4F6",
-                  boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
-                  border: "1px solid rgba(17,19,23,0.08)",
-                  display: "flex",
-                  flexDirection: viewport.isMobile ? "column" : "row",
-                  alignItems: "stretch",
-                  gap: viewport.isMobile ? 10 : 14,
-                  padding: viewport.isMobile ? 10 : 12,
-                }}
-              >
-                <div
-                  style={{
-                    flex: viewport.isMobile ? "0 0 54%" : "0 0 56%",
-                    minWidth: 0,
-                    borderRadius: 16,
-                    overflow: "hidden",
-                    background: "#0f1115",
-                    position: "relative",
-                  }}
-                >
-                  <img
-                    src={service.image}
-                    alt={`${service.name} — service`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  />
-                  <div
-                    style={{
-                      position: "absolute",
-                      inset: 0,
-                      background:
-                        "linear-gradient(to top, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.02) 55%, transparent 100%)",
-                      pointerEvents: "none",
-                    }}
-                  />
-                </div>
-
-                <div
-                  style={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    padding: viewport.isMobile ? "4px 4px 6px" : "2px 8px 2px 4px",
-                  }}
-                >
-                  <div
-                    style={{
-                      color: "#0B0E14",
-                      fontSize: viewport.isMobile ? "clamp(18px,4.8vw,22px)" : "clamp(22px,2.05vw,34px)",
-                      fontWeight: 700,
-                      lineHeight: 1.08,
-                      letterSpacing: "-0.02em",
-                      marginBottom: viewport.isMobile ? 10 : 16,
-                    }}
-                  >
-                    {service.name}
-                  </div>
-                  <div
-                    style={{
-                      color: "rgba(17,19,23,0.86)",
-                      fontSize: viewport.isMobile ? "clamp(12px,3.2vw,15px)" : "clamp(14px,1.2vw,22px)",
-                      fontWeight: 450,
-                      lineHeight: 1.28,
-                      letterSpacing: "-0.005em",
-                      maxWidth: "30ch",
-                    }}
-                  >
-                    {service.category}
-                  </div>
-                </div>
-              </div>
+              {renderServiceCard(service)}
             </Link>
+          </div>
+        ))}
+
+        {/* Flying overlay cards: decoupled from deck and landed stacking. */}
+        {deckServices.map((service, i) => (
+          <div
+            key={`${service.slug}-flying`}
+            ref={(el) => {
+              flyingCardRefs.current[i] = el;
+            }}
+            aria-hidden
+            style={{ pointerEvents: "none" }}
+          >
+            {renderServiceCard(service)}
           </div>
         ))}
 
@@ -917,7 +1020,7 @@ export default function Services() {
                   cursor: finePointer ? "none" : "pointer",
                 }}
               >
-                Bottom Deck view
+               Grid view
               </button>
             </ParticleWrapper>
           </div>
