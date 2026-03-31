@@ -777,9 +777,26 @@ export default function Services() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = filterOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
-  }, [filterOpen]);
+    if (typeof window === "undefined") return;
+    const body = document.body;
+    const html = document.documentElement;
+
+    const applyScrollLock = () => {
+      const isMobile = window.innerWidth < 768;
+      const shouldLock = filterOpen || (viewMode === "ring" && isMobile);
+      const overflowValue = shouldLock ? "hidden" : "";
+      body.style.overflow = overflowValue;
+      html.style.overflow = overflowValue;
+    };
+
+    applyScrollLock();
+    window.addEventListener("resize", applyScrollLock, { passive: true });
+    return () => {
+      window.removeEventListener("resize", applyScrollLock);
+      body.style.overflow = "";
+      html.style.overflow = "";
+    };
+  }, [filterOpen, viewMode]);
 
   useEffect(() => {
     const shouldOpenFilter = params.get("openFilter") === "1";
@@ -993,7 +1010,7 @@ export default function Services() {
 
       {/* ═══ RING VIEW ═══ */}
       {viewMode === "ring" && (
-        <div style={{ position: "relative",paddingBottom: "10px",paddingTop: "18px"}}>
+        <div style={{ position: "relative", height: "100dvh", overflow: "hidden" }}>
           <div className="fixed top-20 sm:top-20 md:top-24 left-3 sm:left-4 md:left-6 lg:left-8 z-[60]">
             <ParticleWrapper>
               <button
