@@ -516,18 +516,18 @@ export default function Contact() {
                     setFocusedField(null);
                     gsap.to(e.currentTarget, { scale: 1, duration: 0.3, ease: "power2.out" });
                   }} 
-                  style={{ ...inputStyle("service"), cursor: "pointer", appearance: "none", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231A1A1A' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 0 top 50%", paddingRight: "24px" }}
+                  style={{ ...inputStyle("service"), cursor: "pointer", appearance: "none", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231A1A1A' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 12px top 50%", paddingRight: "40px", paddingLeft: "12px" }}
                 >
-                  <option value="">Select a service</option>
-                  <option value="ai-agents">AI Agents</option>
-                  <option value="workflow-automation">Workflow Automation</option>
-                  <option value="performance-marketing">Performance Marketing</option>
-                  <option value="web-development">Web & App Development</option>
-                  <option value="content-seo">Content & SEO</option>
-                  <option value="crm">CRM & Sales Automation</option>
-                  <option value="analytics">Analytics & BI</option>
-                  <option value="consulting">AI Consulting</option>
-                  <option value="other">Other</option>
+                  <option value="" style={{ paddingLeft: "12px" }}>Select a service</option>
+                  <option value="ai-agents" style={{ paddingLeft: "12px" }}>AI Agents</option>
+                  <option value="workflow-automation" style={{ paddingLeft: "12px" }}>Workflow Automation</option>
+                  <option value="performance-marketing" style={{ paddingLeft: "12px" }}>Performance Marketing</option>
+                  <option value="web-development" style={{ paddingLeft: "12px" }}>Web & App Development</option>
+                  <option value="content-seo" style={{ paddingLeft: "12px" }}>Content & SEO</option>
+                  <option value="crm" style={{ paddingLeft: "12px" }}>CRM & Sales Automation</option>
+                  <option value="analytics" style={{ paddingLeft: "12px" }}>Analytics & BI</option>
+                  <option value="consulting" style={{ paddingLeft: "12px" }}>AI Consulting</option>
+                  <option value="other" style={{ paddingLeft: "12px" }}>Other</option>
                 </select>
               </div>
             </ParticleWrapper>
