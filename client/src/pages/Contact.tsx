@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import TextReveal from "@/components/TextReveal";
 import ImageReveal from "@/components/ImageReveal";
-import StaggerReveal from "@/components/StaggerReveal";
+
 import MagneticButton from "@/components/MagneticButton";
 import ParticleWrapper from "@/components/ParticleWrapper";
 import TiltCard from "@/components/TiltCard";
@@ -12,15 +12,14 @@ gsap.registerPlugin(ScrollTrigger);
 
 const contactTypes = [
   { label: "General enquiries", email: "hr@weseegpt.com", person: "WeSee Team", title: "General", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
-  { label: "Business enquiries", email: "business@wesee.in", person: "Rahul Purohit", title: "Founder & CEO", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80" },
-  { label: "Press enquiries", email: "press@wesee.in", person: "Arjun Mehta", title: "Head of Growth", photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80" },
-  { label: "Career enquiries", email: "hr@weseegpt.com", person: "HR Team", title: "People & Culture", photo: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&q=80" },
+  { label: "Business enquiries", email: "careers@weseegpt.com", person: "harsh khanna", title: "Founder & CEO", photo: "/client/harsh.webp" },
+ 
 ];
 
 const offices = [
-  { city: "Tokyo", country: "Japan", role: "Headquarters", address: "WeSee HQ, Tokyo, Japan", phone: "+81 98290 XXXXX" },
-  { city: "Mumbai", country: "India", role: "Operations", address: "WeWork BKC, Bandra Kurla Complex, Mumbai 400051", phone: "+91 98200 XXXXX" },
-  { city: "Dubai", country: "UAE", role: "MENA Office", address: "Dubai Internet City, Building 1, Dubai, UAE", phone: "+971 4 XXX XXXX" },
+  { city: "Tokyo", country: "Japan", role: "Headquarters", address: "1 Chome-1-17 Nakameguro, Meguro City, Tokyo 153-0061, Japan", phone: "+81 0704 2332 201" ,map: "https://www.google.com/maps/place/Japan,+%E3%80%92153-0061+Tokyo,+Meguro+City,+Nakameguro,+1-ch%C5%8Dme%E2%88%921%E2%88%9217+%E3%83%9E%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%B3%E6%81%B5%E6%AF%94%E9%A0%88%E8%8B%91+102/@35.6439478,139.7037363,18.85z/data=!4m6!3m5!1s0x60188b47af800cd9:0x20304b16a49a858a!8m2!3d35.6442008!4d139.7034181!16s%2Fg%2F11vzdfqxf4?entry=ttu&g_ep=EgoyMDI2MDMzMC4wIKXMDSoASAFQAw%3D%3D"},
+  { city: "Mumbai", country: "India", role: "Operations", address: "Hubtown Viva, 12th Floor, Saraswati Baug, Shankarwadi, Jogeshwari East, Mumbai, Maharashtra 400060", phone: "+91 8604 1091 07" ,map: "https://www.google.com/maps/place/Hubtown+Viva/@19.1313645,72.8531528,17z/data=!3m2!4b1!5s0x3be7b7d5b663c4ad:0x2f60ba818419208b!4m6!3m5!1s0x3be7b7cecfe0f0fd:0x82655eeb16d16558!8m2!3d19.1313594!4d72.8557277!16s%2Fg%2F11gjhnxbbv?entry=ttu&g_ep=EgoyMDI2MDMzMC4wIKXMDSoASAFQAw%3D%3D"},
+ 
 ];
 
 export default function Contact() {
@@ -196,7 +195,7 @@ export default function Contact() {
       if (openOffice === i) {
         gsap.fromTo(el,
           { maxHeight: 0, opacity: 0, y: -20 },
-          { maxHeight: 200, opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
+          { maxHeight: 360, opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }
         );
         const children = el.querySelectorAll("div, a");
         children.forEach((child, idx) => {
@@ -375,7 +374,7 @@ export default function Contact() {
       </section>
 
       {/* Offices accordion with smooth animation */}
-      <section className="section-padding" style={{ borderTop: "1px solid #EEEEEE" }}>
+      <section className="" style={{ borderTop: "1px solid #EEEEEE" }}>
         <div className="container">
           <TextReveal as="h2" className="section-heading" stagger={0.05}>
             Our offices.
@@ -406,11 +405,57 @@ export default function Contact() {
                   ref={(el) => {
                     officeContentRefs.current[i] = el;
                   }}
-                  style={{ maxHeight: openOffice === i ? 200 : 0, overflow: "hidden", opacity: openOffice === i ? 1 : 0 }}
+                  style={{ maxHeight: openOffice === i ? 360 : 0, overflow: "hidden", opacity: openOffice === i ? 1 : 0 }}
                 >
                   <div style={{ paddingBottom: "clamp(20px, 3vw, 28px)", paddingLeft: "clamp(16px, 2vw, 24px)" }}>
                     <div style={{ fontSize: "clamp(11px, 1.3vw, 13px)", fontWeight: 500, color: "#888888", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>{office.role}</div>
-                    <div style={{ fontSize: "clamp(14px, 1.6vw, 16px)", fontWeight: 400, color: "#3A3A3A", marginBottom: 8, lineHeight: 1.6 }}>{office.address}</div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        gap: 10,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <a
+                        href={
+                          office.map ??
+                          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(office.address.trim())}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${office.city} in maps`}
+                        style={{
+                          textDecoration: "none",
+                          flexShrink: 0,
+                          marginTop: 2,
+                          lineHeight: 0,
+                          transition: "transform 0.2s ease, opacity 0.2s ease",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "scale(1.08)";
+                          e.currentTarget.style.opacity = "0.75";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "scale(1)";
+                          e.currentTarget.style.opacity = "1";
+                        }}
+                      >
+                        <img
+                          src="/locationsvg.svg"
+                          alt=""
+                          width={22}
+                          height={22}
+                          className="pointer-events-none block"
+                          style={{ width: 22, height: 22 }}
+                          aria-hidden
+                        />
+                      </a>
+                      <div style={{ fontSize: "clamp(14px, 1.6vw, 16px)", fontWeight: 400, color: "#3A3A3A", lineHeight: 1.6, flex: 1, minWidth: 0 }}>
+                        {office.address.trim()}
+                      </div>
+                    </div>
                     <a 
                       href={`tel:${office.phone.replace(/\s/g, "")}`} 
                       style={{ fontSize: "clamp(14px, 1.6vw, 16px)", fontWeight: 400, color: "#1A1A1A", textDecoration: "none", transition: "color 0.3s ease", display: "inline-block" }}

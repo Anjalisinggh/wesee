@@ -14,10 +14,10 @@ const directors = [
   {
     name: "Harsh khanna",
     title: "Founder & CEO",
-    bio: "Harsh founded WeSee in 2023 with the belief that AI automation should be accessible, measurable, and transformative. With a background in product engineering and growth marketing, he leads WeSee's strategic direction and client relationships.",
+    bio: "Harsh founded WeSee in 2024 with the belief that AI automation should be accessible, measurable, and transformative. With a background in product engineering and growth marketing, he leads WeSee's strategic direction and client relationships.",
     email: "harsh.khanna@weseegpt.com",
     photo: "/client/harsh.webp",
-    linkedin: "https://www.linkedin.com/in/harsh-singh-431022190/",
+    linkedin: "https://www.linkedin.com/in/harshkhanna96/",
   },
   {
     name: "Takeshi",
@@ -25,17 +25,17 @@ const directors = [
     bio: "Takeshi  leads WeSee's AI engineering team, overseeing the development of conversational AI agents, workflow automation systems, and custom integrations. With deep expertise in LangChain, OpenAI, and enterprise AI architecture, she ensures every solution is production-ready.",
       email: "takeshi.shoyama@weseegpt.com",
       photo: "/client/takeshi.webp",
-    linkedin: "https://linkedin.com/company/wesee",
+    
   },
  
 ];
 
 const teamMembers = [
-  { name: "sanjeev vishwakarma", title: "Full Stack Developer", photo: "/client/sanjeev.jpg" },
+  { name: "sanjeev vishwakarma", title: "Full Stack Developer", photo: "/services/sanjiv.webp" },
   { name: "harsh khanna", title: "Growth Marketing Lead", photo: "/client/harsh.webp" },
-  { name: "deepak yadav", title: "Automation Engineer", photo: "/client/deepak.jpeg" },
+  { name: "deepak yadav", title: "Automation Engineer", photo: "/services/deepak.webp" },
   { name: "alex", title: "UX Designer", photo: "/client/takeshi.webp" },
-  { name: "virendra singh", title: "Data Analyst", photo: "/client/deepak.jpeg" },
+  { name: "virendra singh", title: "Data Analyst", photo: "/client/virendra.jpg" },
 ];
 
 type ColumnProps = {
@@ -300,8 +300,12 @@ export default function Team() {
                       <div style={{ fontSize: 20, fontWeight: 600, color: "#1A1A1A" }}>{d.name}</div>
                       <div style={{ fontSize: 14, fontWeight: 400, color: "#888888", marginTop: 4 }}>{d.title}</div>
                       <p style={{ fontSize: 14, fontWeight: 400, color: "#3A3A3A", lineHeight: 1.7, marginTop: 12 }}>{d.bio}</p>
-                      <div className="flex items-center gap-4" style={{ marginTop: 12 }}>
-                        <a href={d.linkedin} target="_blank" rel="noopener noreferrer" className="cta-link" style={{ fontSize: 13, color: "#1A1A1A" }}>LinkedIn</a>
+                      <div className="flex flex-col items-start gap-2" style={{ marginTop: 12 }}>
+                        {"linkedin" in d && d.linkedin ? (
+                          <a href={d.linkedin} target="_blank" rel="noopener noreferrer" className="cta-link" style={{ fontSize: 13, color: "#1A1A1A" }}>
+                            LinkedIn
+                          </a>
+                        ) : null}
                         <span style={{ fontSize: 13, color: "#888888" }}>{d.email}</span>
                       </div>
                     </div>

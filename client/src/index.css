@@ -221,7 +221,7 @@
 
   /* Legacy alias */
   .section-padding {
-    padding-block: 120px;
+    padding-block: 60px;
   }
 
   @media (max-width: 767px) {
